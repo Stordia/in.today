@@ -5,6 +5,8 @@ return [
     'meta' => [
         'title' => 'in.today – Premium Websites for Restaurants, Cafés & Bars',
         'description' => 'in.today builds high-converting, multilingual websites for restaurants, cafés, bars and clubs – including design, hosting, domains, menus, photography and integrations.',
+        'og_title' => 'in.today – Premium restaurant websites & reservations',
+        'og_description' => 'Custom-designed restaurant websites with reservations, menus, photography and multilingual support – all in one place.',
     ],
 
     'nav' => [

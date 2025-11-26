@@ -2,9 +2,68 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {{-- SEO Variables --}}
+    @php
+        $currentLocale = app()->getLocale();
+        $supportedLocales = config('locales.supported', ['en']);
+        $defaultLocale = config('locales.default', 'en');
+        $canonicalUrl = url($currentLocale);
+    @endphp
+
+    {{-- Primary Meta Tags --}}
     <title>{{ __('landing.meta.title') }}</title>
     <meta name="description" content="{{ __('landing.meta.description') }}">
+    <meta name="robots" content="index,follow">
+    <meta name="application-name" content="in.today">
+
+    {{-- Canonical URL --}}
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    {{-- Hreflang Tags for Internationalization --}}
+    @foreach ($supportedLocales as $locale)
+    <link rel="alternate" hreflang="{{ $locale }}" href="{{ url($locale) }}">
+    @endforeach
+    <link rel="alternate" hreflang="x-default" href="{{ url($defaultLocale) }}">
+
+    {{-- OpenGraph Meta Tags --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="in.today">
+    <meta property="og:title" content="{{ __('landing.meta.og_title') }}">
+    <meta property="og:description" content="{{ __('landing.meta.og_description') }}">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:locale" content="{{ str_replace('-', '_', $currentLocale) }}">
+    @foreach ($supportedLocales as $locale)
+        @if ($locale !== $currentLocale)
+    <meta property="og:locale:alternate" content="{{ str_replace('-', '_', $locale) }}">
+        @endif
+    @endforeach
+    <meta property="og:image" content="{{ asset('img/og-in-today.jpg') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    {{-- Twitter Card Meta Tags --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ __('landing.meta.og_title') }}">
+    <meta name="twitter:description" content="{{ __('landing.meta.og_description') }}">
+    <meta name="twitter:image" content="{{ asset('img/og-in-today.jpg') }}">
+
+    {{-- JSON-LD Structured Data --}}
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => 'in.today',
+        'url' => $canonicalUrl,
+        'logo' => asset('img/logo-in-today.png'),
+        'description' => __('landing.meta.description'),
+        'sameAs' => [
+            'https://www.instagram.com/in.today.official',
+            'https://www.linkedin.com/company/intoday',
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -17,7 +76,7 @@
                 <div class="flex-shrink-0">
                     <h1 class="text-2xl font-bold text-brand">{{ __('landing.nav.logo') }}</h1>
                 </div>
-                @php($baseUrl = '/' . app()->getLocale())
+                @php($baseUrl = '/' . $currentLocale)
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="{{ $baseUrl }}#features" class="text-secondary hover:text-brand transition">{{ __('landing.nav.solutions') }}</a>
                     <a href="{{ $baseUrl }}#pricing" class="text-secondary hover:text-brand transition">{{ __('landing.nav.pricing') }}</a>
@@ -359,12 +418,11 @@
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                    @php($footerBaseUrl = '/' . app()->getLocale())
                     <ul class="space-y-2">
-                        <li><a href="{{ $footerBaseUrl }}#features" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
-                        <li><a href="{{ $footerBaseUrl }}#pricing" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
-                        <li><a href="{{ $footerBaseUrl }}#how-it-works" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.how_it_works') }}</a></li>
-                        <li><a href="{{ $footerBaseUrl }}#faq" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#features" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#pricing" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#how-it-works" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.how_it_works') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#faq" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
                     </ul>
                 </div>
                 <div>
