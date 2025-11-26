@@ -387,21 +387,257 @@
                 </p>
             </div>
 
+            {{-- Success Message --}}
+            @if (session('success'))
+            <div class="mb-8 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-6 py-4 rounded-xl" role="alert">
+                <p class="font-medium">{{ session('success') }}</p>
+            </div>
+            @endif
+
+            {{-- Error Message --}}
+            @if (session('error'))
+            <div class="mb-8 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-6 py-4 rounded-xl" role="alert">
+                <p class="font-medium">{{ session('error') }}</p>
+            </div>
+            @endif
+
             <div class="bg-card rounded-2xl shadow-xl p-8 md:p-12 border border-default">
-                <div class="text-center space-y-6">
-                    <div>
-                        <h4 class="text-xl font-semibold text-primary mb-2">{{ __('landing.contact.email_label') }}</h4>
-                        <a href="mailto:{{ __('landing.contact.email_value') }}" class="text-lg text-brand hover:text-brand-hover">
-                            {{ __('landing.contact.email_value') }}
-                        </a>
+                <form action="{{ route('contact.submit', ['locale' => app()->getLocale()]) }}" method="POST" class="space-y-8">
+                    @csrf
+
+                    {{-- Honeypot field (hidden from real users) --}}
+                    <div class="hidden" aria-hidden="true">
+                        <label for="website_confirm">Leave this field empty</label>
+                        <input type="text" name="website_confirm" id="website_confirm" tabindex="-1" autocomplete="off">
                     </div>
 
-                    <div class="pt-6 border-t border-default">
-                        <p class="text-secondary mb-6">
-                            {{ __('landing.contact.cta') }}
-                        </p>
+                    {{-- Contact Information --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Name --}}
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.name') }} <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                id="name"
+                                value="{{ old('name') }}"
+                                placeholder="{{ __('landing.contact.form.name_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition @error('name') border-red-500 @enderror"
+                                required
+                            >
+                            @error('name')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Email --}}
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.email') }} <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                name="email"
+                                id="email"
+                                value="{{ old('email') }}"
+                                placeholder="{{ __('landing.contact.form.email_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition @error('email') border-red-500 @enderror"
+                                required
+                            >
+                            @error('email')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Phone --}}
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.phone') }}
+                            </label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                id="phone"
+                                value="{{ old('phone') }}"
+                                placeholder="{{ __('landing.contact.form.phone_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition"
+                            >
+                        </div>
+
+                        {{-- Restaurant Name --}}
+                        <div>
+                            <label for="restaurant_name" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.restaurant_name') }} <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="restaurant_name"
+                                id="restaurant_name"
+                                value="{{ old('restaurant_name') }}"
+                                placeholder="{{ __('landing.contact.form.restaurant_name_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition @error('restaurant_name') border-red-500 @enderror"
+                                required
+                            >
+                            @error('restaurant_name')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- City --}}
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.city') }} <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="city"
+                                id="city"
+                                value="{{ old('city') }}"
+                                placeholder="{{ __('landing.contact.form.city_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition @error('city') border-red-500 @enderror"
+                                required
+                            >
+                            @error('city')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Country --}}
+                        <div>
+                            <label for="country" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.country') }} <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="country"
+                                id="country"
+                                value="{{ old('country') }}"
+                                placeholder="{{ __('landing.contact.form.country_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition @error('country') border-red-500 @enderror"
+                                required
+                            >
+                            @error('country')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Current Website --}}
+                        <div>
+                            <label for="website_url" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.website_url') }}
+                            </label>
+                            <input
+                                type="url"
+                                name="website_url"
+                                id="website_url"
+                                value="{{ old('website_url') }}"
+                                placeholder="{{ __('landing.contact.form.website_url_placeholder') }}"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition"
+                            >
+                        </div>
+
+                        {{-- Business Type --}}
+                        <div>
+                            <label for="type" class="block text-sm font-medium text-primary mb-2">
+                                {{ __('landing.contact.form.type') }} <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                name="type"
+                                id="type"
+                                class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary focus:ring-2 focus:ring-brand focus:border-brand transition @error('type') border-red-500 @enderror"
+                                required
+                            >
+                                <option value="">--</option>
+                                @foreach(__('landing.contact.form.type_options') as $value => $label)
+                                <option value="{{ $value }}" {{ old('type') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('type')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
-                </div>
+
+                    {{-- Services Checkboxes --}}
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">
+                            {{ __('landing.contact.form.services') }} <span class="text-red-500">*</span>
+                        </label>
+                        <p class="text-sm text-muted mb-3">{{ __('landing.contact.form.services_hint') }}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach(__('landing.contact.form.services_options') as $value => $label)
+                            <label class="flex items-center space-x-3 p-3 rounded-lg border border-default bg-page hover:border-brand cursor-pointer transition">
+                                <input
+                                    type="checkbox"
+                                    name="services[]"
+                                    value="{{ $value }}"
+                                    {{ is_array(old('services')) && in_array($value, old('services')) ? 'checked' : '' }}
+                                    class="w-5 h-5 text-brand bg-page border-default rounded focus:ring-brand focus:ring-2"
+                                >
+                                <span class="text-secondary">{{ $label }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                        @error('services')
+                        <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Budget Radio Buttons --}}
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-2">
+                            {{ __('landing.contact.form.budget') }} <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach(__('landing.contact.form.budget_options') as $value => $label)
+                            <label class="flex items-center space-x-3 p-3 rounded-lg border border-default bg-page hover:border-brand cursor-pointer transition">
+                                <input
+                                    type="radio"
+                                    name="budget"
+                                    value="{{ $value }}"
+                                    {{ old('budget') === $value ? 'checked' : '' }}
+                                    class="w-5 h-5 text-brand bg-page border-default focus:ring-brand focus:ring-2"
+                                >
+                                <span class="text-secondary">{{ $label }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                        @error('budget')
+                        <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Message --}}
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-primary mb-2">
+                            {{ __('landing.contact.form.message') }}
+                        </label>
+                        <textarea
+                            name="message"
+                            id="message"
+                            rows="4"
+                            placeholder="{{ __('landing.contact.form.message_placeholder') }}"
+                            class="w-full px-4 py-3 rounded-lg border border-default bg-page text-primary placeholder-muted focus:ring-2 focus:ring-brand focus:border-brand transition resize-none"
+                        >{{ old('message') }}</textarea>
+                    </div>
+
+                    {{-- Privacy Note --}}
+                    <p class="text-sm text-muted">
+                        {{ __('landing.contact.privacy_note') }}
+                    </p>
+
+                    {{-- Submit Button --}}
+                    <div class="text-center">
+                        <button
+                            type="submit"
+                            class="px-8 py-4 bg-brand text-white text-lg font-semibold rounded-lg hover:bg-brand-hover transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {{ __('landing.contact.form.submit') }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </section>

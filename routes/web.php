@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
 // Language selection page
@@ -21,4 +22,6 @@ Route::group([
     Route::get('/', function () {
         return view('landing');
     })->name('landing');
+
+    Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 });
