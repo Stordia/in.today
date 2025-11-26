@@ -1,20 +1,37 @@
 #!/bin/bash
 set -e
 
-cd /var/www/vhosts/in.today/dev.in.today
+# --- Βασικές διαδρομές ---
+APP_ROOT="/var/www/vhosts/in.today"
+APP_DIR="$APP_ROOT/dev.in.today"
 
-echo "--- STEP 1: Node.js dependencies ---"
-/var/www/vhosts/in.today/.nodenv/shims/npm install
+# --- phpenv / nodenv περιβάλλον ---
+export HOME="$APP_ROOT"
+export PHPENV_ROOT="$HOME/.phpenv"
+export NODENV_ROOT="$HOME/.nodenv"
+export PATH="$PHPENV_ROOT/shims:$PHPENV_ROOT/bin:$NODENV_ROOT/shims:$NODENV_ROOT/bin:$PATH"
 
-echo "--- STEP 2: PHP dependencies (composer install) ---"
-/var/www/vhosts/in.today/.phpenv/shims/composer install --no-dev --optimize-autoloader
+cd "$APP_DIR"
+
+echo "=== in.today deploy start ==="
+echo "PWD: $(pwd)"
+echo "PHP:  $(php -v | head -n 1 || echo 'php not found')"
+echo "Comp: $(composer -V || echo 'composer not found')"
+echo "Node: $(node -v || echo 'node not found')"
+echo "NPM:  $(npm -v || echo 'npm not found')"
+
+echo "--- STEP 1: PHP dependencies (composer install) ---"
+composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+echo "--- STEP 2: Node.js dependencies (npm install) ---"
+npm install
 
 echo "--- STEP 3: Vite build (Tailwind + JS) ---"
-/var/www/vhosts/in.today/.nodenv/shims/npm run build
+npm run build
 
 echo "--- STEP 4: Laravel cache clear ---"
-/var/www/vhosts/in.today/.phpenv/shims/php artisan config:clear
-/var/www/vhosts/in.today/.phpenv/shims/php artisan route:clear
-/var/www/vhosts/in.today/.phpenv/shims/php artisan view:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
 
 echo "✅ DEPLOYMENT COMPLETED FOR in.today"
