@@ -1,0 +1,90 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Semantic Color Tokens - Light Mode Defaults */
+
+    /* Backgrounds */
+    --color-page-bg: #ffffff;
+    --color-page-bg-secondary: #f9fafb;  /* gray-50 */
+    --color-card-bg: #ffffff;
+    --color-card-bg-hover: #f9fafb;
+
+    /* Text Colors */
+    --color-text-primary: #111827;  /* gray-900 */
+    --color-text-secondary: #4b5563;  /* gray-600 */
+    --color-text-muted: #6b7280;  /* gray-500 */
+
+    /* Brand Colors */
+    --color-brand-primary: #4f46e5;  /* indigo-600 */
+    --color-brand-primary-hover: #4338ca;  /* indigo-700 */
+    --color-brand-secondary: #eef2ff;  /* indigo-50 */
+
+    /* Borders */
+    --color-border: #e5e7eb;  /* gray-200 */
+    --color-border-hover: #4f46e5;  /* indigo-600 */
+
+    /* Interactive Elements */
+    --color-accent: #10b981;  /* green-500 */
+    --color-warning: #f59e0b;  /* amber-500 */
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Dark mode color overrides */
+.dark {
+    /* Backgrounds */
+    --color-page-bg: #0f172a;  /* slate-900 */
+    --color-page-bg-secondary: #1e293b;  /* slate-800 */
+    --color-card-bg: #1e293b;  /* slate-800 */
+    --color-card-bg-hover: #334155;  /* slate-700 */
+
+    /* Text Colors */
+    --color-text-primary: #f1f5f9;  /* slate-100 */
+    --color-text-secondary: #cbd5e1;  /* slate-300 */
+    --color-text-muted: #94a3b8;  /* slate-400 */
+
+    /* Brand Colors */
+    --color-brand-primary: #6366f1;  /* indigo-500 - lighter for dark mode */
+    --color-brand-primary-hover: #818cf8;  /* indigo-400 */
+    --color-brand-secondary: #1e1b4b;  /* indigo-950 */
+
+    /* Borders */
+    --color-border: #334155;  /* slate-700 */
+    --color-border-hover: #6366f1;  /* indigo-500 */
+
+    /* Interactive Elements */
+    --color-accent: #34d399;  /* green-400 - brighter for dark mode */
+    --color-warning: #fbbf24;  /* amber-400 */
+
+    /* Shadows - softer in dark mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+}
+
+/* Utility classes for semantic colors */
+.bg-page { background-color: var(--color-page-bg); }
+.bg-page-secondary { background-color: var(--color-page-bg-secondary); }
+.bg-card { background-color: var(--color-card-bg); }
+.bg-card-hover:hover { background-color: var(--color-card-bg-hover); }
+
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted { color: var(--color-text-muted); }
+
+.bg-brand { background-color: var(--color-brand-primary); }
+.bg-brand-hover:hover { background-color: var(--color-brand-primary-hover); }
+.text-brand { color: var(--color-brand-primary); }
+
+.border-default { border-color: var(--color-border); }
