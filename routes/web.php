@@ -24,4 +24,12 @@ Route::group([
     })->name('landing');
 
     Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+
+    Route::get('/imprint', function () {
+        return view('legal.imprint');
+    })->name('imprint');
+
+    Route::get('/privacy', function () {
+        return view('legal.privacy');
+    })->name('privacy');
 });

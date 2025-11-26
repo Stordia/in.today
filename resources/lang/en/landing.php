@@ -312,4 +312,66 @@ return [
         ],
     ],
 
+    'legal' => [
+        'imprint' => [
+            'title' => 'Imprint',
+            'subtitle' => 'Legal information about this website.',
+            'meta_description' => 'Legal information and imprint for in.today – restaurant website services.',
+            'sections' => [
+                'operator' => [
+                    'title' => 'Website operator',
+                    'body' => 'This is placeholder text for the website operator. Replace this with your actual company name and legal details.',
+                ],
+                'address' => [
+                    'title' => 'Address',
+                    'body' => 'Street, number, postal code, city, country (placeholder).',
+                ],
+                'contact' => [
+                    'title' => 'Contact',
+                    'body' => 'Email: info@in.today (placeholder) | Phone: +49 ... (placeholder).',
+                ],
+                'responsible' => [
+                    'title' => 'Responsible according to applicable law',
+                    'body' => 'Name of the responsible person (placeholder).',
+                ],
+                'vat' => [
+                    'title' => 'VAT ID',
+                    'body' => 'VAT ID number (placeholder).',
+                ],
+                'disclaimer' => [
+                    'title' => 'Disclaimer',
+                    'body' => 'This is placeholder legal disclaimer text. Replace this with legally reviewed content.',
+                ],
+            ],
+        ],
+        'privacy' => [
+            'title' => 'Privacy policy',
+            'subtitle' => 'How we handle your personal data.',
+            'meta_description' => 'Privacy policy for in.today – how we handle your personal data.',
+            'placeholder_notice' => 'This privacy policy is a placeholder. It will be replaced with legally reviewed content before public launch.',
+            'sections' => [
+                'intro' => [
+                    'title' => 'Introduction',
+                    'body' => 'This is placeholder text describing your privacy policy. Replace it with your actual, legally reviewed content.',
+                ],
+                'data' => [
+                    'title' => 'Data we process',
+                    'body' => 'Information about server logs, IP addresses, and basic usage data (placeholder).',
+                ],
+                'contact_form' => [
+                    'title' => 'Contact form',
+                    'body' => 'Explain what happens when someone submits the contact form, which fields are stored/processed, and for how long (placeholder).',
+                ],
+                'cookies' => [
+                    'title' => 'Cookies & analytics',
+                    'body' => 'Placeholder text about cookies and any analytics or tracking tools you might use in the future.',
+                ],
+                'rights' => [
+                    'title' => 'Your rights',
+                    'body' => 'Explain the user rights (access, deletion, etc.) in placeholder form.',
+                ],
+            ],
+        ],
+    ],
+
 ];

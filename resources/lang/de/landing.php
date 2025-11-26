@@ -312,4 +312,66 @@ return [
         ],
     ],
 
+    'legal' => [
+        'imprint' => [
+            'title' => 'Impressum',
+            'subtitle' => 'Rechtliche Informationen zu dieser Website.',
+            'meta_description' => 'Rechtliche Informationen und Impressum für in.today – Restaurant-Website-Services.',
+            'sections' => [
+                'operator' => [
+                    'title' => 'Betreiber der Website',
+                    'body' => 'Dies ist ein Platzhaltertext für den Website-Betreiber. Ersetzen Sie diesen durch Ihren tatsächlichen Firmennamen und rechtliche Angaben.',
+                ],
+                'address' => [
+                    'title' => 'Anschrift',
+                    'body' => 'Straße, Hausnummer, Postleitzahl, Stadt, Land (Platzhalter).',
+                ],
+                'contact' => [
+                    'title' => 'Kontakt',
+                    'body' => 'E-Mail: info@in.today (Platzhalter) | Telefon: +49 ... (Platzhalter).',
+                ],
+                'responsible' => [
+                    'title' => 'Verantwortlich gemäß geltendem Recht',
+                    'body' => 'Name der verantwortlichen Person (Platzhalter).',
+                ],
+                'vat' => [
+                    'title' => 'USt-IdNr.',
+                    'body' => 'Umsatzsteuer-Identifikationsnummer (Platzhalter).',
+                ],
+                'disclaimer' => [
+                    'title' => 'Haftungsausschluss',
+                    'body' => 'Dies ist ein Platzhalter für den rechtlichen Haftungsausschluss. Ersetzen Sie diesen durch rechtlich geprüften Inhalt.',
+                ],
+            ],
+        ],
+        'privacy' => [
+            'title' => 'Datenschutzerklärung',
+            'subtitle' => 'Wie wir mit Ihren personenbezogenen Daten umgehen.',
+            'meta_description' => 'Datenschutzerklärung für in.today – wie wir mit Ihren personenbezogenen Daten umgehen.',
+            'placeholder_notice' => 'Diese Datenschutzerklärung ist ein Platzhalter. Sie wird vor dem öffentlichen Start durch rechtlich geprüfte Inhalte ersetzt.',
+            'sections' => [
+                'intro' => [
+                    'title' => 'Einleitung',
+                    'body' => 'Dies ist ein Platzhaltertext zur Beschreibung Ihrer Datenschutzrichtlinie. Ersetzen Sie ihn durch Ihren tatsächlichen, rechtlich geprüften Inhalt.',
+                ],
+                'data' => [
+                    'title' => 'Daten, die wir verarbeiten',
+                    'body' => 'Informationen über Server-Logs, IP-Adressen und grundlegende Nutzungsdaten (Platzhalter).',
+                ],
+                'contact_form' => [
+                    'title' => 'Kontaktformular',
+                    'body' => 'Erklären Sie, was passiert, wenn jemand das Kontaktformular absendet, welche Felder gespeichert/verarbeitet werden und wie lange (Platzhalter).',
+                ],
+                'cookies' => [
+                    'title' => 'Cookies & Analyse',
+                    'body' => 'Platzhaltertext über Cookies und etwaige Analyse- oder Tracking-Tools, die Sie in Zukunft verwenden könnten.',
+                ],
+                'rights' => [
+                    'title' => 'Ihre Rechte',
+                    'body' => 'Erläutern Sie die Nutzerrechte (Auskunft, Löschung usw.) in Platzhalterform.',
+                ],
+            ],
+        ],
+    ],
+
 ];

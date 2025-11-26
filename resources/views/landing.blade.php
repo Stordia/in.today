@@ -667,8 +667,8 @@
                         <li>Email: <a href="mailto:{{ __('landing.contact.email_value') }}" class="hover:text-white transition">{{ __('landing.contact.email_value') }}</a></li>
                     </ul>
                     <ul class="mt-4 space-y-2 text-slate-400 dark:text-slate-500">
-                        <li><a href="#" class="hover:text-white transition">{{ __('landing.footer.links.imprint') }}</a></li>
-                        <li><a href="#" class="hover:text-white transition">{{ __('landing.footer.links.privacy') }}</a></li>
+                        <li><a href="{{ route('imprint', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.imprint') }}</a></li>
+                        <li><a href="{{ route('privacy', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.privacy') }}</a></li>
                     </ul>
                 </div>
             </div>

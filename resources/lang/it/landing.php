@@ -312,4 +312,66 @@ return [
         ],
     ],
 
+    'legal' => [
+        'imprint' => [
+            'title' => 'Informazioni legali',
+            'subtitle' => 'Informazioni legali su questo sito web.',
+            'meta_description' => 'Informazioni legali e imprint per in.today – servizi per siti web di ristoranti.',
+            'sections' => [
+                'operator' => [
+                    'title' => 'Gestore del sito web',
+                    'body' => 'Questo è un testo segnaposto per il gestore del sito web. Sostituiscilo con il nome effettivo della tua azienda e i dettagli legali.',
+                ],
+                'address' => [
+                    'title' => 'Indirizzo',
+                    'body' => 'Via, numero civico, codice postale, città, paese (segnaposto).',
+                ],
+                'contact' => [
+                    'title' => 'Contatto',
+                    'body' => 'Email: info@in.today (segnaposto) | Telefono: +49 ... (segnaposto).',
+                ],
+                'responsible' => [
+                    'title' => 'Responsabile secondo la legge applicabile',
+                    'body' => 'Nome della persona responsabile (segnaposto).',
+                ],
+                'vat' => [
+                    'title' => 'Partita IVA',
+                    'body' => 'Numero di Partita IVA (segnaposto).',
+                ],
+                'disclaimer' => [
+                    'title' => 'Disclaimer',
+                    'body' => 'Questo è un testo segnaposto per il disclaimer legale. Sostituiscilo con contenuti legalmente revisionati.',
+                ],
+            ],
+        ],
+        'privacy' => [
+            'title' => 'Informativa sulla privacy',
+            'subtitle' => 'Come gestiamo i tuoi dati personali.',
+            'meta_description' => 'Informativa sulla privacy per in.today – come gestiamo i tuoi dati personali.',
+            'placeholder_notice' => 'Questa informativa sulla privacy è un segnaposto. Sarà sostituita con contenuti legalmente revisionati prima del lancio pubblico.',
+            'sections' => [
+                'intro' => [
+                    'title' => 'Introduzione',
+                    'body' => 'Questo è un testo segnaposto che descrive la tua informativa sulla privacy. Sostituiscilo con il contenuto effettivo, legalmente revisionato.',
+                ],
+                'data' => [
+                    'title' => 'Dati che elaboriamo',
+                    'body' => 'Informazioni sui log del server, indirizzi IP e dati di utilizzo di base (segnaposto).',
+                ],
+                'contact_form' => [
+                    'title' => 'Modulo di contatto',
+                    'body' => 'Spiega cosa succede quando qualcuno invia il modulo di contatto, quali campi vengono memorizzati/elaborati e per quanto tempo (segnaposto).',
+                ],
+                'cookies' => [
+                    'title' => 'Cookie & analytics',
+                    'body' => 'Testo segnaposto sui cookie e su eventuali strumenti di analytics o tracciamento che potresti utilizzare in futuro.',
+                ],
+                'rights' => [
+                    'title' => 'I tuoi diritti',
+                    'body' => 'Spiega i diritti dell\'utente (accesso, cancellazione, ecc.) in forma di segnaposto.',
+                ],
+            ],
+        ],
+    ],
+
 ];
