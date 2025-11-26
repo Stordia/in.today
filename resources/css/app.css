@@ -5,6 +5,16 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Smooth scrolling for anchor navigation */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Account for fixed navbar when scrolling to anchors */
+html {
+    scroll-padding-top: 5rem;
+}
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
@@ -43,34 +53,34 @@
 
 /* Dark mode color overrides */
 .dark {
-    /* Backgrounds */
+    /* Backgrounds - slightly lighter for better card visibility */
     --color-page-bg: #0f172a;  /* slate-900 */
     --color-page-bg-secondary: #1e293b;  /* slate-800 */
     --color-card-bg: #1e293b;  /* slate-800 */
     --color-card-bg-hover: #334155;  /* slate-700 */
 
-    /* Text Colors */
-    --color-text-primary: #f1f5f9;  /* slate-100 */
-    --color-text-secondary: #cbd5e1;  /* slate-300 */
-    --color-text-muted: #94a3b8;  /* slate-400 */
+    /* Text Colors - improved contrast for WCAG compliance */
+    --color-text-primary: #f8fafc;  /* slate-50 - brighter for better readability */
+    --color-text-secondary: #e2e8f0;  /* slate-200 - improved contrast */
+    --color-text-muted: #a1a1aa;  /* zinc-400 - better visibility */
 
-    /* Brand Colors */
-    --color-brand-primary: #6366f1;  /* indigo-500 - lighter for dark mode */
-    --color-brand-primary-hover: #818cf8;  /* indigo-400 */
+    /* Brand Colors - brighter for dark backgrounds */
+    --color-brand-primary: #818cf8;  /* indigo-400 - brighter for visibility */
+    --color-brand-primary-hover: #a5b4fc;  /* indigo-300 - lighter on hover */
     --color-brand-secondary: #1e1b4b;  /* indigo-950 */
 
-    /* Borders */
-    --color-border: #334155;  /* slate-700 */
-    --color-border-hover: #6366f1;  /* indigo-500 */
+    /* Borders - more visible on dark backgrounds */
+    --color-border: #475569;  /* slate-600 - brighter border */
+    --color-border-hover: #818cf8;  /* indigo-400 */
 
-    /* Interactive Elements */
-    --color-accent: #34d399;  /* green-400 - brighter for dark mode */
+    /* Interactive Elements - vivid colors for dark mode */
+    --color-accent: #4ade80;  /* green-400 - brighter for dark mode */
     --color-warning: #fbbf24;  /* amber-400 */
 
-    /* Shadows - softer in dark mode */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    /* Shadows - subtle glow effect in dark mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6);
 }
 
 /* Utility classes for semantic colors */
@@ -88,3 +98,32 @@
 .text-brand { color: var(--color-brand-primary); }
 
 .border-default { border-color: var(--color-border); }
+.border-brand { border-color: var(--color-brand-primary); }
+
+.text-accent { color: var(--color-accent); }
+
+/* Focus states for accessibility */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+}
+
+/* Ensure links in dark mode footer are visible */
+.dark .text-slate-400 {
+    color: #94a3b8;  /* slate-400 - good contrast */
+}
+
+.dark .text-slate-500 {
+    color: #64748b;  /* slate-500 */
+}
+
+/* Hover improvements for dark mode */
+.dark .hover\:text-white:hover {
+    color: #ffffff;
+}
+
+/* Better card hover state in dark mode */
+.dark .hover\:bg-card-hover:hover {
+    background-color: var(--color-card-bg-hover);
+}

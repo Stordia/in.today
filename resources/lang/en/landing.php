@@ -3,252 +3,249 @@
 return [
 
     'meta' => [
-        'title' => 'in.today – Digital experiences for restaurants, cafés, bars & clubs',
-        'description' => 'in.today builds premium multilingual websites and reservation experiences for hospitality venues worldwide – from local cafés to fine dining concepts.',
+        'title' => 'in.today – Premium Websites for Restaurants, Cafés & Bars',
+        'description' => 'in.today builds high-converting, multilingual websites for restaurants, cafés, bars and clubs – including design, hosting, domains, menus, photography and integrations.',
     ],
 
-    'navigation' => [
-        'brand' => 'in.today',
-        'features' => 'Features',
+    'nav' => [
+        'logo' => 'in.today',
+        'solutions' => 'Solutions',
         'pricing' => 'Pricing',
         'how_it_works' => 'How it works',
         'faq' => 'FAQ',
         'contact' => 'Contact',
-        'theme_toggle_aria' => 'Toggle dark mode',
+        'dark_mode' => 'Toggle dark mode',
+        'language' => 'Language',
     ],
 
     'hero' => [
-        'badge' => 'For restaurants, cafés, bars & clubs',
-        'title' => 'Premium websites and reservations for the places people talk about.',
-        'title_highlight' => '',
-        'subtitle' => 'in.today is your done-for-you digital partner: custom multilingual websites, domains and hosting, menus and photography, and a modern reservation experience built for how guests actually book today.',
-        'cta_primary' => 'View plans & pricing',
-        'cta_secondary' => 'Book a free consultation',
-        'secondary_note' => '15–20 minute call, no obligation.',
+        'eyebrow' => 'Websites for restaurants, cafés, bars & clubs',
+        'title' => 'Your restaurant deserves a website that actually fills tables.',
+        'subtitle' => 'We design, build and host fast, multilingual, SEO-ready restaurant websites – with menus, reservations and everything you need to turn online visitors into real guests.',
+        'primary_cta' => 'Book a free 20-minute call',
+        'primary_cta_note' => 'Get a realistic quote in under 24 hours.',
+        'secondary_cta' => 'View pricing',
+        'secondary_cta_note' => 'One-time, yearly or monthly leasing – you choose.',
+        'trust_badge' => 'Based in Berlin · Serving hospitality brands across Europe',
     ],
 
-    'who_its_for' => [
-        'title' => 'Built for the modern hospitality world.',
-        'subtitle' => 'Whether you run a neighbourhood café or a destination restaurant, in.today gives you a digital presence that matches your real-world experience.',
-        'small_restaurants' => [
-            'title' => 'Local favourites that need to be found.',
-            'description' => 'Clean, fast, mobile-first websites with your menu, opening hours and reservations in one place – so guests can decide in seconds.',
-        ],
-        'casual_dining' => [
-            'title' => 'Full-service restaurants with stories to tell.',
-            'description' => 'Showcase your concept, your team and your dishes with structured menus, beautiful photography and clear calls-to-action.',
-        ],
-        'bars_clubs' => [
-            'title' => 'Nights out start online.',
-            'description' => 'Highlight events, bottle service, guest lists and reservations in a layout optimised for nightlife discovery and mobile traffic.',
-        ],
-        'fine_dining' => [
-            'title' => 'Experiences that deserve a stage.',
-            'description' => 'Minimal, refined design, seasonal menus, wine lists and tasting experiences – with a booking flow that feels as premium as your service.',
+    'who' => [
+        'title' => 'Built for hospitality – not generic templates.',
+        'subtitle' => 'in.today is for owners who are serious about their digital presence and want a partner who understands the realities of gastronomy.',
+        'items' => [
+            [
+                'label' => 'Independent restaurants',
+                'title' => 'Family-run restaurants & bistros',
+                'description' => 'For owners who want to tell their story, show their food properly and make it easy for guests to reserve a table.',
+                'tag' => 'From 5–8 pages',
+            ],
+            [
+                'label' => 'Cafés & brunch spots',
+                'title' => 'Coffee shops, brunch & dessert places',
+                'description' => 'Mobile-first menus, opening hours and Google-friendly pages for busy guests on the go.',
+                'tag' => 'Instagram-friendly layout',
+            ],
+            [
+                'label' => 'Bars & clubs',
+                'title' => 'Bars, cocktail lounges & night venues',
+                'description' => 'Highlight events, DJ nights and bottle service with clear CTAs for reservations and guest list requests.',
+                'tag' => 'Events & specials',
+            ],
+            [
+                'label' => 'Hospitality groups',
+                'title' => 'Multi-location brands',
+                'description' => 'Consistent branding and separate location pages, with central control over content and SEO.',
+                'tag' => 'Scales with you',
+            ],
         ],
     ],
 
     'features' => [
-        'title' => 'Everything your venue needs online. All in one place.',
-        'subtitle' => 'From the first idea to launch and beyond, in.today delivers a complete digital setup – so you can focus on guests, not on tools.',
-        'custom_website' => [
-            'title' => 'Custom multilingual websites',
-            'description' => 'Tailor-made, mobile-first websites in English by default, with optional German, Greek, Italian and more – ready for international guests.',
-            'items' => [
-                'Mobile-first responsive design',
-                'Multiple language support',
-                'Ready for international guests',
+        'title' => 'What we deliver with every project.',
+        'subtitle' => 'Not "just a website", but a complete digital base for your restaurant – ready to go live and start working for you from day one.',
+        'items' => [
+            [
+                'title' => 'Custom design, not a template',
+                'description' => 'We design around your concept, interior, food and guests – no generic restaurant templates, ever.',
             ],
-        ],
-        'domain_hosting' => [
-            'title' => 'Domains & hosting included',
-            'description' => 'We register and manage your domains (.de, .com, .gr and others), provide secure hosting with SSL and backups, and keep everything up to date.',
-            'items' => [
-                'Domain registration included',
-                'Secure hosting with SSL',
-                'Automatic backups',
+            [
+                'title' => 'Multilingual by design',
+                'description' => 'English as default, plus German, Greek, Italian or any other language you need. Each version is SEO-ready.',
             ],
-        ],
-        'menu_pages' => [
-            'title' => 'Smart menus & per-dish pages',
-            'description' => 'Structured HTML menus with categories, dietary filters and optional per-dish pages for better SEO and "near me" searches.',
-            'items' => [
-                'Structured menu categories',
-                'Dietary filters and labels',
-                'SEO-optimised per-dish pages',
+            [
+                'title' => 'HTML menu – no more PDFs',
+                'description' => 'Fast, searchable menu pages with categories, allergens and pricing. Optionally one page per signature dish for crazy SEO.',
             ],
-        ],
-        'photography' => [
-            'title' => 'Professional photography',
-            'description' => 'Optional on-site shoots for your space, dishes and team – optimised for web, social media and delivery platforms.',
-            'items' => [
-                'Food & dish photography',
-                'Interior & atmosphere shots',
-                'Optimised for web & social',
+            [
+                'title' => 'Hosting & domains included',
+                'description' => '.de, .com and .gr domains, SSL, fast managed hosting and backups – all handled for you by in.today.',
             ],
-        ],
-        'reservations' => [
-            'title' => 'Modern reservations (coming soon)',
-            'description' => 'A unified reservation experience designed for both your own website and the in.today platform – with clear availability and fewer no-shows.',
-            'items' => [
-                'Real-time availability',
-                'Automated confirmations',
-                'Fewer no-shows',
+            [
+                'title' => 'Reservations & integrations',
+                'description' => 'We integrate your existing booking tool or connect in.today\'s own reservation layer when it\'s ready for your market.',
             ],
-        ],
-        'support' => [
-            'title' => 'Ongoing care & support',
-            'description' => 'We handle changes to menus, opening hours, seasonal pages and technical updates, so your digital presence stays current without extra effort.',
-            'items' => [
-                'Menu and content updates',
-                'Technical maintenance',
-                'Priority support included',
+            [
+                'title' => 'SEO, maps & local presence',
+                'description' => 'On-page SEO, Google Maps / Google Business integration and structured data so guests can actually find you.',
             ],
         ],
     ],
 
     'pricing' => [
-        'title' => 'Clear plans for different types of venues.',
-        'subtitle' => 'Every project has a one-time launch fee and a simple monthly subscription. No hidden commissions on your reservations.',
-        'note' => 'All prices are indicative starting points. Final pricing depends on your concept, number of languages and required integrations.',
-        'base' => [
-            'name' => 'Base',
-            'tagline' => 'For cafés & small venues',
-            'launch_fee' => 'from €1,500',
-            'launch_fee_label' => 'one-time',
-            'monthly' => 'from €79',
-            'monthly_label' => '/ month',
-            'features' => [
-                'Up to ~6 pages (home, menu, about, contact).',
-                'One language (English) with option to add more later.',
-                'Interactive menu page with categories and pricing.',
-                'Domain, hosting, SSL and basic analytics.',
-                'Contact form and click-to-call / click-to-map.',
+        'title' => 'Simple pricing for different ways of running your restaurant.',
+        'subtitle' => 'Choose the model that fits how you want to invest: one-time project, yearly service or all-inclusive monthly leasing.',
+        'disclaimer' => 'All prices are indicative and depend on language count, integrations and photography needs.',
+
+        'plans' => [
+            [
+                'name' => 'One-time project',
+                'tagline' => 'You own the website. We build it once, you run it.',
+                'price' => 'from €1.990',
+                'price_note' => '+ optional care plan',
+                'billed' => 'One-time payment',
+                'ideal_for' => 'Ideal for established restaurants with stable concept.',
+                'highlight' => false,
+                'features' => [
+                    'Custom design (up to 8 pages)',
+                    '1 primary language (EN) + 1 additional language',
+                    'Responsive design (mobile-first)',
+                    'HTML menu with categories',
+                    'Basic on-page SEO setup',
+                    'Google Maps & Google Business links',
+                    'Contact & reservation request forms',
+                    'Technical setup, SSL & launch support',
+                ],
             ],
-            'cta' => 'Get Started',
-        ],
-        'pro' => [
-            'name' => 'Pro',
-            'badge' => 'Most popular',
-            'tagline' => 'For busy restaurants & bistros',
-            'launch_fee' => 'from €2,500',
-            'launch_fee_label' => 'one-time',
-            'monthly' => 'from €119',
-            'monthly_label' => '/ month',
-            'features' => [
-                '8–12 pages (menu, story, team, gallery, events and more).',
-                '2–3 languages (e.g. EN + DE + one additional language).',
-                'Advanced menu structure with dietary information.',
-                'Ready for in.today reservations integration.',
-                'Ongoing content updates and priority support.',
+            [
+                'name' => 'Growth plan',
+                'tagline' => 'Our most popular option – website + ongoing support.',
+                'price' => 'from €149',
+                'price_note' => 'per month',
+                'billed' => '12-month agreement',
+                'ideal_for' => 'Ideal for growing restaurants that change menus, run events and want ongoing support.',
+                'highlight' => true,
+                'features' => [
+                    'Everything in "One-time project", plus:',
+                    'Hosting, domains & SSL included',
+                    'Up to 3 languages managed by us',
+                    'Monthly content updates (menu, events, photos)',
+                    'Priority support via email & chat',
+                    'Performance & uptime monitoring',
+                    'Regular security & framework updates',
+                    'Quarterly review of analytics & SEO basics',
+                ],
             ],
-            'cta' => 'Get Started',
-        ],
-        'prime' => [
-            'name' => 'Prime',
-            'tagline' => 'For fine dining & ambitious concepts',
-            'launch_fee' => 'from €4,000',
-            'launch_fee_label' => 'one-time',
-            'monthly' => 'from €189',
-            'monthly_label' => '/ month',
-            'features' => [
-                '12+ pages including seasonal menus, tasting menus and experiences.',
-                'Multiple languages (up to 15, depending on your audience).',
-                'Per-dish pages and rich schema markup for strong SEO/AEO.',
-                'Event pages, private dining and gift card sections.',
-                'Dedicated account contact and strategic optimisation sessions.',
+            [
+                'name' => 'Leasing all-inclusive',
+                'tagline' => 'No big upfront cost – just a fixed monthly fee.',
+                'price' => 'from €189',
+                'price_note' => 'per month',
+                'billed' => '24-month agreement',
+                'ideal_for' => 'Ideal for new concepts and re-launches that want everything bundled.',
+                'highlight' => false,
+                'features' => [
+                    'Everything in "Growth plan", plus:',
+                    'Lower upfront cost, predictable monthly fee',
+                    'Option to include professional photography',
+                    'Dedicated onboarding & launch campaign basics',
+                    'Priority slot for future in.today platform features',
+                    'Optional add-ons: online ordering, gift cards, more',
+                ],
             ],
-            'cta' => 'Get Started',
         ],
     ],
 
-    'how_it_works' => [
-        'title' => 'From first call to go-live – how we work together.',
-        'subtitle' => 'A clear, guided process with a single partner responsible for the entire digital experience.',
-        'step1' => [
-            'title' => '1. Discover & plan',
-            'description' => 'We start with a short call to understand your venue, target guests and goals. Together we decide which plan and languages fit best.',
+    'how' => [
+        'title' => 'How we work with you.',
+        'subtitle' => 'Clear steps, no surprises. From first call to go-live – and beyond.',
+        'steps' => [
+            [
+                'step' => 'Step 1',
+                'title' => '15–20 minute call',
+                'description' => 'We learn about your concept, location, target guests and what you like (and hate) about your current online presence.',
+            ],
+            [
+                'step' => 'Step 2',
+                'title' => 'Offer & structure',
+                'description' => 'You receive a clear proposal with sitemap, features, languages and pricing for one-time, yearly and leasing options.',
+            ],
+            [
+                'step' => 'Step 3',
+                'title' => 'Design, content & build',
+                'description' => 'We collect logo, photos and text (or create them with you), then design and build your site in a password-protected staging area.',
+            ],
+            [
+                'step' => 'Step 4',
+                'title' => 'Launch & support',
+                'description' => 'We handle the technical launch, domain & DNS. After go-live we keep your site fast, secure and up-to-date – depending on your plan.',
+            ],
         ],
-        'step2' => [
-            'title' => '2. Content & concept',
-            'description' => 'You share menus, basic information and any existing photos. We propose structure, navigation and key messages for your website.',
-        ],
-        'step3' => [
-            'title' => '3. Design & build',
-            'description' => 'We design and build your site on in.today, implement the menu, translations and technical setup, and connect your domain.',
-        ],
-        'step4' => [
-            'title' => '4. Launch & ongoing care',
-            'description' => 'After launch, we continuously update menus, hours and content as your business evolves – and later connect the reservation platform.',
-        ],
-        'timeline' => 'Typical timeline:',
-        'timeline_value' => '2–6 weeks depending on plan',
-        'cta' => 'Start Your Project',
     ],
 
     'faq' => [
-        'title' => 'Frequently asked questions',
-        'subtitle' => 'A few of the questions we hear most often from restaurant owners and managers.',
-        'questions' => [
+        'title' => 'Questions restaurant owners often ask us.',
+        'subtitle' => 'If you have a different question, just send us a quick message – we usually reply within one business day.',
+        'items' => [
             [
-                'question' => 'Is in.today only for restaurants in Germany?',
-                'answer' => 'No. in.today is designed as a global platform. We currently focus on Europe, but can work with venues in any country as long as we can support the required languages and legal requirements.',
+                'question' => 'How long does it take to launch my new website?',
+                'answer' => 'For a standard restaurant website with up to 8 pages and 1–2 languages, we typically launch within 3–5 weeks after content is ready. For more complex, multilingual or photography-heavy projects it can take a bit longer – we\'ll give you a realistic timeline in the proposal.',
             ],
             [
-                'question' => 'Do you only build the website, or also handle domains and hosting?',
-                'answer' => 'We handle everything: domains, DNS, secure hosting with SSL, backups and technical maintenance. You have a single partner for the entire digital setup.',
+                'question' => 'Do you also take the food and location photos?',
+                'answer' => 'Yes. We can either work with your existing photographer, or organise a food & interior shoot through our partner network. Photography is usually billed separately or packaged into the leasing / growth plan, depending on your needs.',
             ],
             [
-                'question' => 'Can I bring my own designer or existing branding?',
-                'answer' => 'Absolutely. We can work with your existing logo, colours and brand guidelines, or help refine them if needed. The website will still be built on the in.today platform.',
+                'question' => 'Can you work with my existing reservation system?',
+                'answer' => 'In most cases yes. We integrate your existing booking tool or form (for example resmio, DISH, SevenRooms, OpenTable or others). If you don\'t have a system yet, we\'ll discuss what makes sense for your concept and market.',
             ],
             [
-                'question' => 'How long does it take to launch?',
-                'answer' => 'For Base projects, typical timelines are 2–3 weeks after we receive content. Pro and Prime projects usually take 4–6 weeks, depending on the number of languages and pages.',
+                'question' => 'What about online ordering and delivery?',
+                'answer' => 'in.today focuses on your main digital presence and table reservations. For online ordering we can link to your existing provider or, in selected cases, help you evaluate white-label alternatives. Full in.today ordering modules are planned for later phases.',
             ],
             [
-                'question' => 'What happens if I need to change my menu or opening hours?',
-                'answer' => 'Just send us the updates. Content changes and small adjustments are included in the monthly fee for Pro and Prime plans. For Base, we offer a fair update package.',
+                'question' => 'Is hosting and the domain included?',
+                'answer' => 'Yes, for the Growth and Leasing plans we include managed hosting, SSL and domain management (.de, .com, .gr and more). For one-time projects we can either set everything up for you or work with your existing provider.',
             ],
             [
-                'question' => 'Is the reservation system already available?',
-                'answer' => 'The reservation engine is part of the in.today roadmap and will be introduced step by step. Your website will be ready for a seamless integration as soon as it launches.',
+                'question' => 'Can I switch from one-time to leasing later?',
+                'answer' => 'Yes. Many clients start with a one-time project and later move into a care or leasing model when they see how important regular updates and support are. We\'ll propose a fair migration path based on your situation.',
             ],
             [
-                'question' => 'Can I cancel if it\'s not the right fit?',
-                'answer' => 'We believe in long-term partnerships, not lock-in. After the initial minimum term defined in your contract, you can cancel with reasonable notice.',
+                'question' => 'Where are you based and which markets do you serve?',
+                'answer' => 'in.today is based in Berlin and part of a hospitality-focused digital studio. We primarily serve restaurants, cafés, bars and clubs in Germany and across Europe – with multilingual support for international concepts.',
             ],
         ],
-        'still_questions' => 'Still have questions?',
-        'cta' => 'Contact Us',
     ],
 
     'contact' => [
-        'title' => 'Let\'s talk about your venue.',
-        'subtitle' => 'Share a few details and we\'ll come back with a concrete proposal and next steps.',
-        'email_title' => 'Email Us',
-        'email' => 'hello@in.today',
-        'call_prompt' => 'Or book a free 15–20 minute consultation:',
-        'call_cta' => 'Book a Call',
-        'form' => [
-            'name_label' => 'Your name',
-            'email_label' => 'Email address',
-            'restaurant_label' => 'Restaurant / venue name',
-            'city_label' => 'City & country',
-            'message_label' => 'Tell us briefly about your concept and what you need.',
-            'submit_label' => 'Send message',
-            'helper_text' => 'We usually respond within one business day.',
+        'title' => 'Let\'s talk about your restaurant.',
+        'subtitle' => 'Send us a short message about your concept and current situation. We\'ll come back with a suggestion for next steps.',
+        'email_label' => 'Email us at',
+        'email_value' => 'hello@in.today',
+        'cta' => 'Write us a short email with your restaurant name, city and what you\'d like to improve – we\'ll reply with a link to book a free call.',
+    ],
+
+    'language' => [
+        'title' => 'Choose your language.',
+        'subtitle' => 'in.today is a global platform. The website is available in multiple languages – and your restaurant website can be too.',
+        'current' => 'Current language',
+        'available' => 'Available languages',
+        'hint' => 'Your language choice will be remembered on this device.',
+        'languages' => [
+            'en' => 'English',
+            'de' => 'Deutsch',
+            'el' => 'Ελληνικά',
+            'it' => 'Italiano',
         ],
     ],
 
     'footer' => [
-        'brand' => 'in.today',
-        'tagline' => 'Digital experiences for restaurants, cafés, bars & clubs.',
-        'quick_links_title' => 'Quick Links',
-        'contact_title' => 'Contact',
-        'email_label' => 'Email:',
-        'copyright' => 'in.today – Digital experiences for restaurants, cafés, bars & clubs.',
-        'made_for' => 'Made for venues that care about their online presence as much as their guests.',
+        'copyright' => '© ' . date('Y') . ' in.today. All rights reserved.',
+        'made_in' => 'Based in Berlin, working with restaurants across Europe.',
+        'links' => [
+            'imprint' => 'Imprint',
+            'privacy' => 'Privacy',
+        ],
     ],
 
 ];
