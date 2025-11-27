@@ -70,7 +70,22 @@ class User extends Authenticatable implements FilamentUser
             return $this->isPlatformAdmin();
         }
 
+        // Restaurant panel: user must have at least one active restaurant link
+        if ($panel->getId() === 'restaurant') {
+            return $this->hasAnyRestaurantAccess();
+        }
+
         return false;
+    }
+
+    /**
+     * Check if the user has access to any restaurant.
+     */
+    public function hasAnyRestaurantAccess(): bool
+    {
+        return $this->restaurantUsers()
+            ->where('is_active', true)
+            ->exists();
     }
 
     /*
