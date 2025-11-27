@@ -114,7 +114,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">{{ __('landing.footer.sections.quick_links') }}</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
+                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.features') }}</a></li>
                         <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#pricing" class="footer-text hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
                         <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#faq" class="footer-text hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
                     </ul>

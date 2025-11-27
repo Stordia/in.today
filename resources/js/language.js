@@ -101,32 +101,48 @@ function getCurrentLocale() {
 }
 
 /**
- * Set up language switcher UI
+ * Set up language switcher UI with hash preservation
+ * Handles all language links on the page (both desktop and mobile)
  */
 function setupLanguageSwitcher() {
-    const switcher = document.getElementById('language-switcher');
-    if (!switcher) return;
-
     const currentLocale = getCurrentLocale();
 
-    // Highlight current language
-    const links = switcher.querySelectorAll('[data-locale]');
+    // Find all language links with data-locale attribute or lang-pill class
+    const links = document.querySelectorAll('[data-locale], a.lang-pill, a[href^="/en"], a[href^="/de"], a[href^="/el"], a[href^="/it"]');
+
     links.forEach(link => {
-        const locale = link.getAttribute('data-locale');
+        const href = link.getAttribute('href');
+        const locale = link.getAttribute('data-locale') || extractLocaleFromHref(href);
+
+        if (!locale || !SUPPORTED_LANGUAGES.includes(locale)) return;
 
         // Highlight current
         if (locale === currentLocale) {
-            link.classList.add('font-bold', 'text-brand');
-            link.setAttribute('aria-current', 'true');
+            link.setAttribute('aria-current', 'page');
         }
 
-        // Set up click handlers
+        // Set up click handlers to preserve hash
         link.addEventListener('click', (e) => {
+            // Only intercept simple locale links (e.g., /en, /de)
+            if (!href || !href.match(/^\/[a-z]{2}$/)) return;
+
             e.preventDefault();
             storeLanguage(locale);
-            window.location.href = `/${locale}`;
+
+            // Preserve current hash when switching languages
+            const currentHash = window.location.hash;
+            window.location.href = `/${locale}${currentHash}`;
         });
     });
+}
+
+/**
+ * Extract locale from href like "/en" or "/de"
+ */
+function extractLocaleFromHref(href) {
+    if (!href) return null;
+    const match = href.match(/^\/([a-z]{2})$/);
+    return match ? match[1] : null;
 }
 
 /**

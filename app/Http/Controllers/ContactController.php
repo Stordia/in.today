@@ -3,16 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContactLead;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
-    public function submit(Request $request, string $locale)
+    public function submit(Request $request, string $locale): JsonResponse|RedirectResponse
     {
-        // Honeypot check - if filled, silently reject
+        // Honeypot check - if filled, silently reject (fake success)
         if ($request->filled('website_confirm')) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'ok' => true,
+                    'message' => __('landing.contact.success'),
+                ]);
+            }
+
             return redirect()
                 ->route('landing', ['locale' => $locale])
                 ->with('success', __('landing.contact.success'));
@@ -72,6 +81,15 @@ class ContactController extends Controller
             ]);
         }
 
+        // Return JSON response for AJAX requests
+        if ($request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => __('landing.contact.success'),
+            ]);
+        }
+
+        // Standard redirect for non-AJAX requests
         return redirect()
             ->route('landing', ['locale' => $locale])
             ->with('success', __('landing.contact.success'))

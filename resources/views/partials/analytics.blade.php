@@ -1,9 +1,6 @@
-{{-- Analytics Scripts --}}
-{{-- These are placeholder snippets. Replace with actual scripts when IDs are configured. --}}
+<!-- Analytics placeholder: Google Tag Manager / Meta Pixel will be inserted here when IDs are configured. -->
 
 @if(config('services.analytics.gtm_id'))
-{{-- TODO: Insert real GTM script here when ID is configured --}}
-{{--
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -11,12 +8,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','{{ config('services.analytics.gtm_id') }}');</script>
 <!-- End Google Tag Manager -->
---}}
 @endif
 
 @if(config('services.analytics.meta_pixel_id'))
-{{-- TODO: Insert real Meta Pixel script here when ID is configured --}}
-{{--
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -34,5 +28,4 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id={{ config('services.analytics.meta_pixel_id') }}&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
---}}
 @endif

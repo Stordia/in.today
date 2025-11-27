@@ -87,7 +87,7 @@
 
                 <!-- Centered Nav Links (Desktop) -->
                 <div class="hidden md:flex items-center space-x-6">
-                    <a href="{{ $baseUrl }}#features" class="text-sm font-medium text-secondary hover:text-brand transition">{{ __('landing.nav.solutions') }}</a>
+                    <a href="{{ $baseUrl }}#features" class="text-sm font-medium text-secondary hover:text-brand transition">{{ __('landing.nav.features') }}</a>
                     <a href="{{ $baseUrl }}#pricing" class="text-sm font-medium text-secondary hover:text-brand transition">{{ __('landing.nav.pricing') }}</a>
                     <a href="{{ $baseUrl }}#how-it-works" class="text-sm font-medium text-secondary hover:text-brand transition">{{ __('landing.nav.how_it_works') }}</a>
                     <a href="{{ $baseUrl }}#faq" class="text-sm font-medium text-secondary hover:text-brand transition">{{ __('landing.nav.faq') }}</a>
@@ -493,7 +493,7 @@
             @endif
 
             <div class="bg-card rounded-2xl shadow-xl p-6 md:p-8 border border-default">
-                <form action="{{ route('contact.submit', ['locale' => app()->getLocale()]) }}" method="POST" class="space-y-6">
+                <form id="contact-form" action="{{ route('contact.submit', ['locale' => app()->getLocale()]) }}" method="POST" class="space-y-6">
                     @csrf
 
                     {{-- Honeypot field (hidden from real users) --}}
@@ -749,7 +749,7 @@
                 <div>
                     <h4 class="text-sm font-semibold mb-3 uppercase tracking-wide">{{ __('landing.footer.sections.quick_links') }}</h4>
                     <ul class="space-y-1.5 text-sm">
-                        <li><a href="{{ $baseUrl }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.features') }}</a></li>
                         <li><a href="{{ $baseUrl }}#pricing" class="footer-text hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
                         <li><a href="{{ $baseUrl }}#how-it-works" class="footer-text hover:text-white transition">{{ __('landing.nav.how_it_works') }}</a></li>
                         <li><a href="{{ $baseUrl }}#faq" class="footer-text hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
@@ -784,6 +784,37 @@
 
     {{-- Cookie Consent Banner --}}
     @include('partials.cookie-banner')
+
+    {{-- Contact Form Success Modal --}}
+    <div
+        id="contact-success-modal"
+        class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-labelledby="contact-success-title"
+    >
+        <div class="bg-card rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-default">
+            <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 id="contact-success-title" class="text-xl font-bold text-primary mb-2">
+                {{ __('landing.contact.modal_title') ?? 'Thank you!' }}
+            </h3>
+            <p id="contact-success-message" class="text-secondary mb-6">
+                {{ __('landing.contact.success') }}
+            </p>
+            <button
+                type="button"
+                data-close-modal
+                class="px-6 py-2.5 bg-brand text-white font-semibold rounded-lg hover:bg-brand-hover transition"
+            >
+                {{ __('landing.contact.modal_close') ?? 'Close' }}
+            </button>
+        </div>
+    </div>
 
 </body>
 </html>

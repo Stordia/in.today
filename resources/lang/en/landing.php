@@ -11,7 +11,7 @@ return [
 
     'nav' => [
         'logo' => 'in.today',
-        'solutions' => 'Solutions',
+        'features' => 'Features',
         'pricing' => 'Pricing',
         'how_it_works' => 'How it works',
         'faq' => 'FAQ',

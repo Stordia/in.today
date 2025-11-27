@@ -11,7 +11,7 @@ return [
 
     'nav' => [
         'logo' => 'in.today',
-        'solutions' => 'Leistungen',
+        'features' => 'Funktionen',
         'pricing' => 'Preise',
         'how_it_works' => 'So funktioniert\'s',
         'faq' => 'FAQ',
