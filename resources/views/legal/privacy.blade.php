@@ -63,7 +63,7 @@
     </nav>
 
     <!-- Hero Header -->
-    <section class="pt-24 pb-12 md:pt-32 md:pb-16 bg-gradient-to-br from-indigo-100 to-page dark:from-indigo-950 dark:to-page-bg">
+    <section class="pt-24 pb-12 md:pt-32 md:pb-16 bg-gradient-to-br from-blue-50 to-page dark:from-slate-900 dark:to-page-bg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="text-4xl md:text-5xl font-extrabold text-primary mb-4">
@@ -106,32 +106,32 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 dark:bg-slate-950 text-white py-12">
+    <footer class="footer-bg text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <h3 class="text-2xl font-bold mb-4">{{ __('landing.nav.logo') }}</h3>
-                    <p class="text-slate-400 dark:text-slate-500">
+                    <p class="footer-text">
                         {{ __('landing.footer.made_in') }}
                     </p>
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#features" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
-                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#pricing" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
-                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#faq" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
+                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
+                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#pricing" class="footer-text hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
+                        <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#faq" class="footer-text hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Legal</h4>
-                    <ul class="space-y-2 text-slate-400 dark:text-slate-500">
+                    <ul class="space-y-2 footer-text">
                         <li><a href="{{ route('imprint', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.imprint') }}</a></li>
                         <li><a href="{{ route('privacy', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.privacy') }}</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-slate-800 dark:border-slate-900 text-center text-slate-400 dark:text-slate-500">
+            <div class="mt-8 pt-8 border-t border-slate-700 text-center footer-text">
                 <p>{{ __('landing.footer.copyright') }}</p>
             </div>
         </div>

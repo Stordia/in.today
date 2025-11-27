@@ -16,34 +16,39 @@ html {
 }
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-    /* Semantic Color Tokens - Light Mode Defaults */
+    /* =====================================================
+       BRANDING v2.0 – Color System
+       ===================================================== */
 
-    /* Backgrounds */
-    --color-page-bg: #ffffff;
-    --color-page-bg-secondary: #f9fafb;  /* gray-50 */
-    --color-card-bg: #ffffff;
-    --color-card-bg-hover: #f9fafb;
+    /* Core Palette */
+    --color-brand-primary: #1D4ED8;           /* Service Blue - primary CTAs, links */
+    --color-brand-primary-hover: #1E40AF;     /* Darker blue for hover */
+    --color-brand-secondary: #DBEAFE;         /* Light blue tint for secondary bg */
+    --color-accent: #22C55E;                  /* Today Signal - success, badges */
+    --color-accent-dark: #4ADE80;             /* Brighter green for dark mode */
 
-    /* Text Colors */
-    --color-text-primary: #111827;  /* gray-900 */
-    --color-text-secondary: #4b5563;  /* gray-600 */
-    --color-text-muted: #6b7280;  /* gray-500 */
+    /* Light Mode Backgrounds */
+    --color-page-bg: #F4F4F5;                 /* Fog Grey - page background */
+    --color-page-bg-secondary: #E5E7EB;       /* Slightly darker for sections */
+    --color-card-bg: #FFFFFF;                 /* Card Light - cards, panels */
+    --color-card-bg-hover: #F4F4F5;           /* Card hover state */
 
-    /* Brand Colors */
-    --color-brand-primary: #4f46e5;  /* indigo-600 */
-    --color-brand-primary-hover: #4338ca;  /* indigo-700 */
-    --color-brand-secondary: #eef2ff;  /* indigo-50 */
+    /* Light Mode Text */
+    --color-text-primary: #020617;            /* Ink - main text */
+    --color-text-secondary: #4B5563;          /* Slate - secondary text */
+    --color-text-muted: #6B7280;              /* Lighter muted text */
+    --color-text-on-dark: #F9FAFB;            /* Text on dark backgrounds */
 
-    /* Borders */
-    --color-border: #e5e7eb;  /* gray-200 */
-    --color-border-hover: #4f46e5;  /* indigo-600 */
+    /* Light Mode Borders */
+    --color-border: #E5E7EB;                  /* Soft Slate - dividers, borders */
+    --color-border-hover: #1D4ED8;            /* Brand blue on hover */
 
-    /* Interactive Elements */
-    --color-accent: #10b981;  /* green-500 */
-    --color-warning: #f59e0b;  /* amber-500 */
+    /* State Colors */
+    --color-error: #DC2626;                   /* Signal Red - validation, errors */
+    --color-warning: #F59E0B;                 /* Amber - non-critical alerts */
+    --color-info: #0EA5E9;                    /* Info Blue - hints, badges */
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -51,79 +56,174 @@ html {
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
-/* Dark mode color overrides */
+/* =====================================================
+   Dark Mode Color Overrides (BRANDING v2.0)
+   ===================================================== */
 .dark {
-    /* Backgrounds - slightly lighter for better card visibility */
-    --color-page-bg: #0f172a;  /* slate-900 */
-    --color-page-bg-secondary: #1e293b;  /* slate-800 */
-    --color-card-bg: #1e293b;  /* slate-800 */
-    --color-card-bg-hover: #334155;  /* slate-700 */
+    /* Backgrounds - Night Navy base */
+    --color-page-bg: #020617;                 /* Night Navy - page background */
+    --color-page-bg-secondary: #0F172A;       /* Slightly lighter for sections */
+    --color-card-bg: #0F172A;                 /* Card Dark - with subtle contrast */
+    --color-card-bg-hover: #1E293B;           /* Card hover state */
 
-    /* Text Colors - improved contrast for WCAG compliance */
-    --color-text-primary: #f8fafc;  /* slate-50 - brighter for better readability */
-    --color-text-secondary: #e2e8f0;  /* slate-200 - improved contrast */
-    --color-text-muted: #a1a1aa;  /* zinc-400 - better visibility */
+    /* Text Colors - high contrast for readability */
+    --color-text-primary: #F9FAFB;            /* Near-white for main text */
+    --color-text-secondary: #E2E8F0;          /* Slightly dimmer for secondary */
+    --color-text-muted: #94A3B8;              /* Muted text */
 
     /* Brand Colors - brighter for dark backgrounds */
-    --color-brand-primary: #818cf8;  /* indigo-400 - brighter for visibility */
-    --color-brand-primary-hover: #a5b4fc;  /* indigo-300 - lighter on hover */
-    --color-brand-secondary: #1e1b4b;  /* indigo-950 */
+    --color-brand-primary: #60A5FA;           /* Lighter blue for visibility */
+    --color-brand-primary-hover: #93C5FD;     /* Even lighter on hover */
+    --color-brand-secondary: #1E3A5F;         /* Dark blue tint */
+
+    /* Accent - brighter green for dark mode */
+    --color-accent: #4ADE80;                  /* Brighter Today Signal */
 
     /* Borders - more visible on dark backgrounds */
-    --color-border: #475569;  /* slate-600 - brighter border */
-    --color-border-hover: #818cf8;  /* indigo-400 */
+    --color-border: #475569;                  /* Dark Slate */
+    --color-border-hover: #60A5FA;            /* Brand blue on hover */
 
-    /* Interactive Elements - vivid colors for dark mode */
-    --color-accent: #4ade80;  /* green-400 - brighter for dark mode */
-    --color-warning: #fbbf24;  /* amber-400 */
+    /* State Colors - adjusted for dark mode */
+    --color-error: #F87171;                   /* Lighter red for visibility */
+    --color-warning: #FBBF24;                 /* Lighter amber */
+    --color-info: #38BDF8;                    /* Lighter info blue */
 
-    /* Shadows - subtle glow effect in dark mode */
+    /* Shadows - deeper for dark mode */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6);
 }
 
-/* Utility classes for semantic colors */
+/* =====================================================
+   Semantic Utility Classes
+   ===================================================== */
+
+/* Backgrounds */
 .bg-page { background-color: var(--color-page-bg); }
 .bg-page-secondary { background-color: var(--color-page-bg-secondary); }
 .bg-card { background-color: var(--color-card-bg); }
 .bg-card-hover:hover { background-color: var(--color-card-bg-hover); }
 
+/* Text */
 .text-primary { color: var(--color-text-primary); }
 .text-secondary { color: var(--color-text-secondary); }
 .text-muted { color: var(--color-text-muted); }
 
+/* Brand */
 .bg-brand { background-color: var(--color-brand-primary); }
 .bg-brand-hover:hover { background-color: var(--color-brand-primary-hover); }
+.hover\:bg-brand-hover:hover { background-color: var(--color-brand-primary-hover); }
 .text-brand { color: var(--color-brand-primary); }
+.bg-brand-secondary { background-color: var(--color-brand-secondary); }
 
+/* Borders */
 .border-default { border-color: var(--color-border); }
 .border-brand { border-color: var(--color-brand-primary); }
+.hover\:border-brand:hover { border-color: var(--color-brand-primary); }
 
+/* Accent (success/today) */
 .text-accent { color: var(--color-accent); }
+.bg-accent { background-color: var(--color-accent); }
 
-/* Focus states for accessibility */
+/* State colors */
+.text-error { color: var(--color-error); }
+.bg-error { background-color: var(--color-error); }
+.border-error { border-color: var(--color-error); }
+
+.text-warning { color: var(--color-warning); }
+.bg-warning { background-color: var(--color-warning); }
+
+.text-info { color: var(--color-info); }
+.bg-info { background-color: var(--color-info); }
+
+/* =====================================================
+   Focus States (Accessibility)
+   ===================================================== */
 a:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--color-brand-primary);
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }
 
-/* Ensure links in dark mode footer are visible */
-.dark .text-slate-400 {
-    color: #94a3b8;  /* slate-400 - good contrast */
+/* Focus ring utility for form inputs */
+.focus\:ring-brand:focus {
+    --tw-ring-color: var(--color-brand-primary);
 }
 
-.dark .text-slate-500 {
-    color: #64748b;  /* slate-500 */
+.focus\:border-brand:focus {
+    border-color: var(--color-brand-primary);
 }
 
-/* Hover improvements for dark mode */
-.dark .hover\:text-white:hover {
-    color: #ffffff;
+/* =====================================================
+   Footer Styling (Dark background)
+   ===================================================== */
+.footer-bg {
+    background-color: #020617; /* Night Navy */
 }
 
-/* Better card hover state in dark mode */
-.dark .hover\:bg-card-hover:hover {
-    background-color: var(--color-card-bg-hover);
+.footer-text {
+    color: #94A3B8; /* Muted text for footer */
+}
+
+.footer-text-dim {
+    color: #64748B; /* Dimmer text */
+}
+
+/* Ensure footer links are visible and have good hover states */
+footer a {
+    transition: color 0.15s ease;
+}
+
+footer a:hover {
+    color: #FFFFFF;
+}
+
+/* =====================================================
+   Component-specific Overrides
+   ===================================================== */
+
+/* Highlighted pricing card */
+.pricing-highlight {
+    background-color: var(--color-brand-primary);
+    color: var(--color-text-on-dark);
+}
+
+.dark .pricing-highlight {
+    background-color: #1E40AF; /* Slightly different shade for dark mode */
+}
+
+/* Form checkbox/radio brand color */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: var(--color-brand-primary);
+    border-color: var(--color-brand-primary);
+}
+
+/* Success message styling */
+.alert-success {
+    background-color: #DCFCE7;
+    border-color: #22C55E;
+    color: #166534;
+}
+
+.dark .alert-success {
+    background-color: rgba(34, 197, 94, 0.15);
+    border-color: #4ADE80;
+    color: #86EFAC;
+}
+
+/* Error message styling */
+.alert-error {
+    background-color: #FEE2E2;
+    border-color: #DC2626;
+    color: #991B1B;
+}
+
+.dark .alert-error {
+    background-color: rgba(220, 38, 38, 0.15);
+    border-color: #F87171;
+    color: #FCA5A5;
 }

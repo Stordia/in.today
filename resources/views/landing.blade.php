@@ -124,7 +124,7 @@
     </nav>
 
     <!-- 1. Hero Section -->
-    <section id="hero" class="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-indigo-100 to-page dark:from-indigo-950 dark:to-page-bg">
+    <section id="hero" class="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-blue-50 to-page dark:from-slate-900 dark:to-page-bg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <p class="text-sm font-semibold text-brand uppercase tracking-wide mb-4">{{ __('landing.hero.eyebrow') }}</p>
@@ -170,7 +170,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 @foreach($whoItems as $index => $item)
                 <div class="bg-card rounded-xl p-6 hover:shadow-md transition border border-default">
-                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-950 rounded-lg flex items-center justify-center mb-4">
+                    <div class="w-12 h-12 bg-brand-secondary rounded-lg flex items-center justify-center mb-4">
                         @if($index === 0)
                         <svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -192,7 +192,7 @@
                     <span class="text-xs font-semibold text-brand uppercase tracking-wide">{{ $item['label'] }}</span>
                     <h4 class="text-xl font-semibold text-primary mb-2 mt-1">{{ $item['title'] }}</h4>
                     <p class="text-secondary mb-3">{{ $item['description'] }}</p>
-                    <span class="inline-block text-xs bg-indigo-100 dark:bg-indigo-950 text-brand px-2 py-1 rounded">{{ $item['tag'] }}</span>
+                    <span class="inline-block text-xs bg-brand-secondary text-brand px-2 py-1 rounded">{{ $item['tag'] }}</span>
                 </div>
                 @endforeach
             </div>
@@ -245,23 +245,23 @@
                 @foreach($plans as $plan)
                     @if(!empty($plan['highlight']) && $plan['highlight'])
                     <!-- Highlighted Plan -->
-                    <div class="bg-indigo-600 dark:bg-indigo-700 text-white rounded-2xl p-8 shadow-xl transform md:scale-105 relative">
-                        <div class="absolute top-0 right-0 bg-yellow-400 text-gray-900 dark:text-slate-900 text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-2xl">
+                    <div class="pricing-highlight rounded-2xl p-8 shadow-xl transform md:scale-105 relative">
+                        <div class="absolute top-0 right-0 bg-accent text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-2xl">
                             Most popular
                         </div>
                         <h4 class="text-2xl font-bold mb-2">{{ $plan['name'] }}</h4>
-                        <p class="text-indigo-100 dark:text-indigo-200 mb-4">{{ $plan['tagline'] }}</p>
+                        <p class="text-blue-100 dark:text-blue-200 mb-4">{{ $plan['tagline'] }}</p>
                         <div class="mb-2">
                             <span class="text-4xl font-bold">{{ $plan['price'] }}</span>
-                            <span class="text-indigo-100 dark:text-indigo-200"> {{ $plan['price_note'] }}</span>
+                            <span class="text-blue-100 dark:text-blue-200"> {{ $plan['price_note'] }}</span>
                         </div>
-                        <p class="text-indigo-100 dark:text-indigo-200 text-sm mb-4">{{ $plan['billed'] }}</p>
-                        <p class="text-indigo-100 dark:text-indigo-200 text-sm mb-6">{{ $plan['ideal_for'] }}</p>
+                        <p class="text-blue-100 dark:text-blue-200 text-sm mb-4">{{ $plan['billed'] }}</p>
+                        <p class="text-blue-100 dark:text-blue-200 text-sm mb-6">{{ $plan['ideal_for'] }}</p>
                         @if(!empty($plan['features']))
                         <ul class="space-y-3 mb-8">
                             @foreach($plan['features'] as $line)
                             <li class="flex items-start">
-                                <svg class="w-5 h-5 text-yellow-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-5 h-5 text-accent mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span>{{ $line }}</span>
@@ -269,7 +269,7 @@
                             @endforeach
                         </ul>
                         @endif
-                        <a href="#contact" class="block w-full text-center px-6 py-3 bg-white text-indigo-600 dark:text-indigo-700 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-slate-100 transition">
+                        <a href="#contact" class="block w-full text-center px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-100 transition">
                             Get Started
                         </a>
                     </div>
@@ -335,7 +335,7 @@
                     </div>
                     @if(!$loop->last)
                     <div class="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
-                        <svg class="w-8 h-8 text-indigo-300 dark:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-8 h-8 text-blue-300 dark:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </div>
@@ -376,7 +376,7 @@
     </section>
 
     <!-- 7. Contact Section -->
-    <section id="contact" class="py-16 md:py-24 bg-gradient-to-br from-indigo-100 to-page dark:from-indigo-950 dark:to-page-bg">
+    <section id="contact" class="py-16 md:py-24 bg-gradient-to-br from-blue-50 to-page dark:from-slate-900 dark:to-page-bg">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h3 class="text-3xl md:text-4xl font-bold text-primary mb-4">
@@ -643,36 +643,36 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 dark:bg-slate-950 text-white py-12">
+    <footer class="footer-bg text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <h3 class="text-2xl font-bold mb-4">{{ __('landing.nav.logo') }}</h3>
-                    <p class="text-slate-400 dark:text-slate-500">
+                    <p class="footer-text">
                         {{ __('landing.footer.made_in') }}
                     </p>
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ $baseUrl }}#features" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
-                        <li><a href="{{ $baseUrl }}#pricing" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
-                        <li><a href="{{ $baseUrl }}#how-it-works" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.how_it_works') }}</a></li>
-                        <li><a href="{{ $baseUrl }}#faq" class="text-slate-400 dark:text-slate-500 hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#pricing" class="footer-text hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#how-it-works" class="footer-text hover:text-white transition">{{ __('landing.nav.how_it_works') }}</a></li>
+                        <li><a href="{{ $baseUrl }}#faq" class="footer-text hover:text-white transition">{{ __('landing.nav.faq') }}</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Contact</h4>
-                    <ul class="space-y-2 text-slate-400 dark:text-slate-500">
+                    <ul class="space-y-2 footer-text">
                         <li>Email: <a href="mailto:{{ __('landing.contact.email_value') }}" class="hover:text-white transition">{{ __('landing.contact.email_value') }}</a></li>
                     </ul>
-                    <ul class="mt-4 space-y-2 text-slate-400 dark:text-slate-500">
+                    <ul class="mt-4 space-y-2 footer-text">
                         <li><a href="{{ route('imprint', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.imprint') }}</a></li>
                         <li><a href="{{ route('privacy', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.privacy') }}</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-slate-800 dark:border-slate-900 text-center text-slate-400 dark:text-slate-500">
+            <div class="mt-8 pt-8 border-t border-slate-700 text-center footer-text">
                 <p>{{ __('landing.footer.copyright') }}</p>
             </div>
         </div>
