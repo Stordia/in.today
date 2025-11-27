@@ -158,6 +158,17 @@ textarea:focus-visible {
 }
 
 /* =====================================================
+   Hero Gradient (Light & Dark Mode)
+   ===================================================== */
+.hero-gradient {
+    background: linear-gradient(to bottom, #EFF6FF 0%, var(--color-page-bg) 100%);
+}
+
+.dark .hero-gradient {
+    background: linear-gradient(to bottom, #0F172A 0%, var(--color-page-bg) 100%);
+}
+
+/* =====================================================
    Footer Styling (Dark background)
    ===================================================== */
 .footer-bg {
