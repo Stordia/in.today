@@ -318,6 +318,13 @@ return [
         ],
     ],
 
+    'cookie' => [
+        'message' => 'We use cookies to improve your experience. By continuing to browse, you accept our',
+        'privacy_link' => 'privacy policy',
+        'accept' => 'Accept',
+        'learn_more' => 'Learn more',
+    ],
+
     'legal' => [
         'imprint' => [
             'title' => 'Imprint',

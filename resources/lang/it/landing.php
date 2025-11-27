@@ -318,6 +318,13 @@ return [
         ],
     ],
 
+    'cookie' => [
+        'message' => 'Utilizziamo i cookie per migliorare la tua esperienza. Continuando a navigare, accetti la nostra',
+        'privacy_link' => 'informativa sulla privacy',
+        'accept' => 'Accetta',
+        'learn_more' => 'Scopri di più',
+    ],
+
     'legal' => [
         'imprint' => [
             'title' => 'Informazioni legali',

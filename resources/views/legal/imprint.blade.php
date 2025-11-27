@@ -10,6 +10,9 @@
     <meta name="robots" content="noindex,follow">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Analytics Scripts --}}
+    @include('partials.analytics')
 </head>
 <body class="antialiased bg-page text-primary">
 
@@ -129,6 +132,9 @@
             </div>
         </div>
     </footer>
+
+    {{-- Cookie Consent Banner --}}
+    @include('partials.cookie-banner')
 
 </body>
 </html>

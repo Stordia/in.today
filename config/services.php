@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Analytics Services
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for analytics and tracking services. Leave empty to disable.
+    | Set the environment variables when ready to enable tracking.
+    |
+    */
+
+    'analytics' => [
+        'gtm_id' => env('ANALYTICS_GTM_ID'),
+        'meta_pixel_id' => env('ANALYTICS_META_PIXEL_ID'),
+    ],
+
 ];
