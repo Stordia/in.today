@@ -20,8 +20,29 @@ class Restaurant extends Model
         'name',
         'slug',
         'agency_id',
+        'city_id',
         'timezone',
         'country',
+        // Address
+        'address_street',
+        'address_district',
+        'address_postal',
+        'address_country',
+        // Geo
+        'latitude',
+        'longitude',
+        // Classification
+        'cuisine_id',
+        'price_range',
+        // Stats
+        'avg_rating',
+        'review_count',
+        'reservation_count',
+        // Features & media
+        'features',
+        'logo_url',
+        'cover_image_url',
+        // Config
         'settings',
         'plan',
         'is_active',
@@ -32,6 +53,13 @@ class Restaurant extends Model
     protected function casts(): array
     {
         return [
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
+            'price_range' => 'integer',
+            'avg_rating' => 'decimal:1',
+            'review_count' => 'integer',
+            'reservation_count' => 'integer',
+            'features' => 'array',
             'settings' => 'array',
             'plan' => RestaurantPlan::class,
             'is_active' => 'boolean',
@@ -63,9 +91,44 @@ class Restaurant extends Model
         return $this->belongsTo(Agency::class);
     }
 
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function cuisine(): BelongsTo
+    {
+        return $this->belongsTo(Cuisine::class);
+    }
+
     public function restaurantUsers(): HasMany
     {
         return $this->hasMany(RestaurantUser::class);
+    }
+
+    public function tables(): HasMany
+    {
+        return $this->hasMany(Table::class);
+    }
+
+    public function openingHours(): HasMany
+    {
+        return $this->hasMany(OpeningHour::class);
+    }
+
+    public function blockedDates(): HasMany
+    {
+        return $this->hasMany(BlockedDate::class);
+    }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function waitlist(): HasMany
+    {
+        return $this->hasMany(Waitlist::class);
     }
 
     /*
@@ -104,6 +167,21 @@ class Restaurant extends Model
         return $query->whereNull('agency_id');
     }
 
+    public function scopeByCity($query, int $cityId)
+    {
+        return $query->where('city_id', $cityId);
+    }
+
+    public function scopeByCuisine($query, int $cuisineId)
+    {
+        return $query->where('cuisine_id', $cuisineId);
+    }
+
+    public function scopeByPriceRange($query, int $priceRange)
+    {
+        return $query->where('price_range', $priceRange);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Helpers
@@ -133,5 +211,42 @@ class Restaurant extends Model
     public function isDirectCustomer(): bool
     {
         return $this->agency_id === null;
+    }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array($feature, $this->features ?? [], true);
+    }
+
+    /**
+     * Get the full address as a formatted string.
+     */
+    public function getFullAddress(): string
+    {
+        $parts = array_filter([
+            $this->address_street,
+            $this->address_district,
+            $this->address_postal,
+            $this->address_country,
+        ]);
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Get price range as euro symbols (€, €€, €€€, €€€€).
+     */
+    public function getPriceRangeSymbol(): string
+    {
+        if ($this->price_range === null) {
+            return '';
+        }
+
+        return str_repeat('€', $this->price_range);
     }
 }

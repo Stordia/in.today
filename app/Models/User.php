@@ -68,6 +68,16 @@ class User extends Authenticatable
         return $this->hasMany(RestaurantUser::class);
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function waitlistEntries(): HasMany
+    {
+        return $this->hasMany(Waitlist::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes
