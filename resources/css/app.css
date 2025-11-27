@@ -238,3 +238,66 @@ input[type="radio"]:checked {
     border-color: #F87171;
     color: #FCA5A5;
 }
+
+/* =====================================================
+   Micro-interactions & Hover States
+   ===================================================== */
+
+/* Pricing card hover - subtle lift effect */
+.pricing-card {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.pricing-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Featured pricing card - stronger hover effect */
+.pricing-card-featured:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.dark .pricing-card-featured:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+}
+
+/* CTA button press effect */
+.btn-cta {
+    transition: transform 0.1s ease-out, background-color 0.15s ease-out;
+}
+
+.btn-cta:active {
+    transform: scale(0.98);
+}
+
+/* Language switcher pill hover */
+.lang-pill {
+    transition: all 0.15s ease-out;
+}
+
+.lang-pill:not([aria-current="page"]):hover {
+    background-color: var(--color-card-bg-hover);
+}
+
+/* Form input focus animation */
+input:focus,
+select:focus,
+textarea:focus {
+    transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+/* Checkbox/radio hover effect */
+input[type="checkbox"]:hover,
+input[type="radio"]:hover {
+    border-color: var(--color-brand-primary);
+}
+
+/* Card hover state with smooth transition */
+.card-interactive {
+    transition: border-color 0.15s ease-out, box-shadow 0.2s ease-out;
+}
+
+.card-interactive:hover {
+    border-color: var(--color-brand-primary);
+}

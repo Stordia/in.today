@@ -97,6 +97,8 @@ return [
         'title' => 'Klare Preise – passend zu Ihrem Betrieb.',
         'subtitle' => 'Wählen Sie das Modell, das zu Ihrer Situation passt: Einmaliges Projekt, Jahresservice oder monatliches All-inclusive-Leasing.',
         'disclaimer' => 'Alle Preise sind Richtwerte und hängen von Sprachversionen, Integrationen und Fotografie-Bedarf ab.',
+        'popular_badge' => 'Am beliebtesten',
+        'cta' => 'Jetzt anfragen',
 
         'plans' => [
             [
@@ -306,6 +308,10 @@ return [
     'footer' => [
         'copyright' => '© ' . date('Y') . ' in.today. Alle Rechte vorbehalten.',
         'made_in' => 'Entwickelt in Berlin, für Gastronomiebetriebe in ganz Europa.',
+        'sections' => [
+            'quick_links' => 'Schnellzugriff',
+            'legal' => 'Rechtliches',
+        ],
         'links' => [
             'imprint' => 'Impressum',
             'privacy' => 'Datenschutz',

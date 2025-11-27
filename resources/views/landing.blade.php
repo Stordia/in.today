@@ -113,7 +113,7 @@
                             <a
                                 href="/{{ $locale }}"
                                 data-locale="{{ $locale }}"
-                                class="px-2.5 py-1 text-xs font-semibold rounded-md transition-all {{ app()->getLocale() === $locale ? 'bg-brand text-white' : 'text-secondary hover:text-brand' }}"
+                                class="px-2.5 py-1 text-xs font-semibold rounded-md lang-pill {{ app()->getLocale() === $locale ? 'bg-brand text-white' : 'text-secondary hover:text-brand' }}"
                                 {{ app()->getLocale() === $locale ? 'aria-current=page' : '' }}
                             >
                                 {{ strtoupper($locale) }}
@@ -157,13 +157,13 @@
                     </p>
                     <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-4">
                         <div class="flex flex-col items-center sm:items-start">
-                            <a href="#contact" class="w-full sm:w-auto px-6 py-3 bg-brand text-white font-semibold rounded-lg hover:bg-brand-hover transition shadow-md text-center">
+                            <a href="#contact" class="w-full sm:w-auto px-6 py-3 bg-brand text-white font-semibold rounded-lg hover:bg-brand-hover transition shadow-md text-center btn-cta">
                                 {{ __('landing.hero.primary_cta') }}
                             </a>
                             <span class="text-xs text-muted mt-1.5">{{ __('landing.hero.primary_cta_note') }}</span>
                         </div>
                         <div class="flex flex-col items-center sm:items-start">
-                            <a href="#pricing" class="w-full sm:w-auto px-6 py-3 bg-card text-brand font-semibold rounded-lg hover:bg-card-hover transition border border-brand text-center">
+                            <a href="#pricing" class="w-full sm:w-auto px-6 py-3 bg-card text-brand font-semibold rounded-lg hover:bg-card-hover transition border border-brand text-center btn-cta">
                                 {{ __('landing.hero.secondary_cta') }}
                             </a>
                             <span class="text-xs text-muted mt-1.5">{{ __('landing.hero.secondary_cta_note') }}</span>
@@ -325,7 +325,7 @@
                 @foreach($plans as $plan)
                     @if(!empty($plan['highlight']) && $plan['highlight'])
                     <!-- Highlighted Plan -->
-                    <div class="bg-card rounded-2xl p-6 shadow-lg border-2 border-brand relative flex flex-col">
+                    <div class="bg-card rounded-2xl p-6 shadow-lg border-2 border-brand relative flex flex-col pricing-card pricing-card-featured">
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full">
                             {{ __('landing.pricing.popular_badge') ?? 'Most popular' }}
                         </div>
@@ -357,7 +357,7 @@
                     </div>
                     @else
                     <!-- Regular Plan -->
-                    <div class="bg-card border border-default rounded-2xl p-6 hover:border-brand transition flex flex-col">
+                    <div class="bg-card border border-default rounded-2xl p-6 hover:border-brand transition flex flex-col pricing-card">
                         <h3 class="text-xl font-bold text-primary mb-1">{{ $plan['name'] }}</h3>
                         <p class="text-sm text-secondary mb-3">{{ $plan['tagline'] }}</p>
                         <div class="mb-1">
@@ -471,14 +471,20 @@
 
             {{-- Success Message --}}
             @if (session('success'))
-            <div class="mb-6 alert-success border px-5 py-3 rounded-xl" role="alert">
+            <div class="mb-6 alert-success border px-5 py-4 rounded-xl flex items-start gap-3" role="alert">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
                 <p class="font-medium text-sm">{{ session('success') }}</p>
             </div>
             @endif
 
             {{-- Error Message --}}
             @if (session('error'))
-            <div class="mb-6 alert-error border px-5 py-3 rounded-xl" role="alert">
+            <div class="mb-6 alert-error border px-5 py-4 rounded-xl flex items-start gap-3" role="alert">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
                 <p class="font-medium text-sm">{{ session('error') }}</p>
             </div>
             @endif
@@ -738,7 +744,7 @@
 
                 <!-- Quick Links -->
                 <div>
-                    <h4 class="text-sm font-semibold mb-3 uppercase tracking-wide">{{ __('landing.nav.solutions') }}</h4>
+                    <h4 class="text-sm font-semibold mb-3 uppercase tracking-wide">{{ __('landing.footer.sections.quick_links') }}</h4>
                     <ul class="space-y-1.5 text-sm">
                         <li><a href="{{ $baseUrl }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
                         <li><a href="{{ $baseUrl }}#pricing" class="footer-text hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
@@ -759,7 +765,7 @@
 
                 <!-- Legal -->
                 <div>
-                    <h4 class="text-sm font-semibold mb-3 uppercase tracking-wide">Legal</h4>
+                    <h4 class="text-sm font-semibold mb-3 uppercase tracking-wide">{{ __('landing.footer.sections.legal') }}</h4>
                     <ul class="space-y-1.5 text-sm">
                         <li><a href="{{ route('imprint', ['locale' => app()->getLocale()]) }}" class="footer-text hover:text-white transition">{{ __('landing.footer.links.imprint') }}</a></li>
                         <li><a href="{{ route('privacy', ['locale' => app()->getLocale()]) }}" class="footer-text hover:text-white transition">{{ __('landing.footer.links.privacy') }}</a></li>

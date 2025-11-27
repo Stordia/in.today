@@ -97,6 +97,8 @@ return [
         'title' => 'Simple pricing for different ways of running your restaurant.',
         'subtitle' => 'Choose the model that fits how you want to invest: one-time project, yearly service or all-inclusive monthly leasing.',
         'disclaimer' => 'All prices are indicative and depend on language count, integrations and photography needs.',
+        'popular_badge' => 'Most popular',
+        'cta' => 'Get started',
 
         'plans' => [
             [
@@ -306,6 +308,10 @@ return [
     'footer' => [
         'copyright' => '© ' . date('Y') . ' in.today. All rights reserved.',
         'made_in' => 'Based in Berlin, working with restaurants across Europe.',
+        'sections' => [
+            'quick_links' => 'Quick links',
+            'legal' => 'Legal',
+        ],
         'links' => [
             'imprint' => 'Imprint',
             'privacy' => 'Privacy',

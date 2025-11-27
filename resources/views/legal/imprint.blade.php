@@ -109,7 +109,7 @@
                     </p>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <h4 class="text-lg font-semibold mb-4">{{ __('landing.footer.sections.quick_links') }}</h4>
                     <ul class="space-y-2">
                         <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#features" class="footer-text hover:text-white transition">{{ __('landing.nav.solutions') }}</a></li>
                         <li><a href="{{ route('landing', ['locale' => app()->getLocale()]) }}#pricing" class="footer-text hover:text-white transition">{{ __('landing.nav.pricing') }}</a></li>
@@ -117,7 +117,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Legal</h4>
+                    <h4 class="text-lg font-semibold mb-4">{{ __('landing.footer.sections.legal') }}</h4>
                     <ul class="space-y-2 footer-text">
                         <li><a href="{{ route('imprint', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.imprint') }}</a></li>
                         <li><a href="{{ route('privacy', ['locale' => app()->getLocale()]) }}" class="hover:text-white transition">{{ __('landing.footer.links.privacy') }}</a></li>

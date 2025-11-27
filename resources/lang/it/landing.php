@@ -97,6 +97,8 @@ return [
         'title' => 'Prezzi semplici per diversi modi di gestire il tuo ristorante.',
         'subtitle' => 'Scegli il modello che si adatta al modo in cui vuoi investire: progetto una tantum, servizio annuale o leasing mensile all-inclusive.',
         'disclaimer' => 'Tutti i prezzi sono indicativi e dipendono dal numero di lingue, integrazioni e necessità fotografiche.',
+        'popular_badge' => 'Più popolare',
+        'cta' => 'Inizia',
 
         'plans' => [
             [
@@ -306,6 +308,10 @@ return [
     'footer' => [
         'copyright' => '© ' . date('Y') . ' in.today. Tutti i diritti riservati.',
         'made_in' => 'Con sede a Berlino, lavoriamo con ristoranti in tutta Europa.',
+        'sections' => [
+            'quick_links' => 'Link rapidi',
+            'legal' => 'Legale',
+        ],
         'links' => [
             'imprint' => 'Imprint',
             'privacy' => 'Privacy',
