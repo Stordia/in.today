@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContactLead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -43,6 +44,9 @@ class ContactController extends Controller
             'budget.required' => __('landing.contact.errors.budget_required'),
         ]);
 
+        // Persist the lead to the database (non-fatal if it fails)
+        $this->persistLead($request, $validated, $locale);
+
         // Build email content
         $emailContent = $this->buildEmailContent($validated, $locale);
 
@@ -72,6 +76,42 @@ class ContactController extends Controller
             ->route('landing', ['locale' => $locale])
             ->with('success', __('landing.contact.success'))
             ->withFragment('contact');
+    }
+
+    private function persistLead(Request $request, array $data, string $locale): void
+    {
+        $leadData = [
+            'locale'          => $locale,
+            'name'            => $data['name'] ?? null,
+            'email'           => $data['email'] ?? null,
+            'phone'           => $data['phone'] ?? null,
+            'restaurant_name' => $data['restaurant_name'] ?? null,
+            'city'            => $data['city'] ?? null,
+            'country'         => $data['country'] ?? null,
+            'website_url'     => $data['website_url'] ?? null,
+            'type'            => $data['type'] ?? null,
+            'services'        => $data['services'] ?? null,
+            'budget'          => $data['budget'] ?? null,
+            'message'         => $data['message'] ?? null,
+            'source_url'      => $request->headers->get('referer') ?? $request->fullUrl(),
+            'ip_address'      => $request->ip(),
+            'user_agent'      => $request->userAgent(),
+        ];
+
+        try {
+            ContactLead::create($leadData);
+
+            Log::info('Contact lead persisted to database', [
+                'email' => $leadData['email'],
+                'restaurant' => $leadData['restaurant_name'],
+            ]);
+        } catch (\Throwable $e) {
+            // Non-fatal: log the error but don't break the form submission
+            Log::warning('Failed to store contact lead in database', [
+                'error' => $e->getMessage(),
+                'lead'  => $leadData,
+            ]);
+        }
     }
 
     private function buildEmailContent(array $data, string $locale): string
