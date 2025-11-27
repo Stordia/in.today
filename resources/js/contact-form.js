@@ -136,7 +136,7 @@ function showSuccessModal(message) {
 
     if (modal && messageEl) {
         messageEl.textContent = message;
-        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
 
         // Focus the close button for accessibility
@@ -153,7 +153,7 @@ function showSuccessModal(message) {
 function hideSuccessModal() {
     const modal = document.getElementById('contact-success-modal');
     if (modal) {
-        modal.classList.add('hidden');
+        modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
     }
 }
@@ -198,7 +198,7 @@ function setupModalHandlers() {
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        if (e.key === 'Escape' && modal.style.display !== 'none') {
             hideSuccessModal();
         }
     });

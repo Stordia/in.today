@@ -8,7 +8,24 @@ use App\Enums\WaitlistStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $restaurant_id
+ * @property int|null $user_id
+ * @property string $customer_name
+ * @property string|null $customer_email
+ * @property string|null $customer_phone
+ * @property Carbon $date
+ * @property Carbon $preferred_time
+ * @property int $guests
+ * @property WaitlistStatus $status
+ * @property Carbon|null $notified_at
+ * @property Carbon|null $expires_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class Waitlist extends Model
 {
     use HasFactory;
