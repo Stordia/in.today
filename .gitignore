@@ -15,7 +15,9 @@ nul
 /auth.json
 /node_modules
 /public/build
+/public/css
 /public/hot
+/public/js
 /public/storage
 /storage/*.key
 /storage/pail
