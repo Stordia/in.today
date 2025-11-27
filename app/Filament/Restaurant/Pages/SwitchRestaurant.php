@@ -72,7 +72,7 @@ class SwitchRestaurant extends Page implements HasForms
             ->success()
             ->send();
 
-        $this->redirect(route('filament.restaurant.pages.dashboard'));
+        $this->redirect(route('filament.business.pages.dashboard'));
     }
 
     public static function getSlug(): string

@@ -22,6 +22,6 @@ class Dashboard extends BaseDashboard
 
     public function getSubheading(): ?string
     {
-        return 'Welcome to your restaurant management dashboard.';
+        return 'Welcome to your business dashboard.';
     }
 }

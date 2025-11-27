@@ -29,10 +29,14 @@ class RestaurantPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('restaurant')
-            ->path('restaurant')
+            ->id('business')
+            ->path('business')
             ->login()
-            ->brandName('in.today Restaurants')
+            ->brandName('in.today Business')
+            ->renderHook(
+                'panels::head.end',
+                fn () => '<meta name="robots" content="noindex, nofollow">'
+            )
             ->colors([
                 'primary' => Color::Sky,
                 'danger' => Color::Rose,
@@ -52,7 +56,7 @@ class RestaurantPanelProvider extends PanelProvider
                 'restaurant-switcher' => MenuItem::make()
                     ->label(fn () => static::getCurrentRestaurantLabel())
                     ->icon('heroicon-o-building-storefront')
-                    ->url(fn () => route('filament.restaurant.pages.switch-restaurant'))
+                    ->url(fn () => route('filament.business.pages.switch-restaurant'))
                     ->visible(fn () => static::hasMultipleRestaurants()),
             ])
             ->discoverResources(in: app_path('Filament/Restaurant/Resources'), for: 'App\\Filament\\Restaurant\\Resources')

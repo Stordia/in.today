@@ -732,7 +732,7 @@ class SeedDemoDataCommand extends Command
         $this->newLine();
         $this->info('🔗 LOGIN URLS:');
         $this->info('   Platform Admin: ' . url('/admin'));
-        $this->info('   Restaurant Panel: ' . url('/restaurant'));
+        $this->info('   Business Panel: ' . url('/business'));
         $this->newLine();
 
         $this->warn('⚠️  Remember: These credentials are for DEVELOPMENT ONLY!');

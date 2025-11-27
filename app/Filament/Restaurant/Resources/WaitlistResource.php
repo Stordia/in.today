@@ -164,7 +164,7 @@ class WaitlistResource extends Resource
                     ->icon('heroicon-o-arrow-right-circle')
                     ->color('success')
                     ->visible(fn (Waitlist $record): bool => $record->isActive())
-                    ->url(fn (Waitlist $record): string => route('filament.restaurant.resources.reservations.create', [
+                    ->url(fn (Waitlist $record): string => route('filament.business.resources.reservations.create', [
                         'date' => $record->date?->format('Y-m-d'),
                         'time' => $record->preferred_time?->format('H:i'),
                         'guests' => $record->guests,

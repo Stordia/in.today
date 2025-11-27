@@ -30,6 +30,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('in.today Admin')
+            ->renderHook(
+                'panels::head.end',
+                fn () => '<meta name="robots" content="noindex, nofollow">'
+            )
             ->colors([
                 'primary' => Color::Emerald,
                 'danger' => Color::Rose,
