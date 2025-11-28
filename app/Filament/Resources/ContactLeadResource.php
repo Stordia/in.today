@@ -325,8 +325,20 @@ class ContactLeadResource extends Resource
                     ->label('Services')
                     ->badge()
                     ->color('primary')
-                    ->limitList(2)
-                    ->expandableLimitedList()
+                    ->formatStateUsing(function (ContactLead $record): ?string {
+                        $services = $record->services ?? [];
+                        if (empty($services)) {
+                            return null;
+                        }
+                        $count = \count($services);
+                        if ($count <= 2) {
+                            return implode(', ', $services);
+                        }
+                        $first = \array_slice($services, 0, 2);
+                        $remaining = $count - 2;
+
+                        return implode(', ', $first) . " +{$remaining} more";
+                    })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
