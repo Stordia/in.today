@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>in.today - Loading...</title>
     <style>
+        /* Light mode colors (BRANDING v2.0) */
+        :root {
+            --loader-bg: linear-gradient(to bottom, #EFF6FF 0%, #F4F4F5 100%);
+            --loader-text: #020617;
+            --spinner-track: rgba(29, 78, 216, 0.2);
+            --spinner-head: #1D4ED8;
+        }
+        /* Dark mode colors */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --loader-bg: linear-gradient(to bottom, #0F172A 0%, #020617 100%);
+                --loader-text: #F9FAFB;
+                --spinner-track: rgba(96, 165, 250, 0.2);
+                --spinner-head: #60A5FA;
+            }
+        }
         body {
             margin: 0;
             padding: 0;
@@ -13,8 +29,8 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--loader-bg);
+            color: var(--loader-text);
         }
         .loader {
             text-align: center;
@@ -22,9 +38,9 @@
         .spinner {
             width: 50px;
             height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid var(--spinner-track);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: var(--spinner-head);
             animation: spin 1s ease-in-out infinite;
             margin: 0 auto 20px;
         }
