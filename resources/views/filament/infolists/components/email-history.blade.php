@@ -65,6 +65,27 @@
                         <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Body</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-64 overflow-y-auto">{{ $email->body }}</dd>
                     </div>
+                    @if (!empty($email->attachments))
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Attachments</dt>
+                            <dd class="mt-1">
+                                <ul class="space-y-1">
+                                    @foreach ($email->attachments as $attachment)
+                                        <li>
+                                            <a
+                                                href="{{ route('admin.attachment.download', ['path' => urlencode($attachment)]) }}"
+                                                class="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+                                                target="_blank"
+                                            >
+                                                <x-heroicon-o-paper-clip class="w-4 h-4" />
+                                                {{ basename($attachment) }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </dd>
+                        </div>
+                    @endif
                 </dl>
             </div>
         </div>

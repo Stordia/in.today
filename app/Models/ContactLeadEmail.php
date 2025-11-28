@@ -17,6 +17,7 @@ class ContactLeadEmail extends Model
         'to_email',
         'subject',
         'body',
+        'attachments',
         'status',
         'sent_at',
     ];
@@ -25,6 +26,7 @@ class ContactLeadEmail extends Model
     {
         return [
             'sent_at' => 'datetime',
+            'attachments' => 'array',
         ];
     }
 

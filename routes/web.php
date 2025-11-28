@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 // Language selection page
 Route::get('/language', function () {
@@ -33,3 +34,17 @@ Route::group([
         return view('legal.privacy');
     })->name('privacy');
 });
+
+// Admin attachment download (protected by Filament auth middleware)
+Route::get('/admin/attachments/{path}', function (string $path) {
+    $path = urldecode($path);
+
+    if (! Storage::exists($path)) {
+        abort(404);
+    }
+
+    return Storage::download($path);
+})
+    ->where('path', '.*')
+    ->middleware(['auth', 'verified'])
+    ->name('admin.attachment.download');

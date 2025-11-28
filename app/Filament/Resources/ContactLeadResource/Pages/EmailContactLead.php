@@ -19,6 +19,8 @@ use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EmailContactLead extends Page
 {
@@ -75,6 +77,25 @@ class EmailContactLead extends Page
                     ->label('Body')
                     ->required()
                     ->rows(14),
+
+                Forms\Components\FileUpload::make('attachments')
+                    ->label('Attachments')
+                    ->multiple()
+                    ->maxSize(10240) // 10 MB per file
+                    ->acceptedFileTypes([
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'image/png',
+                        'image/jpeg',
+                    ])
+                    ->helperText('Max 10 MB per file. Allowed: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG')
+                    ->directory(fn () => 'attachments/contact-leads/' . $this->record->id)
+                    ->visibility('private')
+                    ->preserveFilenames()
+                    ->reorderable(),
             ])
             ->statePath('data');
     }
@@ -86,12 +107,16 @@ class EmailContactLead extends Page
         $status = 'sent';
         $sentAt = now();
 
+        // Get attachment paths from form data (Filament stores relative paths)
+        $attachmentPaths = $data['attachments'] ?? [];
+
         try {
             Mail::to($data['to_email'])
                 ->send(new ContactLeadReply(
                     lead: $this->record,
                     emailSubject: $data['subject'],
                     emailBody: $data['body'],
+                    attachmentPaths: $attachmentPaths,
                 ));
         } catch (\Throwable $e) {
             $status = 'failed';
@@ -109,6 +134,7 @@ class EmailContactLead extends Page
                 'to_email' => $data['to_email'],
                 'subject' => $data['subject'],
                 'body' => $data['body'],
+                'attachments' => $attachmentPaths,
                 'status' => $status,
                 'sent_at' => $sentAt,
             ]);
@@ -122,13 +148,14 @@ class EmailContactLead extends Page
             return;
         }
 
-        // Log successful email
+        // Log successful email with attachments
         ContactLeadEmail::create([
             'contact_lead_id' => $this->record->id,
             'sent_by_user_id' => Auth::id(),
             'to_email' => $data['to_email'],
             'subject' => $data['subject'],
             'body' => $data['body'],
+            'attachments' => $attachmentPaths,
             'status' => $status,
             'sent_at' => $sentAt,
         ]);
