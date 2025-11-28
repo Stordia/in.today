@@ -6,23 +6,19 @@ namespace App\Filament\Resources;
 
 use App\Enums\ContactLeadStatus;
 use App\Enums\GlobalRole;
-use App\Enums\RestaurantPlan;
-use App\Enums\RestaurantRole;
 use App\Filament\Resources\ContactLeadResource\Pages;
-use App\Models\City;
 use App\Models\ContactLead;
-use App\Models\Restaurant;
-use App\Models\RestaurantUser;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\HtmlString;
 
 class ContactLeadResource extends Resource
 {
@@ -38,16 +34,19 @@ class ContactLeadResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Contact Leads';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Lead')
-                    ->tabs([
-                        Forms\Components\Tabs\Tab::make('Lead Information')
-                            ->icon('heroicon-o-user')
+                Forms\Components\Grid::make(3)
+                    ->schema([
+                        // Left column - Contact & Business + Request Details
+                        Forms\Components\Group::make()
                             ->schema([
-                                Forms\Components\Section::make('Contact Details')
+                                Forms\Components\Section::make('Contact & Business')
+                                    ->icon('heroicon-o-user')
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
                                             ->required()
@@ -59,46 +58,64 @@ class ContactLeadResource extends Resource
                                         Forms\Components\TextInput::make('phone')
                                             ->tel()
                                             ->maxLength(50),
-                                    ])->columns(3),
-
-                                Forms\Components\Section::make('Business Details')
-                                    ->schema([
                                         Forms\Components\TextInput::make('restaurant_name')
                                             ->label('Restaurant/Business Name')
                                             ->maxLength(255),
+                                        Forms\Components\Grid::make(2)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('city')
+                                                    ->maxLength(255),
+                                                Forms\Components\TextInput::make('country')
+                                                    ->maxLength(255),
+                                            ]),
                                         Forms\Components\TextInput::make('type')
                                             ->label('Business Type')
                                             ->maxLength(100),
-                                        Forms\Components\TextInput::make('city')
-                                            ->maxLength(255),
-                                        Forms\Components\TextInput::make('country')
-                                            ->maxLength(255),
-                                        Forms\Components\TextInput::make('website_url')
-                                            ->label('Website')
-                                            ->url()
-                                            ->maxLength(500),
-                                    ])->columns(3),
+                                    ]),
 
                                 Forms\Components\Section::make('Request Details')
+                                    ->icon('heroicon-o-clipboard-document-list')
                                     ->schema([
-                                        Forms\Components\TextInput::make('services_list')
-                                            ->label('Services')
-                                            ->disabled()
-                                            ->dehydrated(false),
+                                        Forms\Components\Placeholder::make('services_display')
+                                            ->label('Services Requested')
+                                            ->content(function (?ContactLead $record): HtmlString {
+                                                if (! $record || empty($record->services)) {
+                                                    return new HtmlString('<span class="text-gray-400">None specified</span>');
+                                                }
+
+                                                $badges = collect($record->services)
+                                                    ->map(fn ($service) => '<span class="fi-badge flex items-center justify-center gap-x-1 rounded-md text-xs font-medium ring-1 ring-inset px-1.5 min-w-[theme(spacing.5)] py-0.5 bg-primary-50 text-primary-600 ring-primary-600/10 dark:bg-primary-400/10 dark:text-primary-400 dark:ring-primary-400/30">' . e($service) . '</span>')
+                                                    ->join(' ');
+
+                                                return new HtmlString('<div class="flex flex-wrap gap-1">' . $badges . '</div>');
+                                            })
+                                            ->visible(fn (?ContactLead $record): bool => $record !== null),
                                         Forms\Components\TextInput::make('budget')
                                             ->disabled()
                                             ->dehydrated(false),
+                                        Forms\Components\TextInput::make('website_url')
+                                            ->label('Website')
+                                            ->url()
+                                            ->suffixAction(
+                                                Forms\Components\Actions\Action::make('visit_website')
+                                                    ->icon('heroicon-o-arrow-top-right-on-square')
+                                                    ->url(fn (?ContactLead $record): ?string => $record?->website_url)
+                                                    ->openUrlInNewTab()
+                                                    ->visible(fn (?ContactLead $record): bool => ! empty($record?->website_url))
+                                            )
+                                            ->maxLength(500),
                                         Forms\Components\Textarea::make('message')
-                                            ->rows(4)
-                                            ->disabled()
-                                            ->dehydrated(false),
-                                    ])->columns(2),
-                            ]),
+                                            ->rows(5)
+                                            ->columnSpanFull(),
+                                    ]),
+                            ])
+                            ->columnSpan(2),
 
-                        Forms\Components\Tabs\Tab::make('CRM')
-                            ->icon('heroicon-o-briefcase')
+                        // Right column - Internal CRM + Meta
+                        Forms\Components\Group::make()
                             ->schema([
-                                Forms\Components\Section::make('Pipeline')
+                                Forms\Components\Section::make('Internal')
+                                    ->icon('heroicon-o-briefcase')
                                     ->schema([
                                         Forms\Components\Select::make('status')
                                             ->options(ContactLeadStatus::class)
@@ -114,18 +131,10 @@ class ContactLeadResource extends Resource
                                             )
                                             ->searchable()
                                             ->placeholder('Unassigned'),
-                                    ])->columns(2),
-
-                                Forms\Components\Section::make('Notes')
-                                    ->schema([
                                         Forms\Components\Textarea::make('internal_notes')
                                             ->label('Internal Notes')
                                             ->rows(6)
-                                            ->helperText('Private notes about this lead (not visible to the customer)'),
-                                    ]),
-
-                                Forms\Components\Section::make('Conversion')
-                                    ->schema([
+                                            ->helperText('Private notes (not visible to customer)'),
                                         Forms\Components\Placeholder::make('restaurant_link')
                                             ->label('Converted Restaurant')
                                             ->content(fn (ContactLead $record): string => $record->restaurant
@@ -133,35 +142,151 @@ class ContactLeadResource extends Resource
                                                 : 'Not converted yet'
                                             )
                                             ->visible(fn (?ContactLead $record): bool => $record !== null),
-                                    ])
-                                    ->visible(fn (?ContactLead $record): bool => $record !== null),
-                            ]),
+                                    ]),
 
-                        Forms\Components\Tabs\Tab::make('Technical')
-                            ->icon('heroicon-o-cog-6-tooth')
-                            ->schema([
-                                Forms\Components\Section::make('Source Information')
+                                Forms\Components\Section::make('Meta')
+                                    ->icon('heroicon-o-information-circle')
+                                    ->collapsed()
                                     ->schema([
+                                        Forms\Components\Placeholder::make('created_at_display')
+                                            ->label('Submitted')
+                                            ->content(fn (?ContactLead $record): string => $record?->created_at?->format('M j, Y \a\t H:i') ?? '—'),
                                         Forms\Components\TextInput::make('locale')
                                             ->disabled()
                                             ->dehydrated(false),
-                                        Forms\Components\TextInput::make('source_url')
+                                        Forms\Components\Placeholder::make('source_url_display')
                                             ->label('Source URL')
-                                            ->disabled()
-                                            ->dehydrated(false),
+                                            ->content(function (?ContactLead $record): HtmlString {
+                                                if (! $record || empty($record->source_url)) {
+                                                    return new HtmlString('<span class="text-gray-400">—</span>');
+                                                }
+
+                                                return new HtmlString(
+                                                    '<a href="' . e($record->source_url) . '" target="_blank" class="text-primary-600 hover:underline truncate block max-w-full">' . e($record->source_url) . '</a>'
+                                                );
+                                            }),
                                         Forms\Components\TextInput::make('ip_address')
                                             ->label('IP Address')
                                             ->disabled()
                                             ->dehydrated(false),
-                                        Forms\Components\Textarea::make('user_agent')
-                                            ->label('User Agent')
-                                            ->rows(2)
-                                            ->disabled()
-                                            ->dehydrated(false),
-                                    ])->columns(2),
-                            ]),
-                    ])
-                    ->columnSpanFull(),
+                                    ]),
+                            ])
+                            ->columnSpan(1),
+                    ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Grid::make(3)
+                    ->schema([
+                        // Left column
+                        Infolists\Components\Group::make()
+                            ->schema([
+                                Infolists\Components\Section::make('Contact & Business')
+                                    ->icon('heroicon-o-user')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('name')
+                                            ->weight(FontWeight::SemiBold),
+                                        Infolists\Components\TextEntry::make('email')
+                                            ->copyable()
+                                            ->icon('heroicon-o-envelope'),
+                                        Infolists\Components\TextEntry::make('phone')
+                                            ->icon('heroicon-o-phone')
+                                            ->placeholder('—'),
+                                        Infolists\Components\TextEntry::make('restaurant_name')
+                                            ->label('Restaurant/Business')
+                                            ->weight(FontWeight::SemiBold)
+                                            ->placeholder('—'),
+                                        Infolists\Components\TextEntry::make('location')
+                                            ->icon('heroicon-o-map-pin')
+                                            ->placeholder('—'),
+                                        Infolists\Components\TextEntry::make('type')
+                                            ->label('Business Type')
+                                            ->badge()
+                                            ->color('gray')
+                                            ->placeholder('—'),
+                                    ])
+                                    ->columns(2),
+
+                                Infolists\Components\Section::make('Request Details')
+                                    ->icon('heroicon-o-clipboard-document-list')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('services')
+                                            ->label('Services Requested')
+                                            ->badge()
+                                            ->color('primary')
+                                            ->separator(', ')
+                                            ->placeholder('None specified'),
+                                        Infolists\Components\TextEntry::make('budget')
+                                            ->badge()
+                                            ->color('success')
+                                            ->placeholder('—'),
+                                        Infolists\Components\TextEntry::make('website_url')
+                                            ->label('Website')
+                                            ->url(fn (ContactLead $record): ?string => $record->website_url)
+                                            ->openUrlInNewTab()
+                                            ->color('primary')
+                                            ->placeholder('—'),
+                                        Infolists\Components\TextEntry::make('message')
+                                            ->columnSpanFull()
+                                            ->markdown()
+                                            ->placeholder('No message'),
+                                    ])
+                                    ->columns(2),
+                            ])
+                            ->columnSpan(2),
+
+                        // Right column
+                        Infolists\Components\Group::make()
+                            ->schema([
+                                Infolists\Components\Section::make('Internal')
+                                    ->icon('heroicon-o-briefcase')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('status')
+                                            ->badge()
+                                            ->color(fn (ContactLeadStatus $state): string => $state->color()),
+                                        Infolists\Components\TextEntry::make('assignedTo.name')
+                                            ->label('Assigned To')
+                                            ->placeholder('Unassigned')
+                                            ->icon('heroicon-o-user'),
+                                        Infolists\Components\TextEntry::make('internal_notes')
+                                            ->label('Internal Notes')
+                                            ->markdown()
+                                            ->placeholder('No notes yet'),
+                                        Infolists\Components\TextEntry::make('restaurant.name')
+                                            ->label('Converted Restaurant')
+                                            ->visible(fn (ContactLead $record): bool => $record->restaurant_id !== null)
+                                            ->icon('heroicon-o-building-storefront')
+                                            ->color('success'),
+                                    ]),
+
+                                Infolists\Components\Section::make('Meta')
+                                    ->icon('heroicon-o-information-circle')
+                                    ->collapsed()
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('created_at')
+                                            ->label('Submitted')
+                                            ->dateTime('M j, Y \a\t H:i'),
+                                        Infolists\Components\TextEntry::make('locale')
+                                            ->label('Language')
+                                            ->badge()
+                                            ->color('gray'),
+                                        Infolists\Components\TextEntry::make('source_url')
+                                            ->label('Source URL')
+                                            ->url(fn (ContactLead $record): ?string => $record->source_url)
+                                            ->openUrlInNewTab()
+                                            ->limit(40)
+                                            ->placeholder('—'),
+                                        Infolists\Components\TextEntry::make('ip_address')
+                                            ->label('IP Address')
+                                            ->placeholder('—'),
+                                    ]),
+                            ])
+                            ->columnSpan(1),
+                    ]),
             ]);
     }
 
@@ -175,11 +300,17 @@ class ContactLeadResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight(FontWeight::SemiBold),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->copyable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('restaurant_name')
+                    ->label('Business')
+                    ->searchable()
+                    ->limit(20)
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->badge()
@@ -188,14 +319,22 @@ class ContactLeadResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('location')
                     ->label('Location')
-                    ->searchable(['city', 'country']),
+                    ->searchable(['city', 'country'])
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('services')
+                    ->label('Services')
+                    ->badge()
+                    ->color('primary')
+                    ->limitList(2)
+                    ->expandableLimitedList()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (ContactLeadStatus $state): string => $state->color()),
                 Tables\Columns\TextColumn::make('assignedTo.name')
                     ->label('Assigned To')
                     ->placeholder('Unassigned')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('restaurant_id')
                     ->label('Converted')
                     ->boolean()
@@ -203,7 +342,7 @@ class ContactLeadResource extends Resource
                     ->falseIcon('heroicon-o-minus')
                     ->trueColor('success')
                     ->falseColor('gray')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -231,6 +370,13 @@ class ContactLeadResource extends Resource
                     ),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('reply_email')
+                    ->label('Reply')
+                    ->icon('heroicon-o-envelope')
+                    ->color('gray')
+                    ->url(fn (ContactLead $record): string => self::buildMailtoUrl($record))
+                    ->openUrlInNewTab(),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\Action::make('mark_contacted')
@@ -249,7 +395,7 @@ class ContactLeadResource extends Resource
                         ->label('Mark as Proposal Sent')
                         ->icon('heroicon-o-document-text')
                         ->color('warning')
-                        ->visible(fn (ContactLead $record): bool => in_array($record->status, [ContactLeadStatus::Qualified]))
+                        ->visible(fn (ContactLead $record): bool => $record->status === ContactLeadStatus::Qualified)
                         ->action(fn (ContactLead $record) => $record->update(['status' => ContactLeadStatus::ProposalSent])),
                     Tables\Actions\Action::make('mark_won')
                         ->label('Mark as Won')
@@ -301,6 +447,7 @@ class ContactLeadResource extends Resource
         return [
             'index' => Pages\ListContactLeads::route('/'),
             'create' => Pages\CreateContactLead::route('/create'),
+            'view' => Pages\ViewContactLead::route('/{record}'),
             'edit' => Pages\EditContactLead::route('/{record}/edit'),
         ];
     }
@@ -315,5 +462,17 @@ class ContactLeadResource extends Resource
     public static function getNavigationBadgeColor(): ?string
     {
         return 'warning';
+    }
+
+    private static function buildMailtoUrl(ContactLead $record): string
+    {
+        $subject = 'in.today – Your website & booking request';
+
+        $restaurantName = $record->restaurant_name ?? 'your restaurant';
+        $body = "Hi {$record->name},\n\nThank you for your interest in in.today for {$restaurantName}.\n\n";
+
+        return 'mailto:' . rawurlencode($record->email)
+            . '?subject=' . rawurlencode($subject)
+            . '&body=' . rawurlencode($body);
     }
 }
