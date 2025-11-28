@@ -321,11 +321,11 @@ class ContactLeadResource extends Resource
                     ->label('Location')
                     ->searchable(['city', 'country'])
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('services')
+                Tables\Columns\TextColumn::make('services_summary')
                     ->label('Services')
                     ->badge()
                     ->color('primary')
-                    ->formatStateUsing(function (ContactLead $record): ?string {
+                    ->getStateUsing(function (ContactLead $record): ?string {
                         $services = $record->services ?? [];
                         if (empty($services)) {
                             return null;
@@ -338,6 +338,11 @@ class ContactLeadResource extends Resource
                         $remaining = $count - 2;
 
                         return implode(', ', $first) . " +{$remaining} more";
+                    })
+                    ->tooltip(function (ContactLead $record): ?string {
+                        $services = $record->services ?? [];
+
+                        return empty($services) ? null : implode(', ', $services);
                     })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
