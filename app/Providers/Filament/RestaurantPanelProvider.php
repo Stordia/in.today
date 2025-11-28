@@ -46,11 +46,9 @@ class RestaurantPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Operations')
-                    ->icon('heroicon-o-cog-6-tooth'),
+                    ->label('Operations'),
                 NavigationGroup::make()
-                    ->label('Bookings')
-                    ->icon('heroicon-o-calendar-days'),
+                    ->label('Bookings'),
             ])
             ->userMenuItems([
                 'restaurant-switcher' => MenuItem::make()
