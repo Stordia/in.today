@@ -81,7 +81,7 @@
                     <a href="{{ $baseUrl }}#faq" class="text-sm font-medium text-secondary hover:text-brand transition">{{ __('landing.nav.faq') }}</a>
                 </div>
 
-                <!-- Right Side: Theme, Language, CTA -->
+                <!-- Right Side: Theme + CTA -->
                 <div class="flex items-center space-x-3">
                     <!-- Dark Mode Toggle -->
                     <button
@@ -97,33 +97,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
                     </button>
-
-                    <!-- Language Switcher - Segmented Pills -->
-                    <div class="hidden sm:flex items-center bg-card rounded-lg p-1 border border-default" role="group" aria-label="{{ __('landing.nav.language') }}">
-                        @foreach($supportedLocales as $locale)
-                            <a
-                                href="/{{ $locale }}"
-                                data-locale="{{ $locale }}"
-                                class="px-2.5 py-1 text-xs font-semibold rounded-md lang-pill {{ $currentLocale === $locale ? 'bg-brand text-white' : 'text-secondary hover:text-brand' }}"
-                                {{ $currentLocale === $locale ? 'aria-current=page' : '' }}
-                            >
-                                {{ strtoupper($locale) }}
-                            </a>
-                        @endforeach
-                    </div>
-
-                    <!-- Mobile Language Switcher -->
-                    <div class="flex sm:hidden items-center space-x-1 text-xs">
-                        @foreach($supportedLocales as $locale)
-                            <a
-                                href="/{{ $locale }}"
-                                data-locale="{{ $locale }}"
-                                class="px-1.5 py-1 rounded lang-pill {{ $currentLocale === $locale ? 'bg-brand text-white font-semibold' : 'text-muted' }}"
-                            >
-                                {{ strtoupper($locale) }}
-                            </a>
-                        @endforeach
-                    </div>
 
                     <!-- Contact CTA -->
                     <a href="{{ $baseUrl }}#contact" class="hidden sm:inline-flex px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand-hover transition">
@@ -182,8 +155,24 @@
                 </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-slate-700 text-center">
-                <p class="text-xs footer-text">{{ __('landing.footer.copyright') }}</p>
+            <!-- Footer Bottom Bar: Copyright + Country Selector -->
+            <div class="mt-8 pt-6 border-t border-slate-700 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <p class="text-xs footer-text text-center md:text-left">{{ __('landing.footer.copyright') }}</p>
+
+                <div class="flex items-center justify-center md:justify-end gap-3">
+                    <label for="locale-switcher" class="text-xs footer-text">
+                        {{ __('landing.footer.locale_label') }}
+                    </label>
+                    <select
+                        id="locale-switcher"
+                        class="text-sm bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                        <option value="en" @selected($currentLocale === 'en')>{{ __('landing.footer.locale_option_en') }}</option>
+                        <option value="de" @selected($currentLocale === 'de')>{{ __('landing.footer.locale_option_de') }}</option>
+                        <option value="el" @selected($currentLocale === 'el')>{{ __('landing.footer.locale_option_el') }}</option>
+                        <option value="it" @selected($currentLocale === 'it')>{{ __('landing.footer.locale_option_it') }}</option>
+                    </select>
+                </div>
             </div>
         </div>
     </footer>

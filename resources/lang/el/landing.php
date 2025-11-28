@@ -320,6 +320,11 @@ return [
             'imprint' => 'Impressum',
             'privacy' => 'Απόρρητο',
         ],
+        'locale_label' => 'Χώρα ή περιοχή',
+        'locale_option_en' => 'Ηνωμένες Πολιτείες',
+        'locale_option_de' => 'Γερμανία',
+        'locale_option_el' => 'Ελλάδα',
+        'locale_option_it' => 'Ιταλία',
     ],
 
     'cookie' => [

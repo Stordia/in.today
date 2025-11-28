@@ -101,48 +101,25 @@ function getCurrentLocale() {
 }
 
 /**
- * Set up language switcher UI with hash preservation
- * Handles all language links on the page (both desktop and mobile)
+ * Set up footer locale selector with hash preservation
+ * Handles the country/region dropdown in the footer
  */
-function setupLanguageSwitcher() {
-    const currentLocale = getCurrentLocale();
+function setupLocaleSwitcher() {
+    const select = document.getElementById('locale-switcher');
+    if (!select) return;
 
-    // Find all language links with data-locale attribute or lang-pill class
-    const links = document.querySelectorAll('[data-locale], a.lang-pill, a[href^="/en"], a[href^="/de"], a[href^="/el"], a[href^="/it"]');
+    select.addEventListener('change', (event) => {
+        const newLocale = event.target.value;
 
-    links.forEach(link => {
-        const href = link.getAttribute('href');
-        const locale = link.getAttribute('data-locale') || extractLocaleFromHref(href);
+        if (!SUPPORTED_LANGUAGES.includes(newLocale)) return;
 
-        if (!locale || !SUPPORTED_LANGUAGES.includes(locale)) return;
+        // Store preference in localStorage
+        storeLanguage(newLocale);
 
-        // Highlight current
-        if (locale === currentLocale) {
-            link.setAttribute('aria-current', 'page');
-        }
-
-        // Set up click handlers to preserve hash
-        link.addEventListener('click', (e) => {
-            // Only intercept simple locale links (e.g., /en, /de)
-            if (!href || !href.match(/^\/[a-z]{2}$/)) return;
-
-            e.preventDefault();
-            storeLanguage(locale);
-
-            // Preserve current hash when switching languages
-            const currentHash = window.location.hash;
-            window.location.href = `/${locale}${currentHash}`;
-        });
+        // Preserve current hash when switching languages
+        const currentHash = window.location.hash || '';
+        window.location.href = `/${newLocale}${currentHash}`;
     });
-}
-
-/**
- * Extract locale from href like "/en" or "/de"
- */
-function extractLocaleFromHref(href) {
-    if (!href) return null;
-    const match = href.match(/^\/([a-z]{2})$/);
-    return match ? match[1] : null;
 }
 
 /**
@@ -165,10 +142,10 @@ function initLanguage() {
 // Initialize immediately
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        setupLanguageSwitcher();
+        setupLocaleSwitcher();
     });
 } else {
-    setupLanguageSwitcher();
+    setupLocaleSwitcher();
 }
 
 initLanguage();

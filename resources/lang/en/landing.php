@@ -320,6 +320,11 @@ return [
             'imprint' => 'Imprint',
             'privacy' => 'Privacy',
         ],
+        'locale_label' => 'Country or region',
+        'locale_option_en' => 'United States',
+        'locale_option_de' => 'Germany',
+        'locale_option_el' => 'Greece',
+        'locale_option_it' => 'Italy',
     ],
 
     'cookie' => [
