@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\ContactLead;
+use App\Observers\ContactLeadObserver;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        ContactLead::observe(ContactLeadObserver::class);
     }
 }

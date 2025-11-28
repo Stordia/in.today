@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AffiliateRedirectController;
 use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,10 @@ Route::get('/language', function () {
 Route::get('/', function () {
     return view('lang-redirect');
 })->name('root');
+
+// Affiliate redirect route - tracks clicks and redirects to clean landing page
+Route::get('/go/{slug}', [AffiliateRedirectController::class, 'redirect'])
+    ->name('affiliate.redirect');
 
 // Localized landing pages
 Route::group([

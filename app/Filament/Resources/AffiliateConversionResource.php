@@ -96,6 +96,12 @@ class AffiliateConversionResource extends Resource
                     ->label('Link')
                     ->placeholder('—')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('contactLead.name')
+                    ->label('Lead')
+                    ->description(fn ($record) => $record->contactLead?->email)
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('restaurant.name')
                     ->label('Restaurant')
                     ->placeholder('—')
@@ -136,6 +142,18 @@ class AffiliateConversionResource extends Resource
                     ->relationship('affiliate', 'name')
                     ->searchable()
                     ->preload(),
+                Tables\Filters\TernaryFilter::make('has_lead')
+                    ->label('Has Lead')
+                    ->queries(
+                        true: fn ($query) => $query->whereNotNull('contact_lead_id'),
+                        false: fn ($query) => $query->whereNull('contact_lead_id'),
+                    ),
+                Tables\Filters\TernaryFilter::make('has_restaurant')
+                    ->label('Has Restaurant')
+                    ->queries(
+                        true: fn ($query) => $query->whereNotNull('restaurant_id'),
+                        false: fn ($query) => $query->whereNull('restaurant_id'),
+                    ),
                 Tables\Filters\Filter::make('occurred_at')
                     ->form([
                         Forms\Components\DatePicker::make('from')

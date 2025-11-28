@@ -42,6 +42,8 @@ class ContactLead extends Model
         'assigned_to_user_id',
         'internal_notes',
         'restaurant_id',
+        'affiliate_id',
+        'affiliate_link_id',
     ];
 
     protected function casts(): array
@@ -71,6 +73,16 @@ class ContactLead extends Model
     public function emails(): HasMany
     {
         return $this->hasMany(ContactLeadEmail::class);
+    }
+
+    public function affiliate(): BelongsTo
+    {
+        return $this->belongsTo(Affiliate::class);
+    }
+
+    public function affiliateLink(): BelongsTo
+    {
+        return $this->belongsTo(AffiliateLink::class);
     }
 
     /*
@@ -137,6 +149,11 @@ class ContactLead extends Model
     public function canConvert(): bool
     {
         return ! $this->isConverted() && $this->status !== ContactLeadStatus::Won;
+    }
+
+    public function isAffiliateLead(): bool
+    {
+        return $this->affiliate_link_id !== null;
     }
 
     public function getLocationAttribute(): string

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AffiliateLink;
 use App\Models\ContactLead;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
@@ -116,12 +117,28 @@ class ContactController extends Controller
             'user_agent'      => $request->userAgent(),
         ];
 
+        // Check for affiliate attribution from session
+        $affiliateLinkId = session('affiliate_link_id');
+        if ($affiliateLinkId) {
+            $affiliateLink = AffiliateLink::find($affiliateLinkId);
+            if ($affiliateLink) {
+                $leadData['affiliate_link_id'] = $affiliateLink->id;
+                $leadData['affiliate_id'] = $affiliateLink->affiliate_id;
+
+                Log::info('Affiliate attribution attached to lead', [
+                    'affiliate_link_id' => $affiliateLink->id,
+                    'affiliate_id' => $affiliateLink->affiliate_id,
+                ]);
+            }
+        }
+
         try {
             ContactLead::create($leadData);
 
             Log::info('Contact lead persisted to database', [
                 'email' => $leadData['email'],
                 'restaurant' => $leadData['restaurant_name'],
+                'affiliate_link_id' => $leadData['affiliate_link_id'] ?? null,
             ]);
         } catch (\Throwable $e) {
             // Non-fatal: log the error but don't break the form submission
