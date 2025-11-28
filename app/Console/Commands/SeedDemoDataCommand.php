@@ -24,7 +24,6 @@ use App\Models\Waitlist;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class SeedDemoDataCommand extends Command
 {
@@ -131,13 +130,15 @@ class SeedDemoDataCommand extends Command
     {
         $this->info('Creating platform admin user...');
 
-        $password = 'Admin123!';
+        // Use the same password for all demo users for consistency
+        // Note: User model has 'password' => 'hashed' cast, so do NOT use Hash::make()
+        $password = 'Demo123!';
 
         $admin = User::updateOrCreate(
             ['email' => 'admin@in.today.test'],
             [
                 'name' => 'Platform Admin',
-                'password' => Hash::make($password),
+                'password' => $password,
                 'global_role' => GlobalRole::PlatformAdmin,
                 'email_verified_at' => now(),
             ]
@@ -334,6 +335,7 @@ class SeedDemoDataCommand extends Command
     {
         $this->info('Creating restaurant users...');
 
+        // Note: User model has 'password' => 'hashed' cast, so do NOT use Hash::make()
         $password = 'Demo123!';
 
         // User A: Single restaurant owner (Meraki only)
@@ -341,7 +343,7 @@ class SeedDemoDataCommand extends Command
             ['email' => 'owner.single@in.today.test'],
             [
                 'name' => 'Single Owner Demo',
-                'password' => Hash::make($password),
+                'password' => $password,
                 'global_role' => GlobalRole::User,
                 'email_verified_at' => now(),
             ]
@@ -369,7 +371,7 @@ class SeedDemoDataCommand extends Command
             ['email' => 'owner.multi@in.today.test'],
             [
                 'name' => 'Multi Owner Demo',
-                'password' => Hash::make($password),
+                'password' => $password,
                 'global_role' => GlobalRole::User,
                 'email_verified_at' => now(),
             ]
@@ -407,7 +409,7 @@ class SeedDemoDataCommand extends Command
             ['email' => 'staff@in.today.test'],
             [
                 'name' => 'Staff Demo',
-                'password' => Hash::make($password),
+                'password' => $password,
                 'global_role' => GlobalRole::User,
                 'email_verified_at' => now(),
             ]
