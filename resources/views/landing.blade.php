@@ -802,17 +802,17 @@
                 </svg>
             </div>
             <h3 id="contact-success-title" class="text-xl font-bold text-primary mb-2">
-                {{ __('landing.contact.modal_title') ?? 'Thank you!' }}
+                {{ __('landing.contact.modal_title') }}
             </h3>
             <p id="contact-success-message" class="text-secondary mb-6">
-                {{ __('landing.contact.success') }}
+                {{ __('landing.contact.modal_body') }}
             </p>
             <button
                 type="button"
                 data-close-modal
                 class="px-6 py-2.5 bg-brand text-white font-semibold rounded-lg hover:bg-brand-hover transition"
             >
-                {{ __('landing.contact.modal_close') ?? 'Close' }}
+                {{ __('landing.contact.modal_close') }}
             </button>
         </div>
     </div>

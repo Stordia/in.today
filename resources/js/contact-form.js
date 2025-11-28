@@ -136,10 +136,14 @@ function showSuccessModal(message) {
 
     if (modal && messageEl) {
         messageEl.textContent = message;
-        modal.style.display = 'flex';
-        modal.setAttribute('aria-hidden', 'false');
 
-        // Focus the close button for accessibility
+        // First remove aria-hidden before showing to prevent focus conflict
+        modal.removeAttribute('aria-hidden');
+
+        // Then show the modal
+        modal.style.display = 'flex';
+
+        // Focus the close button for accessibility (after aria-hidden is removed)
         const closeButton = modal.querySelector('[data-close-modal]');
         if (closeButton) {
             closeButton.focus();
@@ -155,6 +159,13 @@ function hideSuccessModal() {
     if (modal) {
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
+
+        // Return focus to the form submit button for better keyboard navigation
+        const form = document.getElementById('contact-form');
+        const submitButton = form?.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.focus();
+        }
     }
 }
 

@@ -276,6 +276,10 @@ return [
         'success' => 'Vielen Dank! Wir haben Ihre Anfrage erhalten und melden uns innerhalb von 24 Stunden.',
         'error' => 'Da ist etwas schiefgelaufen. Bitte versuchen Sie es erneut oder schreiben Sie uns direkt an hello@in.today.',
 
+        'modal_title' => 'Vielen Dank!',
+        'modal_body' => 'Wir haben Ihre Anfrage erhalten und melden uns innerhalb von 24 Stunden bei Ihnen.',
+        'modal_close' => 'Schließen',
+
         'errors' => [
             'name_required' => 'Bitte geben Sie Ihren Namen ein.',
             'email_required' => 'Bitte geben Sie Ihre E-Mail-Adresse ein.',

@@ -276,6 +276,10 @@ return [
         'success' => 'Grazie! Abbiamo ricevuto la tua richiesta e ti risponderemo entro 24 ore.',
         'error' => 'Qualcosa è andato storto. Riprova o scrivici direttamente a hello@in.today.',
 
+        'modal_title' => 'Grazie!',
+        'modal_body' => 'Abbiamo ricevuto la tua richiesta e ti risponderemo entro 24 ore.',
+        'modal_close' => 'Chiudi',
+
         'errors' => [
             'name_required' => 'Inserisci il tuo nome.',
             'email_required' => 'Inserisci il tuo indirizzo email.',

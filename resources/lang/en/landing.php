@@ -276,6 +276,10 @@ return [
         'success' => 'Thank you! We\'ve received your request and will get back to you within 24 hours.',
         'error' => 'Something went wrong. Please try again or email us directly at hello@in.today.',
 
+        'modal_title' => 'Thank you!',
+        'modal_body' => 'We\'ve received your request and will get back to you within 24 hours.',
+        'modal_close' => 'Close',
+
         'errors' => [
             'name_required' => 'Please enter your name.',
             'email_required' => 'Please enter your email address.',
