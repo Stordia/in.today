@@ -53,8 +53,9 @@ class ContactLeadReply extends Mailable
         $attachments = [];
 
         foreach ($this->attachmentPaths as $path) {
-            if (Storage::exists($path)) {
-                $attachments[] = Attachment::fromStorage($path)
+            // Attachments are stored on the public disk
+            if (Storage::disk('public')->exists($path)) {
+                $attachments[] = Attachment::fromStorageDisk('public', $path)
                     ->as(basename($path));
             }
         }

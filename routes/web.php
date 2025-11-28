@@ -35,15 +35,16 @@ Route::group([
     })->name('privacy');
 });
 
-// Admin attachment download (protected by Filament auth middleware)
+// Admin attachment download (protected by auth middleware)
+// Attachments are stored on the public disk
 Route::get('/admin/attachments/{path}', function (string $path) {
     $path = urldecode($path);
 
-    if (! Storage::exists($path)) {
+    if (! Storage::disk('public')->exists($path)) {
         abort(404);
     }
 
-    return Storage::download($path);
+    return Storage::disk('public')->download($path);
 })
     ->where('path', '.*')
     ->middleware(['auth', 'verified'])

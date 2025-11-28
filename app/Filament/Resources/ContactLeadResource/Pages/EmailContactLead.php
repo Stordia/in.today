@@ -81,6 +81,7 @@ class EmailContactLead extends Page
                 Forms\Components\FileUpload::make('attachments')
                     ->label('Attachments')
                     ->multiple()
+                    ->disk('public')
                     ->maxSize(10240) // 10 MB per file
                     ->acceptedFileTypes([
                         'application/pdf',
