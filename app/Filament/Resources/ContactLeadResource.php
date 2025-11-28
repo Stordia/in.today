@@ -152,7 +152,7 @@ class ContactLeadResource extends Resource
                                     ->schema([
                                         Forms\Components\Placeholder::make('created_at_display')
                                             ->label('Submitted')
-                                            ->content(fn (?ContactLead $record): string => $record?->created_at?->format('M j, Y \a\t H:i') ?? '—'),
+                                            ->content(fn (?ContactLead $record): string => $record?->created_at?->timezone(config('app.timezone'))->format('M j, Y \a\t H:i') ?? '—'),
                                         Forms\Components\TextInput::make('locale')
                                             ->disabled()
                                             ->dehydrated(false),
@@ -271,7 +271,7 @@ class ContactLeadResource extends Resource
                                     ->schema([
                                         Infolists\Components\TextEntry::make('created_at')
                                             ->label('Submitted')
-                                            ->dateTime('M j, Y \a\t H:i'),
+                                            ->dateTime('M j, Y \a\t H:i', config('app.timezone')),
                                         Infolists\Components\TextEntry::make('locale')
                                             ->label('Language')
                                             ->badge()
@@ -298,7 +298,7 @@ class ContactLeadResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Date')
-                    ->dateTime('M j, Y H:i')
+                    ->dateTime('M j, Y H:i', config('app.timezone'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()

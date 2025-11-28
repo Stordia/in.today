@@ -19,7 +19,7 @@
                             </span>
                         @endif
                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ $email->sent_at?->format('M j, Y \a\t H:i') ?? $email->created_at->format('M j, Y \a\t H:i') }}
+                            {{ ($email->sent_at ?? $email->created_at)->timezone(config('app.timezone'))->format('M j, Y \a\t H:i') }}
                         </span>
                     </div>
 
