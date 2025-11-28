@@ -30,8 +30,8 @@ enum ContactLeadStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::New => 'gray',
-            self::Contacted => 'info',
+            self::New => 'info',
+            self::Contacted => 'primary',
             self::Qualified => 'primary',
             self::ProposalSent => 'warning',
             self::Won => 'success',
