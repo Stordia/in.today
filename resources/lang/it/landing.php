@@ -296,7 +296,10 @@ return [
     ],
 
     'language' => [
-        'title' => 'Scegli la tua lingua.',
+        'page_title' => 'Scegli il tuo paese o regione',
+        'title' => 'Scegli il tuo paese o regione',
+        'description' => 'Seleziona dove svolgi la tua attività e quale lingua preferisci. Puoi cambiarlo in qualsiasi momento dal footer.',
+        'back_auto' => 'Rileva automaticamente la mia lingua',
         'subtitle' => 'in.today è una piattaforma globale. Il sito web è disponibile in più lingue – e anche il sito del tuo ristorante può esserlo.',
         'current' => 'Lingua corrente',
         'available' => 'Lingue disponibili',

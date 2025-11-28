@@ -155,24 +155,22 @@
                 </div>
             </div>
 
-            <!-- Footer Bottom Bar: Copyright + Country Selector -->
+            <!-- Footer Bottom Bar: Copyright + Country Link -->
             <div class="mt-8 pt-6 border-t border-slate-700 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <p class="text-xs footer-text text-center md:text-left">{{ __('landing.footer.copyright') }}</p>
 
-                <div class="flex items-center justify-center md:justify-end gap-3">
-                    <label for="locale-switcher" class="text-xs footer-text">
-                        {{ __('landing.footer.locale_label') }}
-                    </label>
-                    <select
-                        id="locale-switcher"
-                        class="text-sm bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                    >
-                        <option value="en" @selected($currentLocale === 'en')>{{ __('landing.footer.locale_option_en') }}</option>
-                        <option value="de" @selected($currentLocale === 'de')>{{ __('landing.footer.locale_option_de') }}</option>
-                        <option value="el" @selected($currentLocale === 'el')>{{ __('landing.footer.locale_option_el') }}</option>
-                        <option value="it" @selected($currentLocale === 'it')>{{ __('landing.footer.locale_option_it') }}</option>
-                    </select>
-                </div>
+                <a
+                    id="change-country-link"
+                    href="{{ route('language.select') }}"
+                    class="text-xs md:text-sm footer-text hover:text-white underline underline-offset-2 decoration-dotted text-center md:text-right transition"
+                >
+                    {{ match ($currentLocale) {
+                        'de' => __('landing.footer.locale_option_de'),
+                        'el' => __('landing.footer.locale_option_el'),
+                        'it' => __('landing.footer.locale_option_it'),
+                        default => __('landing.footer.locale_option_en'),
+                    } }}
+                </a>
             </div>
         </div>
     </footer>

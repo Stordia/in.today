@@ -101,24 +101,68 @@ function getCurrentLocale() {
 }
 
 /**
- * Set up footer locale selector with hash preservation
- * Handles the country/region dropdown in the footer
+ * Set up footer country/region link
+ * Adds ?continue= parameter with current URL (including hash) for return flow
  */
-function setupLocaleSwitcher() {
-    const select = document.getElementById('locale-switcher');
-    if (!select) return;
+function setupChangeCountryLink() {
+    const link = document.getElementById('change-country-link');
+    if (!link) return;
 
-    select.addEventListener('change', (event) => {
-        const newLocale = event.target.value;
+    link.addEventListener('click', (event) => {
+        event.preventDefault();
 
-        if (!SUPPORTED_LANGUAGES.includes(newLocale)) return;
+        const baseHref = link.getAttribute('href') || '/language';
+        const currentUrl = window.location.href; // includes hash
 
-        // Store preference in localStorage
-        storeLanguage(newLocale);
+        const targetUrl = `${baseHref}?continue=${encodeURIComponent(currentUrl)}`;
+        window.location.href = targetUrl;
+    });
+}
 
-        // Preserve current hash when switching languages
-        const currentHash = window.location.hash || '';
-        window.location.href = `/${newLocale}${currentHash}`;
+/**
+ * Initialize the language selection page (/language)
+ * Handles locale switching with return flow to previous page
+ */
+function initLanguageSelectionPage() {
+    const root = document.getElementById('language-select-root');
+    if (!root) return;
+
+    const continueUrl = root.dataset.continue || window.location.origin + '/';
+    const buttons = root.querySelectorAll('[data-locale]');
+
+    /**
+     * Build a new URL with the locale segment replaced
+     */
+    function buildLocaleUrl(locale, rawUrl) {
+        try {
+            const url = new URL(rawUrl);
+            const segments = url.pathname.split('/').filter(Boolean);
+
+            // Replace or prepend locale segment
+            if (segments.length > 0 && SUPPORTED_LANGUAGES.includes(segments[0])) {
+                segments[0] = locale;
+            } else {
+                segments.unshift(locale);
+            }
+
+            url.pathname = '/' + segments.join('/');
+            return url.toString();
+        } catch (e) {
+            return `/${locale}`;
+        }
+    }
+
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const locale = btn.dataset.locale || 'en';
+            const target = buildLocaleUrl(locale, continueUrl);
+
+            // Store preference
+            storeLanguage(locale);
+
+            // Redirect to the new locale URL
+            window.location.href = target;
+        });
     });
 }
 
@@ -142,10 +186,12 @@ function initLanguage() {
 // Initialize immediately
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        setupLocaleSwitcher();
+        setupChangeCountryLink();
+        initLanguageSelectionPage();
     });
 } else {
-    setupLocaleSwitcher();
+    setupChangeCountryLink();
+    initLanguageSelectionPage();
 }
 
 initLanguage();
