@@ -26,6 +26,11 @@ class EditContactLead extends EditRecord
 {
     protected static string $resource = ContactLeadResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
     protected function getHeaderActions(): array
     {
         return [

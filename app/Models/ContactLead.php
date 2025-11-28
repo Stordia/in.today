@@ -12,6 +12,15 @@ class ContactLead extends Model
 {
     protected $table = 'contact_leads';
 
+    public const TYPE_OPTIONS = [
+        'restaurant' => 'Restaurant',
+        'cafe' => 'Café / Bistro',
+        'bar' => 'Bar / Lounge',
+        'hotel' => 'Hotel / Guesthouse',
+        'catering' => 'Catering',
+        'other' => 'Other',
+    ];
+
     protected $fillable = [
         'locale',
         'name',

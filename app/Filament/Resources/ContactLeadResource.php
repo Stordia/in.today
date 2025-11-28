@@ -68,9 +68,11 @@ class ContactLeadResource extends Resource
                                                 Forms\Components\TextInput::make('country')
                                                     ->maxLength(255),
                                             ]),
-                                        Forms\Components\TextInput::make('type')
+                                        Forms\Components\Select::make('type')
                                             ->label('Business Type')
-                                            ->maxLength(100),
+                                            ->options(ContactLead::TYPE_OPTIONS)
+                                            ->searchable()
+                                            ->native(false),
                                     ]),
 
                                 Forms\Components\Section::make('Request Details')
@@ -315,6 +317,7 @@ class ContactLeadResource extends Resource
                     ->label('Type')
                     ->badge()
                     ->color('gray')
+                    ->formatStateUsing(fn (?string $state): ?string => $state ? (ContactLead::TYPE_OPTIONS[$state] ?? $state) : null)
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('location')
@@ -347,6 +350,7 @@ class ContactLeadResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
+                    ->icon(fn (ContactLeadStatus $state): string => $state->icon())
                     ->color(fn (ContactLeadStatus $state): string => $state->color()),
                 Tables\Columns\TextColumn::make('assignedTo.name')
                     ->label('Assigned To')
