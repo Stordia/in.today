@@ -296,9 +296,11 @@ return [
     ],
 
     'language' => [
-        'page_title' => 'Choose Your Country or Region',
+        'page_title' => 'Choose your country or region',
         'title' => 'Choose your country or region',
         'description' => 'Select where you do business and which language you prefer. You can change this anytime from the footer.',
+        'region_north_america' => 'North America',
+        'region_europe' => 'Europe',
         'back_auto' => 'Auto-detect my language',
         'subtitle' => 'in.today is a global platform. The website is available in multiple languages – and your restaurant website can be too.',
         'current' => 'Current language',

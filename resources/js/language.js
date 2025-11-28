@@ -9,7 +9,8 @@
  */
 
 // Language constants
-const STORAGE_KEY = 'intoday_lang';
+const STORAGE_KEY = 'intoday_locale';
+const BACK_URL_KEY = 'intoday_language_back';
 const DEFAULT_LANGUAGE = 'en';
 const SUPPORTED_LANGUAGES = ['en', 'de', 'el', 'it'];
 
@@ -102,7 +103,7 @@ function getCurrentLocale() {
 
 /**
  * Set up footer country/region link
- * Adds ?continue= parameter with current URL (including hash) for return flow
+ * Stores current URL in localStorage for return flow (no query params)
  */
 function setupChangeCountryLink() {
     const link = document.getElementById('change-country-link');
@@ -111,24 +112,40 @@ function setupChangeCountryLink() {
     link.addEventListener('click', (event) => {
         event.preventDefault();
 
-        const baseHref = link.getAttribute('href') || '/language';
         const currentUrl = window.location.href; // includes hash
 
-        const targetUrl = `${baseHref}?continue=${encodeURIComponent(currentUrl)}`;
-        window.location.href = targetUrl;
+        try {
+            localStorage.setItem(BACK_URL_KEY, currentUrl);
+        } catch (e) {
+            // ignore storage errors
+        }
+
+        // Navigate to /language without query params
+        const href = link.getAttribute('href') || '/language';
+        window.location.href = href;
     });
 }
 
 /**
  * Initialize the language selection page (/language)
- * Handles locale switching with return flow to previous page
+ * Reads back URL from localStorage, handles locale switching with return flow
  */
 function initLanguageSelectionPage() {
-    const root = document.getElementById('language-select-root');
+    const root = document.getElementById('language-root');
     if (!root) return;
 
-    const continueUrl = root.dataset.continue || window.location.origin + '/';
     const buttons = root.querySelectorAll('[data-locale]');
+
+    // Read back URL from localStorage
+    let backUrl = window.location.origin + '/en';
+    try {
+        const stored = localStorage.getItem(BACK_URL_KEY);
+        if (stored) {
+            backUrl = stored;
+        }
+    } catch (e) {
+        // ignore
+    }
 
     /**
      * Build a new URL with the locale segment replaced
@@ -155,10 +172,16 @@ function initLanguageSelectionPage() {
     buttons.forEach((btn) => {
         btn.addEventListener('click', () => {
             const locale = btn.dataset.locale || 'en';
-            const target = buildLocaleUrl(locale, continueUrl);
+            const target = buildLocaleUrl(locale, backUrl);
 
-            // Store preference
-            storeLanguage(locale);
+            try {
+                // Store locale preference
+                storeLanguage(locale);
+                // Clear the back URL
+                localStorage.removeItem(BACK_URL_KEY);
+            } catch (e) {
+                // ignore
+            }
 
             // Redirect to the new locale URL
             window.location.href = target;
