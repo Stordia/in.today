@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\ContactLeadStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContactLead extends Model
 {
@@ -65,6 +66,11 @@ class ContactLead extends Model
     public function restaurant(): BelongsTo
     {
         return $this->belongsTo(Restaurant::class);
+    }
+
+    public function emails(): HasMany
+    {
+        return $this->hasMany(ContactLeadEmail::class);
     }
 
     /*

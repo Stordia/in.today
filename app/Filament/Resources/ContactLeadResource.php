@@ -7,17 +7,25 @@ namespace App\Filament\Resources;
 use App\Enums\ContactLeadStatus;
 use App\Enums\GlobalRole;
 use App\Filament\Resources\ContactLeadResource\Pages;
+use App\Mail\ContactLeadReply;
 use App\Models\ContactLead;
+use App\Models\ContactLeadEmail;
 use App\Models\User;
+use App\Support\ContactLeadEmailTemplates;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
 
 class ContactLeadResource extends Resource
@@ -417,12 +425,7 @@ class ContactLeadResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('reply_email')
-                    ->label('Reply')
-                    ->icon('heroicon-o-envelope')
-                    ->color('gray')
-                    ->url(fn (ContactLead $record): string => self::buildMailtoUrl($record))
-                    ->openUrlInNewTab(),
+                self::getSendEmailAction(),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\Action::make('mark_contacted')
@@ -520,5 +523,106 @@ class ContactLeadResource extends Resource
         return 'mailto:' . rawurlencode($record->email)
             . '?subject=' . rawurlencode($subject)
             . '&body=' . rawurlencode($body);
+    }
+
+    /**
+     * Get the Send Email action for reuse across List and View pages.
+     */
+    public static function getSendEmailAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('send_email')
+            ->label('Send Email')
+            ->icon('heroicon-o-paper-airplane')
+            ->color('primary')
+            ->modalHeading('Send Email to Lead')
+            ->modalDescription(fn (ContactLead $record): string => "Sending email to {$record->name} ({$record->email})")
+            ->modalSubmitActionLabel('Send Email')
+            ->form([
+                Forms\Components\Select::make('template')
+                    ->label('Template')
+                    ->options(ContactLeadEmailTemplates::options())
+                    ->default('initial_reply')
+                    ->live()
+                    ->afterStateUpdated(function (Get $get, Set $set, ?string $state, ContactLead $record): void {
+                        if ($state) {
+                            $resolved = ContactLeadEmailTemplates::for($record, $state);
+                            $set('subject', $resolved['subject']);
+                            $set('body', $resolved['body']);
+                        }
+                    }),
+                Forms\Components\TextInput::make('to_email')
+                    ->label('To')
+                    ->email()
+                    ->required()
+                    ->default(fn (ContactLead $record): string => $record->email),
+                Forms\Components\TextInput::make('subject')
+                    ->label('Subject')
+                    ->required()
+                    ->maxLength(255)
+                    ->default(fn (ContactLead $record): string => ContactLeadEmailTemplates::for($record, 'initial_reply')['subject']),
+                Forms\Components\Textarea::make('body')
+                    ->label('Body')
+                    ->required()
+                    ->rows(12)
+                    ->default(fn (ContactLead $record): string => ContactLeadEmailTemplates::for($record, 'initial_reply')['body']),
+            ])
+            ->action(function (ContactLead $record, array $data): void {
+                $status = 'sent';
+                $sentAt = now();
+
+                try {
+                    Mail::to($data['to_email'])
+                        ->send(new ContactLeadReply(
+                            lead: $record,
+                            emailSubject: $data['subject'],
+                            emailBody: $data['body'],
+                        ));
+                } catch (\Throwable $e) {
+                    $status = 'failed';
+                    $sentAt = null;
+
+                    Log::error('Failed to send ContactLead email', [
+                        'contact_lead_id' => $record->id,
+                        'to_email' => $data['to_email'],
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    Notification::make()
+                        ->title('Email failed to send')
+                        ->body('The email could not be sent. Please try again later.')
+                        ->danger()
+                        ->send();
+
+                    // Still log the failed attempt
+                    ContactLeadEmail::create([
+                        'contact_lead_id' => $record->id,
+                        'sent_by_user_id' => Auth::id(),
+                        'to_email' => $data['to_email'],
+                        'subject' => $data['subject'],
+                        'body' => $data['body'],
+                        'status' => $status,
+                        'sent_at' => $sentAt,
+                    ]);
+
+                    return;
+                }
+
+                // Log successful email
+                ContactLeadEmail::create([
+                    'contact_lead_id' => $record->id,
+                    'sent_by_user_id' => Auth::id(),
+                    'to_email' => $data['to_email'],
+                    'subject' => $data['subject'],
+                    'body' => $data['body'],
+                    'status' => $status,
+                    'sent_at' => $sentAt,
+                ]);
+
+                Notification::make()
+                    ->title('Email sent successfully')
+                    ->body("Email sent to {$data['to_email']}")
+                    ->success()
+                    ->send();
+            });
     }
 }
