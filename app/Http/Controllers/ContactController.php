@@ -119,6 +119,15 @@ class ContactController extends Controller
 
         // Check for affiliate attribution from session
         $affiliateLinkId = session('affiliate_link_id');
+        $affiliateId = session('affiliate_id');
+
+        Log::info('Checking affiliate session data', [
+            'affiliate_link_id' => $affiliateLinkId,
+            'affiliate_id' => $affiliateId,
+            'session_id' => session()->getId(),
+            'has_session' => session()->isStarted(),
+        ]);
+
         if ($affiliateLinkId) {
             $affiliateLink = AffiliateLink::find($affiliateLinkId);
             if ($affiliateLink) {
@@ -129,6 +138,9 @@ class ContactController extends Controller
                     'affiliate_link_id' => $affiliateLink->id,
                     'affiliate_id' => $affiliateLink->affiliate_id,
                 ]);
+
+                // Clear the affiliate session data after use (one-time attribution)
+                session()->forget(['affiliate_link_id', 'affiliate_id']);
             }
         }
 

@@ -44,15 +44,16 @@ class AffiliateRedirectController extends Controller
         $affiliateLink->increment('clicks_count');
 
         // Store affiliate info in session for later attribution
-        session([
-            'affiliate_link_id' => $affiliateLink->id,
-            'affiliate_id' => $affiliateLink->affiliate_id,
-        ]);
+        // Using session()->put() and save() to ensure persistence across redirect
+        session()->put('affiliate_link_id', $affiliateLink->id);
+        session()->put('affiliate_id', $affiliateLink->affiliate_id);
+        session()->save();
 
-        Log::info('Affiliate click tracked', [
+        Log::info('Affiliate click tracked and session saved', [
             'affiliate_link_id' => $affiliateLink->id,
             'affiliate_id' => $affiliateLink->affiliate_id,
             'slug' => $slug,
+            'session_id' => session()->getId(),
         ]);
 
         // Determine target locale (default to 'en' for now)

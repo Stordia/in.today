@@ -244,6 +244,27 @@ class ContactLeadResource extends Resource
                         // Right column
                         Infolists\Components\Group::make()
                             ->schema([
+                                Infolists\Components\Section::make('Source')
+                                    ->icon('heroicon-o-globe-alt')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('source_type')
+                                            ->label('Source')
+                                            ->badge()
+                                            ->color(fn (ContactLead $record): string => $record->affiliate_id ? 'info' : 'gray')
+                                            ->getStateUsing(fn (ContactLead $record): string => $record->affiliate_id ? 'Affiliate' : 'Organic'),
+                                        Infolists\Components\TextEntry::make('affiliate.name')
+                                            ->label('Affiliate')
+                                            ->visible(fn (ContactLead $record): bool => $record->affiliate_id !== null)
+                                            ->icon('heroicon-o-user-group')
+                                            ->color('info'),
+                                        Infolists\Components\TextEntry::make('affiliateLink.slug')
+                                            ->label('Link Slug')
+                                            ->visible(fn (ContactLead $record): bool => $record->affiliate_link_id !== null)
+                                            ->prefix('/go/')
+                                            ->copyable()
+                                            ->icon('heroicon-o-link'),
+                                    ]),
+
                                 Infolists\Components\Section::make('Internal')
                                     ->icon('heroicon-o-briefcase')
                                     ->schema([
@@ -300,6 +321,16 @@ class ContactLeadResource extends Resource
                     ->label('Date')
                     ->dateTime('M j, Y H:i', config('app.timezone'))
                     ->sortable(),
+                Tables\Columns\TextColumn::make('source')
+                    ->label('Source')
+                    ->badge()
+                    ->color(fn (ContactLead $record): string => $record->affiliate_id ? 'info' : 'gray')
+                    ->getStateUsing(fn (ContactLead $record): string => $record->affiliate?->name
+                        ? 'Affiliate: ' . $record->affiliate->name
+                        : 'Organic'
+                    )
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw('affiliate_id IS NULL ' . ($direction === 'asc' ? 'DESC' : 'ASC')))
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
@@ -413,6 +444,15 @@ class ContactLeadResource extends Resource
                     ->queries(
                         true: fn ($query) => $query->whereNotNull('restaurant_id'),
                         false: fn ($query) => $query->whereNull('restaurant_id'),
+                    ),
+                Tables\Filters\TernaryFilter::make('affiliate_source')
+                    ->label('Source')
+                    ->placeholder('All Sources')
+                    ->trueLabel('Affiliate Leads')
+                    ->falseLabel('Organic Leads')
+                    ->queries(
+                        true: fn ($query) => $query->whereNotNull('affiliate_id'),
+                        false: fn ($query) => $query->whereNull('affiliate_id'),
                     ),
             ])
             ->actions([
