@@ -1,6 +1,9 @@
 <div class="space-y-4">
     @forelse ($emails as $email)
-        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+        <div
+            x-data="{ expanded: false }"
+            class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
+        >
             <div class="flex items-start justify-between gap-4">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
@@ -32,54 +35,37 @@
                     </p>
                 </div>
 
-                <div x-data="{ open: false }" class="flex-shrink-0">
-                    <button
-                        type="button"
-                        x-on:click="open = !open"
-                        class="inline-flex items-center justify-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                    >
-                        <x-heroicon-o-eye class="w-3.5 h-3.5" />
-                        <span x-text="open ? 'Hide' : 'View'">View</span>
-                    </button>
+                <button
+                    type="button"
+                    x-on:click="expanded = !expanded"
+                    class="flex-shrink-0 inline-flex items-center justify-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                    <x-heroicon-o-eye class="w-3.5 h-3.5" />
+                    <span x-text="expanded ? 'Hide' : 'View'">View</span>
+                </button>
+            </div>
 
-                    <div
-                        x-show="open"
-                        x-collapse
-                        x-cloak
-                        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 dark:bg-gray-900/75"
-                        x-on:click.self="open = false"
-                        x-on:keydown.escape.window="open = false"
-                    >
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
-                            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Email Details</h3>
-                                <button
-                                    type="button"
-                                    x-on:click="open = false"
-                                    class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                                >
-                                    <x-heroicon-o-x-mark class="w-5 h-5" />
-                                </button>
-                            </div>
-                            <div class="p-4 overflow-y-auto flex-1">
-                                <dl class="space-y-3">
-                                    <div>
-                                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Subject</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $email->subject }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">To</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $email->to_email }}</dd>
-                                    </div>
-                                    <div>
-                                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Body</dt>
-                                        <dd class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-64 overflow-y-auto">{{ $email->body }}</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </div>
+            {{-- Inline expandable section - no overlay, no global listeners --}}
+            <div
+                x-show="expanded"
+                x-collapse
+                x-cloak
+                class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+            >
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Subject</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $email->subject }}</dd>
                     </div>
-                </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">To</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $email->to_email }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Body</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-64 overflow-y-auto">{{ $email->body }}</dd>
+                    </div>
+                </dl>
             </div>
         </div>
     @empty
