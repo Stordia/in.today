@@ -32,7 +32,7 @@ enum ContactLeadStatus: string
         return match ($this) {
             self::New => 'gray',
             self::Contacted => 'info',
-            self::Qualified => 'purple',
+            self::Qualified => 'primary',
             self::ProposalSent => 'warning',
             self::Won => 'success',
             self::Lost => 'danger',

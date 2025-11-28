@@ -349,9 +349,25 @@ class ContactLeadResource extends Resource
                     })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
-                    ->icon(fn (ContactLeadStatus $state): string => $state->icon())
-                    ->color(fn (ContactLeadStatus $state): string => $state->color()),
+                    ->icon(function (?string $state): ?string {
+                        $enum = ContactLeadStatus::tryFrom($state);
+
+                        return $enum?->icon();
+                    })
+                    ->color(function (?string $state): string {
+                        $enum = ContactLeadStatus::tryFrom($state);
+
+                        return $enum?->color() ?? 'gray';
+                    })
+                    ->formatStateUsing(function (?string $state): string {
+                        $enum = ContactLeadStatus::tryFrom($state);
+
+                        return $enum?->label()
+                            ?? ucfirst(str_replace('_', ' ', (string) $state));
+                    })
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('assignedTo.name')
                     ->label('Assigned To')
                     ->placeholder('Unassigned')
