@@ -32,7 +32,25 @@ class ViewAffiliate extends ViewRecord
                 ->color('primary')
                 ->requiresConfirmation()
                 ->modalHeading('Create Payout from Approved Conversions')
-                ->modalDescription('This will create a payout from all approved conversions that are not yet linked to a payout.')
+                ->modalDescription(function (): string {
+                    /** @var Affiliate $affiliate */
+                    $affiliate = $this->record;
+
+                    $query = $affiliate->conversions()
+                        ->where('status', AffiliateConversionStatus::Approved)
+                        ->whereNull('affiliate_payout_id')
+                        ->where('commission_amount', '>', 0);
+
+                    $count = $query->count();
+                    $sum = (float) $query->sum('commission_amount');
+
+                    return sprintf(
+                        'This will create a payout for %d approved conversion%s with a total commission of %.2f EUR.',
+                        $count,
+                        $count === 1 ? '' : 's',
+                        $sum
+                    );
+                })
                 ->action(function (): void {
                     /** @var Affiliate $affiliate */
                     $affiliate = $this->record;
