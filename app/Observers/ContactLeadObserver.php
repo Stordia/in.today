@@ -18,8 +18,17 @@ class ContactLeadObserver
      */
     public function created(ContactLead $lead): void
     {
+        Log::info('[AFFILIATE_DEBUG] ContactLeadObserver::created triggered', [
+            'contact_lead_id' => $lead->id,
+            'affiliate_link_id' => $lead->affiliate_link_id,
+            'affiliate_id' => $lead->affiliate_id,
+            'lead_email' => $lead->email,
+        ]);
+
         // Only create conversion if this is an affiliate-attributed lead
         if (! $lead->affiliate_link_id) {
+            Log::info('[AFFILIATE_DEBUG] No affiliate_link_id on lead, skipping conversion creation');
+
             return;
         }
 
@@ -38,7 +47,7 @@ class ContactLeadObserver
             // Increment conversions_count on the affiliate link
             $lead->affiliateLink?->increment('conversions_count');
 
-            Log::info('Affiliate conversion created for new lead', [
+            Log::info('[AFFILIATE_DEBUG] Affiliate conversion created successfully', [
                 'contact_lead_id' => $lead->id,
                 'affiliate_conversion_id' => $conversion->id,
                 'affiliate_id' => $lead->affiliate_id,
@@ -46,10 +55,11 @@ class ContactLeadObserver
             ]);
         } catch (\Throwable $e) {
             // Non-fatal: log the error but don't break the lead creation
-            Log::error('Failed to create affiliate conversion for lead', [
+            Log::error('[AFFILIATE_DEBUG] Failed to create affiliate conversion for lead', [
                 'contact_lead_id' => $lead->id,
                 'affiliate_link_id' => $lead->affiliate_link_id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

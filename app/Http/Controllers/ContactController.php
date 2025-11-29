@@ -118,30 +118,41 @@ class ContactController extends Controller
         ];
 
         // Check for affiliate attribution from session
-        $affiliateLinkId = session('affiliate_link_id');
-        $affiliateId = session('affiliate_id');
+        // Using consolidated 'affiliate' array structure
+        $affiliate = session('affiliate');
 
-        Log::info('Checking affiliate session data', [
-            'affiliate_link_id' => $affiliateLinkId,
-            'affiliate_id' => $affiliateId,
+        Log::info('[AFFILIATE_DEBUG] ContactController::persistLead checking session', [
+            'affiliate_session_data' => $affiliate,
             'session_id' => session()->getId(),
-            'has_session' => session()->isStarted(),
+            'session_driver' => config('session.driver'),
+            'session_all_keys' => array_keys(session()->all()),
         ]);
 
-        if ($affiliateLinkId) {
-            $affiliateLink = AffiliateLink::find($affiliateLinkId);
+        if ($affiliate && ! empty($affiliate['link_id'])) {
+            // Verify the affiliate link still exists and is valid
+            $affiliateLink = AffiliateLink::find($affiliate['link_id']);
+
             if ($affiliateLink) {
                 $leadData['affiliate_link_id'] = $affiliateLink->id;
                 $leadData['affiliate_id'] = $affiliateLink->affiliate_id;
 
-                Log::info('Affiliate attribution attached to lead', [
+                Log::info('[AFFILIATE_DEBUG] Affiliate attribution attached to lead data', [
                     'affiliate_link_id' => $affiliateLink->id,
                     'affiliate_id' => $affiliateLink->affiliate_id,
+                    'affiliate_name' => $affiliate['name'] ?? 'unknown',
+                    'original_slug' => $affiliate['slug'] ?? 'unknown',
                 ]);
 
                 // Clear the affiliate session data after use (one-time attribution)
-                session()->forget(['affiliate_link_id', 'affiliate_id']);
+                session()->forget('affiliate');
+                session()->save();
+            } else {
+                Log::warning('[AFFILIATE_DEBUG] Affiliate link from session no longer exists', [
+                    'session_link_id' => $affiliate['link_id'],
+                ]);
             }
+        } else {
+            Log::info('[AFFILIATE_DEBUG] No affiliate data in session (organic lead)');
         }
 
         try {
