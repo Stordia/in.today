@@ -6,15 +6,26 @@ namespace App\Http\Controllers;
 
 use App\Models\AffiliateLink;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 
 class AffiliateRedirectController extends Controller
 {
     /**
+     * Cookie name for affiliate attribution.
+     */
+    public const COOKIE_NAME = 'intoday_affiliate';
+
+    /**
+     * Cookie lifetime in minutes (30 days).
+     */
+    public const COOKIE_LIFETIME_MINUTES = 60 * 24 * 30;
+
+    /**
      * Handle affiliate link redirect.
      *
      * Looks up the affiliate link by slug, increments click count,
-     * stores affiliate info in session, and redirects to the landing page.
+     * stores affiliate info in session AND cookie, and redirects to the landing page.
      * The final URL is always clean (no query parameters).
      */
     public function redirect(string $slug): RedirectResponse
@@ -50,16 +61,17 @@ class AffiliateRedirectController extends Controller
         // Increment click count
         $affiliateLink->increment('clicks_count');
 
-        // Store affiliate info in session as a single consolidated array
-        // This approach is more reliable than separate keys
+        // Build affiliate data for both session and cookie
+        // Using consistent keys for both storage methods
         $affiliateData = [
-            'id' => $affiliateLink->affiliate_id,
-            'link_id' => $affiliateLink->id,
+            'affiliate_id' => $affiliateLink->affiliate_id,
+            'affiliate_link_id' => $affiliateLink->id,
             'slug' => $affiliateLink->slug,
             'name' => $affiliateLink->affiliate->name,
-            'timestamp' => now()->toIso8601String(),
+            'ts' => now()->toIso8601String(),
         ];
 
+        // Store in session (immediate attribution for same-session form submissions)
         session()->put('affiliate', $affiliateData);
         session()->save();
 
@@ -70,11 +82,30 @@ class AffiliateRedirectController extends Controller
             'verification_read' => session('affiliate'),
         ]);
 
+        // Create cookie for 30-day attribution window (last-click wins)
+        $cookie = Cookie::make(
+            self::COOKIE_NAME,
+            json_encode($affiliateData),
+            self::COOKIE_LIFETIME_MINUTES,
+            '/',
+            null,
+            null,
+            true // HttpOnly
+        );
+
+        Log::info('[AFFILIATE_DEBUG_COOKIE] Cookie set for affiliate attribution', [
+            'cookie_name' => self::COOKIE_NAME,
+            'affiliate_id' => $affiliateData['affiliate_id'],
+            'affiliate_link_id' => $affiliateData['affiliate_link_id'],
+            'slug' => $affiliateData['slug'],
+            'expires_in_days' => 30,
+            'session_id' => session()->getId(),
+        ]);
+
         // Determine target locale (default to 'en' for now)
-        // Could be extended to parse from slug metadata or detect browser locale
         $locale = 'en';
 
-        // Redirect to clean landing page (no query parameters)
-        return redirect()->route('landing', ['locale' => $locale]);
+        // Redirect to clean landing page with cookie attached
+        return redirect()->route('landing', ['locale' => $locale])->withCookie($cookie);
     }
 }

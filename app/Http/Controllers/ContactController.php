@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AffiliateLink;
 use App\Models\ContactLead;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -117,42 +118,29 @@ class ContactController extends Controller
             'user_agent'      => $request->userAgent(),
         ];
 
-        // Check for affiliate attribution from session
-        // Using consolidated 'affiliate' array structure
-        $affiliate = session('affiliate');
+        // Resolve affiliate attribution from session or cookie
+        $affiliate = $this->resolveAffiliateAttribution($request);
 
-        Log::info('[AFFILIATE_DEBUG] ContactController::persistLead checking session', [
-            'affiliate_session_data' => $affiliate,
-            'session_id' => session()->getId(),
-            'session_driver' => config('session.driver'),
-            'session_all_keys' => array_keys(session()->all()),
-        ]);
-
-        if ($affiliate && ! empty($affiliate['link_id'])) {
+        if ($affiliate) {
             // Verify the affiliate link still exists and is valid
-            $affiliateLink = AffiliateLink::find($affiliate['link_id']);
+            $affiliateLink = AffiliateLink::find($affiliate['affiliate_link_id']);
 
             if ($affiliateLink) {
                 $leadData['affiliate_link_id'] = $affiliateLink->id;
                 $leadData['affiliate_id'] = $affiliateLink->affiliate_id;
 
-                Log::info('[AFFILIATE_DEBUG] Affiliate attribution attached to lead data', [
+                Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Affiliate attribution attached to lead data', [
                     'affiliate_link_id' => $affiliateLink->id,
                     'affiliate_id' => $affiliateLink->affiliate_id,
                     'affiliate_name' => $affiliate['name'] ?? 'unknown',
                     'original_slug' => $affiliate['slug'] ?? 'unknown',
+                    'source' => $affiliate['_source'] ?? 'unknown',
                 ]);
-
-                // Clear the affiliate session data after use (one-time attribution)
-                session()->forget('affiliate');
-                session()->save();
             } else {
-                Log::warning('[AFFILIATE_DEBUG] Affiliate link from session no longer exists', [
-                    'session_link_id' => $affiliate['link_id'],
+                Log::warning('[AFFILIATE_DEBUG_ATTRIBUTION] Affiliate link no longer exists', [
+                    'affiliate_link_id' => $affiliate['affiliate_link_id'],
                 ]);
             }
-        } else {
-            Log::info('[AFFILIATE_DEBUG] No affiliate data in session (organic lead)');
         }
 
         try {
@@ -163,12 +151,126 @@ class ContactController extends Controller
                 'restaurant' => $leadData['restaurant_name'],
                 'affiliate_link_id' => $leadData['affiliate_link_id'] ?? null,
             ]);
+
+            // Clear session affiliate data after lead is created (one-time attribution per submission)
+            // Cookie is NOT deleted - allows multiple leads within 30-day window
+            if (session()->has('affiliate')) {
+                session()->forget('affiliate');
+                session()->save();
+                Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Session affiliate data cleared after lead creation');
+            }
         } catch (\Throwable $e) {
             // Non-fatal: log the error but don't break the form submission
             Log::warning('Failed to store contact lead in database', [
                 'error' => $e->getMessage(),
                 'lead'  => $leadData,
             ]);
+        }
+    }
+
+    /**
+     * Resolve affiliate attribution from session or cookie.
+     *
+     * Priority:
+     * 1. Session data (immediate same-session attribution)
+     * 2. Cookie data (30-day attribution window)
+     *
+     * Returns null if no valid attribution found.
+     */
+    private function resolveAffiliateAttribution(Request $request): ?array
+    {
+        // 1. Check session first (highest priority - same session as click)
+        $sessionData = session('affiliate');
+
+        Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Checking session for affiliate data', [
+            'session_data' => $sessionData,
+            'session_id' => session()->getId(),
+        ]);
+
+        if ($sessionData && $this->isValidAffiliateData($sessionData)) {
+            Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Using session-based attribution', [
+                'affiliate_id' => $sessionData['affiliate_id'],
+                'affiliate_link_id' => $sessionData['affiliate_link_id'],
+            ]);
+
+            return array_merge($sessionData, ['_source' => 'session']);
+        }
+
+        // 2. Check cookie (30-day attribution window)
+        $cookieValue = $request->cookie(AffiliateRedirectController::COOKIE_NAME);
+
+        Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Checking cookie for affiliate data', [
+            'cookie_name' => AffiliateRedirectController::COOKIE_NAME,
+            'cookie_present' => $cookieValue !== null,
+        ]);
+
+        if (! $cookieValue) {
+            Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] No affiliate data found (organic lead)');
+
+            return null;
+        }
+
+        // Decode cookie JSON
+        $cookieData = json_decode($cookieValue, true);
+
+        if (! $cookieData || ! $this->isValidAffiliateData($cookieData)) {
+            Log::warning('[AFFILIATE_DEBUG_ATTRIBUTION] Cookie data invalid or malformed', [
+                'raw_cookie' => $cookieValue,
+            ]);
+
+            return null;
+        }
+
+        // Check if cookie is within 30-day attribution window
+        if (! $this->isCookieWithinAttributionWindow($cookieData)) {
+            Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Cookie expired (older than 30 days)', [
+                'cookie_ts' => $cookieData['ts'] ?? 'missing',
+            ]);
+
+            return null;
+        }
+
+        Log::info('[AFFILIATE_DEBUG_ATTRIBUTION] Using cookie-based attribution', [
+            'affiliate_id' => $cookieData['affiliate_id'],
+            'affiliate_link_id' => $cookieData['affiliate_link_id'],
+            'cookie_ts' => $cookieData['ts'],
+        ]);
+
+        // Store in session for consistency with rest of code path
+        session()->put('affiliate', $cookieData);
+
+        return array_merge($cookieData, ['_source' => 'cookie']);
+    }
+
+    /**
+     * Validate that affiliate data has required keys.
+     */
+    private function isValidAffiliateData(array $data): bool
+    {
+        return ! empty($data['affiliate_id']) && ! empty($data['affiliate_link_id']);
+    }
+
+    /**
+     * Check if cookie timestamp is within 30-day attribution window.
+     */
+    private function isCookieWithinAttributionWindow(array $cookieData): bool
+    {
+        if (empty($cookieData['ts'])) {
+            return false;
+        }
+
+        try {
+            $cookieTimestamp = Carbon::parse($cookieData['ts']);
+            $daysSinceCookie = now()->diffInDays($cookieTimestamp);
+
+            return $daysSinceCookie <= 30;
+        } catch (\Exception $e) {
+            Log::warning('[AFFILIATE_DEBUG_ATTRIBUTION] Failed to parse cookie timestamp', [
+                'ts' => $cookieData['ts'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
         }
     }
 
