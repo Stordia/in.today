@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AffiliateResource\Pages;
+use App\Filament\Resources\AffiliateResource\RelationManagers;
 use App\Models\Affiliate;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -179,7 +180,11 @@ class AffiliateResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\LinksRelationManager::class,
+            RelationManagers\ConversionsRelationManager::class,
+            RelationManagers\PayoutsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

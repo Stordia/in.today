@@ -87,11 +87,18 @@ class AffiliateLinkResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->copyable(),
+                Tables\Columns\TextColumn::make('share_url')
+                    ->label('Share URL')
+                    ->getStateUsing(fn (AffiliateLink $record): string => url('/go/' . $record->slug))
+                    ->copyable()
+                    ->copyMessage('Share URL copied!')
+                    ->icon('heroicon-o-clipboard-document')
+                    ->iconPosition('after'),
                 Tables\Columns\TextColumn::make('target_url')
                     ->label('Target URL')
                     ->limit(40)
                     ->tooltip(fn ($record) => $record->target_url)
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('clicks_count')
                     ->label('Clicks')
                     ->numeric()
@@ -118,6 +125,7 @@ class AffiliateLinkResource extends Resource
                     ->label('Active'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -138,6 +146,7 @@ class AffiliateLinkResource extends Resource
         return [
             'index' => Pages\ListAffiliateLinks::route('/'),
             'create' => Pages\CreateAffiliateLink::route('/create'),
+            'view' => Pages\ViewAffiliateLink::route('/{record}'),
             'edit' => Pages\EditAffiliateLink::route('/{record}/edit'),
         ];
     }

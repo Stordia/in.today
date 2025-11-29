@@ -93,11 +93,13 @@ class AffiliateConversionResource extends Resource
                     ->label('Link')
                     ->placeholder('—')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('contactLead.name')
-                    ->label('Lead')
-                    ->description(fn ($record) => $record->contactLead?->email)
+                Tables\Columns\TextColumn::make('contactLead.email')
+                    ->label('Lead Email')
+                    ->description(fn ($record) => $record->contactLead?->name)
                     ->placeholder('—')
                     ->searchable()
+                    ->copyable()
+                    ->copyMessage('Email copied!')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('restaurant.name')
                     ->label('Restaurant')
