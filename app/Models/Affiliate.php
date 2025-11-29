@@ -49,6 +49,11 @@ class Affiliate extends Model
         return $this->hasMany(AffiliateConversion::class);
     }
 
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(AffiliatePayout::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes
@@ -127,6 +132,27 @@ class Affiliate extends Model
     {
         return (float) $this->conversions()
             ->where('status', AffiliateConversionStatus::Pending)
+            ->sum('commission_amount');
+    }
+
+    /**
+     * Outstanding approved commission: approved conversions NOT yet linked to a payout.
+     */
+    public function getOutstandingApprovedCommissionAttribute(): float
+    {
+        return (float) $this->conversions()
+            ->where('status', AffiliateConversionStatus::Approved)
+            ->whereNull('affiliate_payout_id')
+            ->sum('commission_amount');
+    }
+
+    /**
+     * Paid commission: sum of all conversions with status = paid.
+     */
+    public function getPaidCommissionAttribute(): float
+    {
+        return (float) $this->conversions()
+            ->where('status', AffiliateConversionStatus::Paid)
             ->sum('commission_amount');
     }
 }

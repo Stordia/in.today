@@ -18,6 +18,7 @@ class AffiliateConversion extends Model
         'affiliate_link_id',
         'restaurant_id',
         'contact_lead_id',
+        'affiliate_payout_id',
         'status',
         'commission_amount',
         'currency',
@@ -59,6 +60,11 @@ class AffiliateConversion extends Model
     public function contactLead(): BelongsTo
     {
         return $this->belongsTo(ContactLead::class);
+    }
+
+    public function payout(): BelongsTo
+    {
+        return $this->belongsTo(AffiliatePayout::class, 'affiliate_payout_id');
     }
 
     /*

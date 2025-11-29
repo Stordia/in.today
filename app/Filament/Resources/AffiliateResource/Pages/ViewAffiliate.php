@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\AffiliateResource\Pages;
 
+use App\Enums\AffiliateConversionStatus;
+use App\Enums\AffiliatePayoutStatus;
+use App\Filament\Resources\AffiliatePayoutResource;
 use App\Filament\Resources\AffiliateResource;
 use App\Models\Affiliate;
+use App\Models\AffiliateConversion;
+use App\Models\AffiliatePayout;
 use Filament\Actions;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\FontWeight;
+use Illuminate\Support\Facades\DB;
 
 class ViewAffiliate extends ViewRecord
 {
@@ -19,6 +26,83 @@ class ViewAffiliate extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('createPayoutFromApproved')
+                ->label('Create Payout from Approved')
+                ->icon('heroicon-o-banknotes')
+                ->color('primary')
+                ->requiresConfirmation()
+                ->modalHeading('Create Payout from Approved Conversions')
+                ->modalDescription('This will create a payout from all approved conversions that are not yet linked to a payout.')
+                ->action(function (): void {
+                    /** @var Affiliate $affiliate */
+                    $affiliate = $this->record;
+
+                    // Find all approved conversions not yet linked to a payout
+                    $conversions = AffiliateConversion::query()
+                        ->where('affiliate_id', $affiliate->id)
+                        ->where('status', AffiliateConversionStatus::Approved)
+                        ->whereNull('affiliate_payout_id')
+                        ->where('commission_amount', '>', 0)
+                        ->get();
+
+                    if ($conversions->isEmpty()) {
+                        Notification::make()
+                            ->title('No eligible conversions')
+                            ->body('There are no approved conversions without a payout for this affiliate.')
+                            ->warning()
+                            ->send();
+
+                        return;
+                    }
+
+                    DB::transaction(function () use ($affiliate, $conversions): void {
+                        // Calculate totals
+                        $totalAmount = $conversions->sum('commission_amount');
+                        $currency = $conversions->first()->currency ?? 'EUR';
+                        $periodStart = $conversions->min('occurred_at');
+                        $periodEnd = $conversions->max('occurred_at');
+
+                        // Create the payout
+                        $payout = AffiliatePayout::create([
+                            'affiliate_id' => $affiliate->id,
+                            'amount' => $totalAmount,
+                            'currency' => $currency,
+                            'status' => AffiliatePayoutStatus::Pending,
+                            'period_start' => $periodStart?->toDateString(),
+                            'period_end' => $periodEnd?->toDateString(),
+                        ]);
+
+                        // Link conversions to the payout
+                        AffiliateConversion::query()
+                            ->whereIn('id', $conversions->pluck('id'))
+                            ->update(['affiliate_payout_id' => $payout->id]);
+
+                        Notification::make()
+                            ->title('Payout created')
+                            ->body(sprintf(
+                                'Created payout #%d for %s with %d conversions totaling %.2f %s.',
+                                $payout->id,
+                                $affiliate->name,
+                                $conversions->count(),
+                                $totalAmount,
+                                $currency
+                            ))
+                            ->success()
+                            ->actions([
+                                \Filament\Notifications\Actions\Action::make('view')
+                                    ->label('View Payout')
+                                    ->url(AffiliatePayoutResource::getUrl('view', ['record' => $payout]))
+                                    ->button(),
+                            ])
+                            ->send();
+                    });
+                })
+                ->visible(fn (): bool => $this->record->conversions()
+                    ->where('status', AffiliateConversionStatus::Approved)
+                    ->whereNull('affiliate_payout_id')
+                    ->where('commission_amount', '>', 0)
+                    ->exists()
+                ),
             Actions\EditAction::make(),
         ];
     }
@@ -103,13 +187,14 @@ class ViewAffiliate extends ViewRecord
                                         Infolists\Components\TextEntry::make('default_commission_rate')
                                             ->label('Default Rate')
                                             ->suffix('%'),
-                                        Infolists\Components\TextEntry::make('total_approved_commission')
-                                            ->label('Approved (Unpaid)')
-                                            ->getStateUsing(fn (Affiliate $record): string => number_format($record->total_approved_commission, 2, ',', '.') . ' €')
-                                            ->color('info'),
+                                        Infolists\Components\TextEntry::make('outstanding_approved_commission')
+                                            ->label('Outstanding (Approved)')
+                                            ->getStateUsing(fn (Affiliate $record): string => number_format($record->outstanding_approved_commission, 2, ',', '.') . ' €')
+                                            ->color('info')
+                                            ->helperText('Approved but not yet in a payout'),
                                         Infolists\Components\TextEntry::make('total_paid_commission')
                                             ->label('Total Paid')
-                                            ->getStateUsing(fn (Affiliate $record): string => number_format($record->total_paid_commission, 2, ',', '.') . ' €')
+                                            ->getStateUsing(fn (Affiliate $record): string => number_format($record->paid_commission, 2, ',', '.') . ' €')
                                             ->color('success'),
                                     ]),
 

@@ -126,19 +126,20 @@ class AffiliateResource extends Resource
                     ->label('Conversions')
                     ->counts('conversions')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('total_approved_commission')
-                    ->label('Approved')
+                Tables\Columns\TextColumn::make('outstanding_approved_commission')
+                    ->label('Outstanding')
                     ->money('EUR', locale: 'de_DE')
-                    ->getStateUsing(fn (Affiliate $record): float => $record->total_approved_commission)
+                    ->getStateUsing(fn (Affiliate $record): float => $record->outstanding_approved_commission)
                     ->sortable(query: fn ($query, $direction) => $query
-                        ->withSum(['conversions as approved_sum' => fn ($q) => $q->where('status', 'approved')], 'commission_amount')
-                        ->orderBy('approved_sum', $direction)
+                        ->withSum(['conversions as outstanding_sum' => fn ($q) => $q->where('status', 'approved')->whereNull('affiliate_payout_id')], 'commission_amount')
+                        ->orderBy('outstanding_sum', $direction)
                     )
+                    ->description('Approved, not in payout')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('total_paid_commission')
+                Tables\Columns\TextColumn::make('paid_commission')
                     ->label('Paid')
                     ->money('EUR', locale: 'de_DE')
-                    ->getStateUsing(fn (Affiliate $record): float => $record->total_paid_commission)
+                    ->getStateUsing(fn (Affiliate $record): float => $record->paid_commission)
                     ->sortable(query: fn ($query, $direction) => $query
                         ->withSum(['conversions as paid_sum' => fn ($q) => $q->where('status', 'paid')], 'commission_amount')
                         ->orderBy('paid_sum', $direction)

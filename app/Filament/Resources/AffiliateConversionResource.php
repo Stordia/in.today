@@ -128,6 +128,15 @@ class AffiliateConversionResource extends Resource
                 Tables\Columns\TextColumn::make('currency')
                     ->label('Currency')
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('payout.id')
+                    ->label('Payout')
+                    ->formatStateUsing(fn ($state, $record) => $record->payout ? ('#' . $record->payout->id) : '—')
+                    ->url(fn ($record) => $record->payout
+                        ? AffiliatePayoutResource::getUrl('view', ['record' => $record->payout])
+                        : null
+                    )
+                    ->openUrlInNewTab()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('occurred_at')
                     ->label('Occurred')
                     ->dateTime()
@@ -162,6 +171,12 @@ class AffiliateConversionResource extends Resource
                     ->queries(
                         true: fn ($query) => $query->whereNotNull('restaurant_id'),
                         false: fn ($query) => $query->whereNull('restaurant_id'),
+                    ),
+                Tables\Filters\TernaryFilter::make('has_payout')
+                    ->label('Has Payout')
+                    ->queries(
+                        true: fn ($query) => $query->whereNotNull('affiliate_payout_id'),
+                        false: fn ($query) => $query->whereNull('affiliate_payout_id'),
                     ),
                 Tables\Filters\Filter::make('occurred_at')
                     ->form([
