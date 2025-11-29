@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AffiliateConversionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,7 @@ class AffiliateConversion extends Model
     protected function casts(): array
     {
         return [
+            'status' => AffiliateConversionStatus::class,
             'commission_amount' => 'decimal:2',
             'occurred_at' => 'datetime',
             'metadata' => 'array',
@@ -65,24 +67,29 @@ class AffiliateConversion extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function scopeByStatus($query, string $status)
+    public function scopeByStatus($query, AffiliateConversionStatus $status)
     {
         return $query->where('status', $status);
     }
 
     public function scopePending($query)
     {
-        return $query->where('status', 'pending');
+        return $query->where('status', AffiliateConversionStatus::Pending);
     }
 
     public function scopeApproved($query)
     {
-        return $query->where('status', 'approved');
+        return $query->where('status', AffiliateConversionStatus::Approved);
     }
 
     public function scopePaid($query)
     {
-        return $query->where('status', 'paid');
+        return $query->where('status', AffiliateConversionStatus::Paid);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', AffiliateConversionStatus::Rejected);
     }
 
     /*
@@ -93,21 +100,21 @@ class AffiliateConversion extends Model
 
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === AffiliateConversionStatus::Pending;
     }
 
     public function isApproved(): bool
     {
-        return $this->status === 'approved';
+        return $this->status === AffiliateConversionStatus::Approved;
     }
 
     public function isRejected(): bool
     {
-        return $this->status === 'rejected';
+        return $this->status === AffiliateConversionStatus::Rejected;
     }
 
     public function isPaid(): bool
     {
-        return $this->status === 'paid';
+        return $this->status === AffiliateConversionStatus::Paid;
     }
 }

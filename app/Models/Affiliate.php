@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AffiliateConversionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -88,5 +89,44 @@ class Affiliate extends Model
     public function isBlocked(): bool
     {
         return $this->status === 'blocked';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commission Aggregates
+    |--------------------------------------------------------------------------
+    */
+
+    public function getTotalConversionsAttribute(): int
+    {
+        return $this->conversions()->count();
+    }
+
+    public function getPendingConversionsCountAttribute(): int
+    {
+        return $this->conversions()
+            ->where('status', AffiliateConversionStatus::Pending)
+            ->count();
+    }
+
+    public function getTotalApprovedCommissionAttribute(): float
+    {
+        return (float) $this->conversions()
+            ->where('status', AffiliateConversionStatus::Approved)
+            ->sum('commission_amount');
+    }
+
+    public function getTotalPaidCommissionAttribute(): float
+    {
+        return (float) $this->conversions()
+            ->where('status', AffiliateConversionStatus::Paid)
+            ->sum('commission_amount');
+    }
+
+    public function getTotalPendingCommissionAttribute(): float
+    {
+        return (float) $this->conversions()
+            ->where('status', AffiliateConversionStatus::Pending)
+            ->sum('commission_amount');
     }
 }

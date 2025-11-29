@@ -126,6 +126,24 @@ class AffiliateResource extends Resource
                     ->label('Conversions')
                     ->counts('conversions')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('total_approved_commission')
+                    ->label('Approved')
+                    ->money('EUR', locale: 'de_DE')
+                    ->getStateUsing(fn (Affiliate $record): float => $record->total_approved_commission)
+                    ->sortable(query: fn ($query, $direction) => $query
+                        ->withSum(['conversions as approved_sum' => fn ($q) => $q->where('status', 'approved')], 'commission_amount')
+                        ->orderBy('approved_sum', $direction)
+                    )
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('total_paid_commission')
+                    ->label('Paid')
+                    ->money('EUR', locale: 'de_DE')
+                    ->getStateUsing(fn (Affiliate $record): float => $record->total_paid_commission)
+                    ->sortable(query: fn ($query, $direction) => $query
+                        ->withSum(['conversions as paid_sum' => fn ($q) => $q->where('status', 'paid')], 'commission_amount')
+                        ->orderBy('paid_sum', $direction)
+                    )
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -147,6 +165,7 @@ class AffiliateResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -167,6 +186,7 @@ class AffiliateResource extends Resource
         return [
             'index' => Pages\ListAffiliates::route('/'),
             'create' => Pages\CreateAffiliate::route('/create'),
+            'view' => Pages\ViewAffiliate::route('/{record}'),
             'edit' => Pages\EditAffiliate::route('/{record}/edit'),
         ];
     }

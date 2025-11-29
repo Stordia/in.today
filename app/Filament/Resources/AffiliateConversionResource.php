@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\AffiliateConversionStatus;
 use App\Filament\Resources\AffiliateConversionResource\Pages;
 use App\Models\AffiliateConversion;
 use Filament\Forms;
@@ -55,18 +56,14 @@ class AffiliateConversionResource extends Resource
                 Forms\Components\Section::make('Status & Commission')
                     ->schema([
                         Forms\Components\Select::make('status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'approved' => 'Approved',
-                                'rejected' => 'Rejected',
-                                'paid' => 'Paid',
-                            ])
+                            ->options(AffiliateConversionStatus::class)
                             ->required()
-                            ->default('pending'),
+                            ->default(AffiliateConversionStatus::Pending),
                         Forms\Components\TextInput::make('commission_amount')
                             ->numeric()
                             ->step(0.01)
-                            ->prefix('€'),
+                            ->prefix('€')
+                            ->helperText('Leave empty to use affiliate default rate on approval'),
                         Forms\Components\TextInput::make('currency')
                             ->maxLength(3)
                             ->default('EUR'),
@@ -108,18 +105,29 @@ class AffiliateConversionResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'approved' => 'success',
-                        'rejected' => 'danger',
-                        'paid' => 'info',
-                        default => 'gray',
-                    }),
+                    ->icon(fn ($state): ?string => $state instanceof AffiliateConversionStatus
+                        ? $state->icon()
+                        : AffiliateConversionStatus::tryFrom((string) $state)?->icon()
+                    )
+                    ->color(fn ($state): string => $state instanceof AffiliateConversionStatus
+                        ? $state->color()
+                        : (AffiliateConversionStatus::tryFrom((string) $state)?->color() ?? 'gray')
+                    )
+                    ->formatStateUsing(fn ($state): string => $state instanceof AffiliateConversionStatus
+                        ? $state->label()
+                        : (AffiliateConversionStatus::tryFrom((string) $state)?->label() ?? ucfirst((string) $state))
+                    )
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('commission_amount')
                     ->label('Commission')
-                    ->money(fn ($record) => $record->currency ?? 'EUR')
+                    ->money(fn ($record) => $record->currency ?? 'EUR', locale: 'de_DE')
+                    ->placeholder('—')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('currency')
+                    ->label('Currency')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('occurred_at')
                     ->label('Occurred')
                     ->dateTime()
@@ -131,11 +139,12 @@ class AffiliateConversionResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
                     ->options([
                         'pending' => 'Pending',
                         'approved' => 'Approved',
-                        'rejected' => 'Rejected',
                         'paid' => 'Paid',
+                        'rejected' => 'Rejected',
                     ]),
                 Tables\Filters\SelectFilter::make('affiliate_id')
                     ->label('Affiliate')
@@ -168,6 +177,59 @@ class AffiliateConversionResource extends Resource
                     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('markApproved')
+                    ->label('Approve')
+                    ->color('info')
+                    ->icon('heroicon-o-check-circle')
+                    ->visible(fn (AffiliateConversion $record): bool => $record->status === AffiliateConversionStatus::Pending
+                        || $record->status === AffiliateConversionStatus::Rejected
+                    )
+                    ->requiresConfirmation()
+                    ->modalHeading('Approve Conversion')
+                    ->modalDescription('This will approve the conversion and set the commission amount if not already set.')
+                    ->action(function (AffiliateConversion $record): void {
+                        // Fill commission_amount from affiliate default if null
+                        if (is_null($record->commission_amount) && $record->affiliate?->default_commission_rate) {
+                            $record->commission_amount = $record->affiliate->default_commission_rate;
+                        }
+
+                        if (is_null($record->currency)) {
+                            $record->currency = 'EUR';
+                        }
+
+                        if (is_null($record->occurred_at)) {
+                            $record->occurred_at = now();
+                        }
+
+                        $record->status = AffiliateConversionStatus::Approved;
+                        $record->save();
+                    }),
+                Tables\Actions\Action::make('markPaid')
+                    ->label('Mark Paid')
+                    ->color('success')
+                    ->icon('heroicon-o-banknotes')
+                    ->visible(fn (AffiliateConversion $record): bool => $record->status === AffiliateConversionStatus::Approved)
+                    ->requiresConfirmation()
+                    ->modalHeading('Mark as Paid')
+                    ->modalDescription('This will mark the conversion as paid to the affiliate.')
+                    ->action(function (AffiliateConversion $record): void {
+                        $record->status = AffiliateConversionStatus::Paid;
+                        $record->save();
+                    }),
+                Tables\Actions\Action::make('markRejected')
+                    ->label('Reject')
+                    ->color('danger')
+                    ->icon('heroicon-o-x-circle')
+                    ->visible(fn (AffiliateConversion $record): bool => $record->status === AffiliateConversionStatus::Pending
+                        || $record->status === AffiliateConversionStatus::Approved
+                    )
+                    ->requiresConfirmation()
+                    ->modalHeading('Reject Conversion')
+                    ->modalDescription('This will reject the conversion. The affiliate will not receive commission for this lead.')
+                    ->action(function (AffiliateConversion $record): void {
+                        $record->status = AffiliateConversionStatus::Rejected;
+                        $record->save();
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
@@ -188,5 +250,17 @@ class AffiliateConversionResource extends Resource
             'view' => Pages\ViewAffiliateConversion::route('/{record}'),
             'edit' => Pages\EditAffiliateConversion::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) AffiliateConversion::query()
+            ->where('status', AffiliateConversionStatus::Pending)
+            ->count() ?: null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 }
