@@ -62,9 +62,15 @@ class RestaurantResource extends Resource
                             ->relationship('cuisine', 'name_en')
                             ->searchable()
                             ->preload(),
-                        Forms\Components\TextInput::make('timezone')
-                            ->maxLength(100)
-                            ->default('Europe/Berlin'),
+                        Forms\Components\Select::make('timezone')
+                            ->label('Timezone')
+                            ->options(fn () => array_combine(
+                                \DateTimeZone::listIdentifiers(),
+                                \DateTimeZone::listIdentifiers()
+                            ))
+                            ->searchable()
+                            ->required()
+                            ->default(config('app.timezone', 'Europe/Berlin')),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Address')

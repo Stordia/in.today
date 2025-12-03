@@ -42,9 +42,15 @@ class CityResource extends Resource
                             ->preload()
                             ->required()
                             ->placeholder('Select a country'),
-                        Forms\Components\TextInput::make('timezone')
-                            ->maxLength(100)
-                            ->default('Europe/Berlin'),
+                        Forms\Components\Select::make('timezone')
+                            ->label('Timezone')
+                            ->options(fn () => array_combine(
+                                \DateTimeZone::listIdentifiers(),
+                                \DateTimeZone::listIdentifiers()
+                            ))
+                            ->searchable()
+                            ->default(config('app.timezone', 'Europe/Berlin'))
+                            ->helperText('Timezone is mainly used for future features. Safe to leave at default unless needed.'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Location')

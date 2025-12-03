@@ -67,7 +67,7 @@ class OnboardRestaurant extends Page implements HasForms
             'booking_default_duration_minutes' => 90,
             'booking_min_lead_time_minutes' => 60,
             'booking_max_lead_time_days' => 30,
-            'timezone' => 'Europe/Berlin',
+            'timezone' => config('app.timezone', 'Europe/Berlin'),
             // Owner defaults
             'owner_mode' => 'new_user',
         ]);
@@ -167,10 +167,13 @@ class OnboardRestaurant extends Page implements HasForms
 
                         Select::make('timezone')
                             ->label('Timezone')
-                            ->options($this->getTimezoneOptions())
+                            ->options(fn () => array_combine(
+                                \DateTimeZone::listIdentifiers(),
+                                \DateTimeZone::listIdentifiers()
+                            ))
                             ->searchable()
                             ->required()
-                            ->default('Europe/Berlin'),
+                            ->default(config('app.timezone', 'Europe/Berlin')),
                     ])
                     ->columns(2),
 
@@ -398,52 +401,4 @@ class OnboardRestaurant extends Page implements HasForms
         }
     }
 
-    /**
-     * Get timezone options for the select field.
-     *
-     * @return array<string, string>
-     */
-    private function getTimezoneOptions(): array
-    {
-        return [
-            'Europe/Berlin' => 'Europe/Berlin (CET/CEST)',
-            'Europe/London' => 'Europe/London (GMT/BST)',
-            'Europe/Paris' => 'Europe/Paris (CET/CEST)',
-            'Europe/Rome' => 'Europe/Rome (CET/CEST)',
-            'Europe/Madrid' => 'Europe/Madrid (CET/CEST)',
-            'Europe/Amsterdam' => 'Europe/Amsterdam (CET/CEST)',
-            'Europe/Athens' => 'Europe/Athens (EET/EEST)',
-            'Europe/Vienna' => 'Europe/Vienna (CET/CEST)',
-            'Europe/Brussels' => 'Europe/Brussels (CET/CEST)',
-            'Europe/Zurich' => 'Europe/Zurich (CET/CEST)',
-            'Europe/Stockholm' => 'Europe/Stockholm (CET/CEST)',
-            'Europe/Oslo' => 'Europe/Oslo (CET/CEST)',
-            'Europe/Copenhagen' => 'Europe/Copenhagen (CET/CEST)',
-            'Europe/Helsinki' => 'Europe/Helsinki (EET/EEST)',
-            'Europe/Warsaw' => 'Europe/Warsaw (CET/CEST)',
-            'Europe/Prague' => 'Europe/Prague (CET/CEST)',
-            'Europe/Budapest' => 'Europe/Budapest (CET/CEST)',
-            'Europe/Lisbon' => 'Europe/Lisbon (WET/WEST)',
-            'Europe/Dublin' => 'Europe/Dublin (GMT/IST)',
-            'Europe/Moscow' => 'Europe/Moscow (MSK)',
-            'America/New_York' => 'America/New_York (EST/EDT)',
-            'America/Chicago' => 'America/Chicago (CST/CDT)',
-            'America/Denver' => 'America/Denver (MST/MDT)',
-            'America/Los_Angeles' => 'America/Los_Angeles (PST/PDT)',
-            'America/Toronto' => 'America/Toronto (EST/EDT)',
-            'America/Vancouver' => 'America/Vancouver (PST/PDT)',
-            'America/Mexico_City' => 'America/Mexico_City (CST/CDT)',
-            'America/Sao_Paulo' => 'America/Sao_Paulo (BRT)',
-            'Asia/Tokyo' => 'Asia/Tokyo (JST)',
-            'Asia/Shanghai' => 'Asia/Shanghai (CST)',
-            'Asia/Hong_Kong' => 'Asia/Hong_Kong (HKT)',
-            'Asia/Singapore' => 'Asia/Singapore (SGT)',
-            'Asia/Dubai' => 'Asia/Dubai (GST)',
-            'Asia/Kolkata' => 'Asia/Kolkata (IST)',
-            'Australia/Sydney' => 'Australia/Sydney (AEST/AEDT)',
-            'Australia/Melbourne' => 'Australia/Melbourne (AEST/AEDT)',
-            'Pacific/Auckland' => 'Pacific/Auckland (NZST/NZDT)',
-            'UTC' => 'UTC',
-        ];
-    }
 }
