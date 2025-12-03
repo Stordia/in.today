@@ -10,6 +10,7 @@ use App\Mail\ReservationCustomerConfirmation;
 use App\Mail\ReservationRestaurantNotification;
 use App\Models\Reservation;
 use App\Models\Restaurant;
+use App\Services\AppSettings;
 use App\Services\Reservations\AvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -198,17 +199,23 @@ class PublicBookingController extends Controller
 
         // Send confirmation emails (wrapped in try/catch to not break booking flow)
         try {
-            // Determine restaurant notification email (no contact_email column yet, use config fallback)
-            $restaurantNotificationEmail = config('services.bookings.notification_email');
+            $sendCustomerConfirmation = AppSettings::get('booking.send_customer_confirmation', true);
+            $sendRestaurantNotification = AppSettings::get('booking.send_restaurant_notification', true);
+
+            // Determine restaurant notification email
+            $restaurantNotificationEmail = AppSettings::get(
+                'booking.default_notification_email',
+                config('services.bookings.notification_email')
+            );
 
             // Send confirmation to customer
-            if (! empty($reservation->customer_email)) {
+            if ($sendCustomerConfirmation && ! empty($reservation->customer_email)) {
                 Mail::to($reservation->customer_email)
                     ->send(new ReservationCustomerConfirmation($reservation, $restaurant));
             }
 
             // Send notification to restaurant
-            if (! empty($restaurantNotificationEmail)) {
+            if ($sendRestaurantNotification && ! empty($restaurantNotificationEmail)) {
                 Mail::to($restaurantNotificationEmail)
                     ->send(new ReservationRestaurantNotification($reservation, $restaurant));
             }

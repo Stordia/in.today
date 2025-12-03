@@ -48,6 +48,10 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Bookings'),
                 NavigationGroup::make()
                     ->label('Partners'),
+                NavigationGroup::make()
+                    ->label('Settings')
+                    ->icon('heroicon-o-cog-8-tooth')
+                    ->collapsed(false),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
