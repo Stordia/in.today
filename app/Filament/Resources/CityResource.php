@@ -40,11 +40,8 @@ class CityResource extends Resource
                             ->relationship('country', 'name')
                             ->searchable()
                             ->preload()
+                            ->required()
                             ->placeholder('Select a country'),
-                        Forms\Components\TextInput::make('country')
-                            ->label('Country (Legacy)')
-                            ->maxLength(100)
-                            ->helperText('Legacy field - prefer using Country select above'),
                         Forms\Components\TextInput::make('timezone')
                             ->maxLength(100)
                             ->default('Europe/Berlin'),
