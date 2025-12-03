@@ -40,6 +40,13 @@ Route::group([
     })->name('privacy');
 });
 
+// Public booking page (no locale prefix for now)
+Route::get('/book/{slug}', [App\Http\Controllers\PublicBookingController::class, 'show'])
+    ->name('public.booking.show');
+
+Route::post('/book/{slug}/request', [App\Http\Controllers\PublicBookingController::class, 'request'])
+    ->name('public.booking.request');
+
 // Admin attachment download (protected by auth middleware)
 // Attachments are stored on the public disk
 Route::get('/admin/attachments/{path}', function (string $path) {

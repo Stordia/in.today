@@ -50,4 +50,19 @@ return [
         'meta_pixel_id' => env('ANALYTICS_META_PIXEL_ID'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Booking / Reservation Services
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for reservation emails and notifications.
+    |
+    */
+
+    'bookings' => [
+        'notification_email' => env('RESERVATIONS_NOTIFICATION_EMAIL', 'proposals@in.today'),
+        'from_address' => env('RESERVATIONS_FROM_ADDRESS', 'noreply@in.today'),
+        'from_name' => env('RESERVATIONS_FROM_NAME', 'in.today'),
+    ],
+
 ];
