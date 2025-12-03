@@ -18,9 +18,11 @@ class City extends Model
         'slug',
         'name',
         'country_id',
+        'admin_name',
         'country', // legacy text field
         'latitude',
         'longitude',
+        'population',
         'timezone',
         'is_active',
         'sort_order',
@@ -32,6 +34,7 @@ class City extends Model
         return [
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
+            'population' => 'integer',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
             'restaurant_count' => 'integer',
