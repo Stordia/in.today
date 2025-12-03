@@ -35,8 +35,16 @@ class CityResource extends Resource
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('Leave blank to auto-generate from name'),
+                        Forms\Components\Select::make('country_id')
+                            ->label('Country')
+                            ->relationship('country', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Select a country'),
                         Forms\Components\TextInput::make('country')
-                            ->maxLength(100),
+                            ->label('Country (Legacy)')
+                            ->maxLength(100)
+                            ->helperText('Legacy field - prefer using Country select above'),
                         Forms\Components\TextInput::make('timezone')
                             ->maxLength(100)
                             ->default('Europe/Berlin'),
@@ -74,9 +82,15 @@ class CityResource extends Resource
                 Tables\Columns\TextColumn::make('slug')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('country.name')
+                    ->label('Country')
+                    ->sortable()
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('country')
+                    ->label('Country (Legacy)')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('timezone')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('restaurant_count')
@@ -98,8 +112,11 @@ class CityResource extends Resource
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active'),
-                Tables\Filters\SelectFilter::make('country')
-                    ->options(fn () => City::query()->distinct()->pluck('country', 'country')->filter()->toArray()),
+                Tables\Filters\SelectFilter::make('country_id')
+                    ->label('Country')
+                    ->relationship('country', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

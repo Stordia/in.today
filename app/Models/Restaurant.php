@@ -21,8 +21,9 @@ class Restaurant extends Model
         'slug',
         'agency_id',
         'city_id',
+        'country_id',
         'timezone',
-        'country',
+        'country', // legacy text field
         // Address
         'address_street',
         'address_district',
@@ -48,6 +49,15 @@ class Restaurant extends Model
         'is_active',
         'is_verified',
         'is_featured',
+        // Booking settings
+        'booking_enabled',
+        'booking_public_slug',
+        'booking_min_party_size',
+        'booking_max_party_size',
+        'booking_default_duration_minutes',
+        'booking_min_lead_time_minutes',
+        'booking_max_lead_time_days',
+        'booking_notes_internal',
     ];
 
     protected function casts(): array
@@ -65,6 +75,13 @@ class Restaurant extends Model
             'is_active' => 'boolean',
             'is_verified' => 'boolean',
             'is_featured' => 'boolean',
+            // Booking settings
+            'booking_enabled' => 'boolean',
+            'booking_min_party_size' => 'integer',
+            'booking_max_party_size' => 'integer',
+            'booking_default_duration_minutes' => 'integer',
+            'booking_min_lead_time_minutes' => 'integer',
+            'booking_max_lead_time_days' => 'integer',
         ];
     }
 
@@ -94,6 +111,11 @@ class Restaurant extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
     }
 
     public function cuisine(): BelongsTo
@@ -248,5 +270,25 @@ class Restaurant extends Model
         }
 
         return str_repeat('€', $this->price_range);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Booking Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    public function isBookingEnabled(): bool
+    {
+        return $this->booking_enabled;
+    }
+
+    public function getBookingUrl(): ?string
+    {
+        if (! $this->booking_public_slug) {
+            return null;
+        }
+
+        return url("/book/{$this->booking_public_slug}");
     }
 }

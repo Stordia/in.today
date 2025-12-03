@@ -6,43 +6,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class City extends Model
+class Country extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'slug',
         'name',
-        'country_id',
-        'country', // legacy text field
-        'latitude',
-        'longitude',
-        'timezone',
+        'code',
+        'slug',
         'is_active',
-        'sort_order',
-        'restaurant_count',
     ];
 
     protected function casts(): array
     {
         return [
-            'latitude' => 'decimal:8',
-            'longitude' => 'decimal:8',
             'is_active' => 'boolean',
-            'sort_order' => 'integer',
-            'restaurant_count' => 'integer',
         ];
     }
 
     protected static function booted(): void
     {
-        static::creating(function (City $city) {
-            if (empty($city->slug)) {
-                $city->slug = Str::slug($city->name);
+        static::creating(function (Country $country) {
+            if (empty($country->slug)) {
+                $country->slug = Str::slug($country->name);
             }
         });
     }
@@ -53,9 +42,9 @@ class City extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function country(): BelongsTo
+    public function cities(): HasMany
     {
-        return $this->belongsTo(Country::class);
+        return $this->hasMany(City::class);
     }
 
     public function restaurants(): HasMany
@@ -74,14 +63,9 @@ class City extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeByCountry($query, string $country)
-    {
-        return $query->where('country', $country);
-    }
-
     public function scopeOrdered($query)
     {
-        return $query->orderBy('sort_order')->orderBy('name');
+        return $query->orderBy('name');
     }
 
     /*
@@ -93,10 +77,5 @@ class City extends Model
     public function isActive(): bool
     {
         return $this->is_active;
-    }
-
-    public function hasCoordinates(): bool
-    {
-        return $this->latitude !== null && $this->longitude !== null;
     }
 }

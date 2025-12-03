@@ -45,6 +45,12 @@ class RestaurantResource extends Resource
                             ->searchable()
                             ->preload()
                             ->placeholder('Direct customer (no agency)'),
+                        Forms\Components\Select::make('country_id')
+                            ->label('Country')
+                            ->relationship('country', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Select a country'),
                         Forms\Components\Select::make('city_id')
                             ->label('City')
                             ->relationship('city', 'name')
@@ -129,6 +135,11 @@ class RestaurantResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('country.name')
+                    ->label('Country')
+                    ->sortable()
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('city.name')
                     ->label('City')
                     ->sortable(),
@@ -172,6 +183,11 @@ class RestaurantResource extends Resource
                     ->label('Verified'),
                 Tables\Filters\TernaryFilter::make('is_featured')
                     ->label('Featured'),
+                Tables\Filters\SelectFilter::make('country_id')
+                    ->label('Country')
+                    ->relationship('country', 'name')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('city_id')
                     ->label('City')
                     ->relationship('city', 'name')
