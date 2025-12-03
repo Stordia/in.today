@@ -228,6 +228,7 @@ class RestaurantResource extends Resource
             'index' => Pages\ListRestaurants::route('/'),
             'create' => Pages\CreateRestaurant::route('/create'),
             'edit' => Pages\EditRestaurant::route('/{record}/edit'),
+            'onboard' => Pages\OnboardRestaurant::route('/onboard'),
         ];
     }
 }
