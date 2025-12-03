@@ -12,6 +12,22 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use SplFileObject;
 
+/**
+ * Import countries and cities from SimpleMaps World Cities Database.
+ *
+ * IMPORTANT: The worldcities.csv file is NOT committed to the repository.
+ * It must be manually uploaded to storage/app/world/worldcities.csv
+ *
+ * To import full data:
+ * 1. Download the SimpleMaps World Cities Database (Basic or Pro)
+ * 2. Upload worldcities.csv to storage/app/world/worldcities.csv
+ * 3. Run: php artisan world:import-cities
+ *    Or with options: php artisan world:import-cities --truncate --country=DE
+ *
+ * If the CSV file is missing, the command will fail with a clear error message.
+ * For development environments without the CSV, use WorldDirectoryDemoSeeder
+ * to populate a minimal set of demo countries and cities.
+ */
 class ImportSimpleMapsCommand extends Command
 {
     protected $signature = 'world:import-cities
@@ -43,12 +59,25 @@ class ImportSimpleMapsCommand extends Command
         $filePath = storage_path(self::CSV_PATH);
 
         if (! file_exists($filePath)) {
-            $this->error("CSV file not found: {$filePath}");
+            $errorMessage = "worldcities.csv not found in storage/app/world/. Please upload it manually before running this command.";
+
+            $this->error($errorMessage);
             $this->newLine();
-            $this->info('Please download the SimpleMaps World Cities Database and place it at:');
-            $this->info("  {$filePath}");
+            $this->warn('The SimpleMaps World Cities Database CSV is not committed to the repository.');
+            $this->warn('To import full geo data:');
             $this->newLine();
-            $this->info('Expected columns: city, city_ascii, lat, lng, country, iso2, iso3, admin_name, capital, population, id');
+            $this->info('  1. Download the SimpleMaps World Cities Database (https://simplemaps.com/data/world-cities)');
+            $this->info('  2. Upload worldcities.csv to: storage/app/world/worldcities.csv');
+            $this->info('  3. Run: php artisan world:import-cities');
+            $this->newLine();
+            $this->info('For development without the full dataset, run:');
+            $this->info('  php artisan db:seed --class=WorldDirectoryDemoSeeder');
+            $this->newLine();
+            $this->info('Expected CSV columns: city, city_ascii, lat, lng, country, iso2, iso3, admin_name, capital, population, id');
+
+            Log::warning('World cities import aborted: CSV file not found', [
+                'expected_path' => $filePath,
+            ]);
 
             return self::FAILURE;
         }

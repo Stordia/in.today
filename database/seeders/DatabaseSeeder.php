@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -21,5 +23,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed platform settings (email, booking, affiliate, technical settings)
+        $this->call(AppSettingsSeeder::class);
+
+        // Seed demo countries and cities for development environments
+        // For full geo data, upload worldcities.csv and run: php artisan world:import-cities
+        $this->call(WorldDirectoryDemoSeeder::class);
     }
 }
