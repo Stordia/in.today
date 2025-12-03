@@ -123,7 +123,10 @@ class CityResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('sort_order');
+            ->defaultSort('sort_order')
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession();
     }
 
     public static function getRelations(): array

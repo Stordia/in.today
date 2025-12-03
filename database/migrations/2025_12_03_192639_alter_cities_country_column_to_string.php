@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,6 +16,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            // SQLite doesn't support ALTER COLUMN, but the schema is already
+            // compatible since SQLite stores strings dynamically
+            return;
+        }
+
         DB::statement('ALTER TABLE cities MODIFY country VARCHAR(191) NULL');
     }
 
@@ -24,6 +34,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            return;
+        }
+
         DB::statement("ALTER TABLE cities MODIFY country CHAR(2) NOT NULL DEFAULT 'DE'");
     }
 };

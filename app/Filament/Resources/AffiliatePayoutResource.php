@@ -284,7 +284,10 @@ class AffiliatePayoutResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession();
     }
 
     public static function getRelations(): array

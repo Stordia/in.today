@@ -519,7 +519,10 @@ class ContactLeadResource extends Resource
                         ->action(fn ($records) => $records->each->update(['assigned_to_user_id' => Auth::id()])),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession();
     }
 
     public static function getRelations(): array

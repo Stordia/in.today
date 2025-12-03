@@ -189,7 +189,8 @@ class OnboardRestaurant extends Page implements HasForms
                             ->maxValue(50)
                             ->default(1)
                             ->required()
-                            ->suffix('guests'),
+                            ->suffix('guests')
+                            ->live(onBlur: true),
 
                         TextInput::make('booking_max_party_size')
                             ->label('Maximum Party Size')
@@ -199,7 +200,12 @@ class OnboardRestaurant extends Page implements HasForms
                             ->default(12)
                             ->required()
                             ->suffix('guests')
-                            ->rules(['gte:booking_min_party_size']),
+                            ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
+                                if ((int) $value < $minPartySize) {
+                                    $fail("The Maximum Party Size must be at least {$minPartySize} (the minimum party size).");
+                                }
+                            }),
 
                         TextInput::make('booking_default_duration_minutes')
                             ->label('Default Reservation Duration')

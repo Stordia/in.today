@@ -106,7 +106,10 @@ class CountryResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('name');
+            ->defaultSort('name')
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession();
     }
 
     public static function getRelations(): array

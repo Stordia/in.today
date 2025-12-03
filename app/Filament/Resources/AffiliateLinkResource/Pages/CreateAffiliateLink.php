@@ -10,4 +10,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateAffiliateLink extends CreateRecord
 {
     protected static string $resource = AffiliateLinkResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

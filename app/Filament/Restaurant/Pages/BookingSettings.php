@@ -13,6 +13,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
@@ -137,7 +138,8 @@ class BookingSettings extends Page implements HasForms
                             ->maxValue(50)
                             ->default(1)
                             ->required()
-                            ->suffix('guests'),
+                            ->suffix('guests')
+                            ->live(onBlur: true),
 
                         TextInput::make('booking_max_party_size')
                             ->label('Maximum Party Size')
@@ -147,7 +149,13 @@ class BookingSettings extends Page implements HasForms
                             ->default(20)
                             ->required()
                             ->suffix('guests')
-                            ->helperText('For larger parties, guests will be prompted to contact you directly.'),
+                            ->helperText('For larger parties, guests will be prompted to contact you directly.')
+                            ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
+                                if ((int) $value < $minPartySize) {
+                                    $fail("The Maximum Party Size must be at least {$minPartySize} (the minimum party size).");
+                                }
+                            }),
                     ])
                     ->columns(2),
 
