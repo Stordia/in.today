@@ -23,6 +23,14 @@ class AffiliateResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    /**
+     * Hide from sidebar navigation - access via AffiliateHub page instead.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
