@@ -359,8 +359,6 @@ class OnboardRestaurant extends Page implements HasForms
                 RestaurantUser::create([
                     'restaurant_id' => $restaurant->id,
                     'user_id' => $ownerUser->id,
-                    'name' => $ownerUser->name,
-                    'email' => $ownerUser->email,
                     'role' => RestaurantRole::Owner,
                     'is_active' => true,
                 ]);

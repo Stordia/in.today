@@ -139,8 +139,6 @@ class EditContactLead extends EditRecord
             RestaurantUser::create([
                 'restaurant_id' => $restaurant->id,
                 'user_id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
                 'role' => RestaurantRole::Owner,
                 'is_active' => true,
             ]);
