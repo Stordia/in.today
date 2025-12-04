@@ -345,6 +345,7 @@ class DevStatus extends Page implements HasForms
             ->schema([
                 Section::make('Summary')
                     ->description('High-level notes about current development phase and priorities.')
+                    ->collapsible()
                     ->schema([
                         Textarea::make('summary')
                             ->label('Global notes / context')
@@ -354,7 +355,9 @@ class DevStatus extends Page implements HasForms
                     ]),
 
                 Section::make('Features & Modules')
-                    ->description('Track status of features and modules being developed.')
+                    ->description('Legend: ⚪ planned · 🟡 in progress · 🧪 ready for tests · ✅ done · 🔴 blocked')
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Repeater::make('features')
                             ->label('Features / Modules')
@@ -383,12 +386,20 @@ class DevStatus extends Page implements HasForms
                             ])
                             ->columns(2)
                             ->collapsed(false)
-                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                            ->itemLabel(fn (array $state): string => match ($state['status'] ?? null) {
+                                'planned' => '⚪ ' . ($state['name'] ?? 'Untitled feature'),
+                                'in_progress' => '🟡 ' . ($state['name'] ?? 'Untitled feature'),
+                                'ready_for_tests' => '🧪 ' . ($state['name'] ?? 'Untitled feature'),
+                                'tested_ok' => '✅ ' . ($state['name'] ?? 'Untitled feature'),
+                                'blocked' => '🔴 ' . ($state['name'] ?? 'Untitled feature'),
+                                default => $state['name'] ?? 'Untitled feature',
+                            })
                             ->columnSpanFull(),
                     ]),
 
                 Section::make('Test Suites')
-                    ->description('Track test suites and their status.')
+                    ->description('Legend: ⚪ not run yet · 🧪 in progress · ✅ last run passed · 🔴 last run failed')
+                    ->collapsible()
                     ->collapsed()
                     ->schema([
                         Repeater::make('tests')
@@ -427,12 +438,28 @@ class DevStatus extends Page implements HasForms
                             ])
                             ->columns(2)
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                            ->itemLabel(function (array $state): string {
+                                $name = $state['name'] ?? 'Untitled test suite';
+                                $lastResult = $state['last_result'] ?? null;
+                                $lastRunAt = $state['last_run_at'] ?? null;
+
+                                // No run yet
+                                if (empty($lastRunAt) || empty($lastResult) || $lastResult === 'unknown') {
+                                    return '⚪ ' . $name;
+                                }
+
+                                return match ($lastResult) {
+                                    'pass' => '✅ ' . $name,
+                                    'fail' => '🔴 ' . $name,
+                                    default => '🧪 ' . $name,
+                                };
+                            })
                             ->columnSpanFull(),
                     ]),
 
                 Section::make('Todos')
-                    ->description('Short todo list for development and QA tasks.')
+                    ->description('Legend: 🔵 open · 🟡 in progress · ✅ done · 🔴 blocked')
+                    ->collapsible()
                     ->collapsed()
                     ->schema([
                         Repeater::make('todos')
@@ -457,6 +484,7 @@ class DevStatus extends Page implements HasForms
                                         'open' => 'Open',
                                         'in_progress' => 'In Progress',
                                         'done' => 'Done',
+                                        'blocked' => 'Blocked',
                                     ])
                                     ->default('open'),
                                 Select::make('priority')
@@ -474,7 +502,13 @@ class DevStatus extends Page implements HasForms
                             ])
                             ->columns(2)
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                            ->itemLabel(fn (array $state): string => match ($state['status'] ?? null) {
+                                'open' => '🔵 ' . ($state['title'] ?? 'Untitled todo'),
+                                'in_progress' => '🟡 ' . ($state['title'] ?? 'Untitled todo'),
+                                'done' => '✅ ' . ($state['title'] ?? 'Untitled todo'),
+                                'blocked' => '🔴 ' . ($state['title'] ?? 'Untitled todo'),
+                                default => $state['title'] ?? 'Untitled todo',
+                            })
                             ->columnSpanFull(),
                     ]),
             ])
@@ -1010,13 +1044,14 @@ class DevStatus extends Page implements HasForms
 
         $map = [
             'open' => 'open',
+            'todo' => 'open',
             'in_progress' => 'in_progress',
             'inprogress' => 'in_progress',
             'in progress' => 'in_progress',
             'done' => 'done',
             'completed' => 'done',
             'planned' => 'open',
-            'blocked' => 'open',
+            'blocked' => 'blocked',
         ];
 
         return $map[$status] ?? 'open';
