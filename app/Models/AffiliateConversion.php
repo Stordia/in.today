@@ -20,6 +20,7 @@ class AffiliateConversion extends Model
         'contact_lead_id',
         'affiliate_payout_id',
         'status',
+        'order_amount',
         'commission_amount',
         'currency',
         'occurred_at',
@@ -30,6 +31,7 @@ class AffiliateConversion extends Model
     {
         return [
             'status' => AffiliateConversionStatus::class,
+            'order_amount' => 'decimal:2',
             'commission_amount' => 'decimal:2',
             'occurred_at' => 'datetime',
             'metadata' => 'array',

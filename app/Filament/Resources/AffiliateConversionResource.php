@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Enums\AffiliateConversionStatus;
 use App\Filament\Resources\AffiliateConversionResource\Pages;
 use App\Models\AffiliateConversion;
+use App\Services\AppSettings;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -64,11 +65,17 @@ class AffiliateConversionResource extends Resource
                             ->options(AffiliateConversionStatus::class)
                             ->required()
                             ->default(AffiliateConversionStatus::Pending),
+                        Forms\Components\TextInput::make('order_amount')
+                            ->label('Order Amount')
+                            ->numeric()
+                            ->step(0.01)
+                            ->prefix('€')
+                            ->helperText('Base order value (commission is calculated from this)'),
                         Forms\Components\TextInput::make('commission_amount')
                             ->numeric()
                             ->step(0.01)
                             ->prefix('€')
-                            ->helperText('Leave empty to use affiliate default rate on approval'),
+                            ->helperText('Leave empty to auto-calculate on approval based on order amount'),
                         Forms\Components\TextInput::make('currency')
                             ->maxLength(3)
                             ->default('EUR'),
@@ -127,6 +134,12 @@ class AffiliateConversionResource extends Resource
                         : (AffiliateConversionStatus::tryFrom((string) $state)?->label() ?? ucfirst((string) $state))
                     )
                     ->sortable(),
+                Tables\Columns\TextColumn::make('order_amount')
+                    ->label('Order')
+                    ->money(fn ($record) => $record->currency ?? 'EUR', locale: 'de_DE')
+                    ->placeholder('—')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('commission_amount')
                     ->label('Commission')
                     ->money(fn ($record) => $record->currency ?? 'EUR', locale: 'de_DE')
@@ -208,11 +221,37 @@ class AffiliateConversionResource extends Resource
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Approve Conversion')
-                    ->modalDescription('This will approve the conversion and set the commission amount if not already set.')
+                    ->modalDescription(function (AffiliateConversion $record): string {
+                        $lines = ['This will approve the conversion.'];
+
+                        $orderAmount = (float) ($record->order_amount ?? 0);
+                        $commissionAmount = (float) ($record->commission_amount ?? 0);
+
+                        if ($commissionAmount > 0) {
+                            $lines[] = sprintf('Commission: €%.2f (already set).', $commissionAmount);
+                        } elseif ($orderAmount > 0) {
+                            $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+                            $calculatedCommission = round($orderAmount * $rate / 100, 2);
+                            $lines[] = sprintf(
+                                'Commission will be auto-calculated: €%.2f × %.0f%% = €%.2f',
+                                $orderAmount,
+                                $rate,
+                                $calculatedCommission
+                            );
+                        } else {
+                            $lines[] = 'No order amount set. Commission will remain empty (set it manually via Edit).';
+                        }
+
+                        return implode("\n", $lines);
+                    })
                     ->action(function (AffiliateConversion $record): void {
-                        // Fill commission_amount from affiliate default if null
-                        if (is_null($record->commission_amount) && $record->affiliate?->default_commission_rate) {
-                            $record->commission_amount = $record->affiliate->default_commission_rate;
+                        $orderAmount = (float) ($record->order_amount ?? 0);
+                        $commissionAmount = (float) ($record->commission_amount ?? 0);
+
+                        // Auto-calculate commission if not set and order_amount exists
+                        if ($commissionAmount <= 0 && $orderAmount > 0) {
+                            $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+                            $record->commission_amount = round($orderAmount * $rate / 100, 2);
                         }
 
                         if (is_null($record->currency)) {

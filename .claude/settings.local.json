@@ -1,19 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan:*)",
-      "Bash(npm run build:*)",
-      "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(mkdir:*)",
-      "Bash(composer require:*)",
-      "Bash(findstr:*)",
-      "Bash(del \"\\?\\d:\\Claude\\in.today\\nul\")",
-      "Bash(cmd /c \"del /f /q \\?\\d:\\Claude\\in.today\\nul\")",
-      "Bash(python -c \"import os; os.remove(r''\\\\?\\d:\\Claude\\in.today\\nul'')\")",
-      "Bash(python -c \"import os; os.remove(r''d:\\Claude\\in.today\\nul'')\")",
-      "Bash(cd /d d:Claudein.today)"
+      "Bash(php artisan make:migration:*)"
     ],
     "deny": [],
     "ask": []
