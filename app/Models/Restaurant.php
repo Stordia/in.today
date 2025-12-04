@@ -8,6 +8,7 @@ use App\Enums\RestaurantPlan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -126,6 +127,28 @@ class Restaurant extends Model
     public function restaurantUsers(): HasMany
     {
         return $this->hasMany(RestaurantUser::class);
+    }
+
+    /**
+     * Get all users linked to this restaurant via RestaurantUser pivot.
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'restaurant_users')
+            ->withPivot(['role', 'is_active'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the primary owner of this restaurant.
+     * Returns the first user with 'owner' role, or null if none exists.
+     */
+    public function owner(): ?User
+    {
+        return $this->users()
+            ->wherePivot('role', 'owner')
+            ->wherePivot('is_active', true)
+            ->first();
     }
 
     public function tables(): HasMany

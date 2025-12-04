@@ -6,10 +6,12 @@ namespace App\Filament\Resources;
 
 use App\Enums\RestaurantPlan;
 use App\Filament\Resources\RestaurantResource\Pages;
+use App\Filament\Resources\RestaurantResource\RelationManagers;
 use App\Models\Agency;
 use App\Models\City;
 use App\Models\Cuisine;
 use App\Models\Restaurant;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -131,6 +133,28 @@ class RestaurantResource extends Resource
                             ->url()
                             ->maxLength(500),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Owner')
+                    ->description('Primary owner of this restaurant. Manage team members in the Users tab.')
+                    ->schema([
+                        Forms\Components\Placeholder::make('owner_info')
+                            ->label('Current Owner')
+                            ->content(function (?Restaurant $record): string {
+                                if (! $record) {
+                                    return 'Owner will be assigned after creation (use Onboard for new restaurants).';
+                                }
+
+                                $owner = $record->owner();
+
+                                if (! $owner) {
+                                    return 'No owner assigned. Use the Users relation manager to assign one.';
+                                }
+
+                                return "{$owner->name} ({$owner->email})";
+                            }),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
             ]);
     }
 
@@ -157,6 +181,15 @@ class RestaurantResource extends Resource
                     ->label('Agency')
                     ->placeholder('Direct')
                     ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('owner_name')
+                    ->label('Owner')
+                    ->getStateUsing(fn (Restaurant $record): ?string => $record->owner()?->name)
+                    ->placeholder('—')
+                    ->url(fn (Restaurant $record): ?string => ($owner = $record->owner())
+                        ? UserResource::getUrl('view', ['record' => $owner])
+                        : null
+                    )
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('plan')
                     ->badge()
@@ -228,7 +261,9 @@ class RestaurantResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\UsersRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
