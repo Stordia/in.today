@@ -72,6 +72,12 @@ class AffiliateLinkResource extends Resource
 
                 Forms\Components\Section::make('Additional')
                     ->schema([
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Notes')
+                            ->rows(2)
+                            ->maxLength(1000)
+                            ->columnSpanFull()
+                            ->helperText('Internal notes about this link (optional).'),
                         Forms\Components\Textarea::make('metadata')
                             ->rows(3)
                             ->columnSpanFull()

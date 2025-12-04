@@ -6,9 +6,12 @@ namespace App\Filament\Resources\AffiliateResource\RelationManagers;
 
 use App\Filament\Resources\AffiliateLinkResource;
 use App\Models\AffiliateLink;
+use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class LinksRelationManager extends RelationManager
 {
@@ -17,6 +20,43 @@ class LinksRelationManager extends RelationManager
     protected static ?string $title = 'Links';
 
     protected static ?string $icon = 'heroicon-o-link';
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('slug')
+                    ->label('Slug')
+                    ->required()
+                    ->maxLength(191)
+                    ->unique(table: 'affiliate_links', column: 'slug', ignoreRecord: true)
+                    ->helperText('Used in /go/{slug} redirect URL. Use lowercase letters, numbers, and hyphens.')
+                    ->rules(['regex:/^[a-z0-9\-]+$/'])
+                    ->validationMessages([
+                        'regex' => 'Slug must contain only lowercase letters, numbers, and hyphens.',
+                    ]),
+
+                Forms\Components\TextInput::make('target_url')
+                    ->label('Target URL')
+                    ->required()
+                    ->url()
+                    ->maxLength(2048)
+                    ->columnSpanFull()
+                    ->helperText('Full URL where visitors will be redirected, e.g. https://example.com/landing'),
+
+                Forms\Components\Toggle::make('is_active')
+                    ->label('Active')
+                    ->default(true)
+                    ->helperText('Inactive links will not redirect visitors.'),
+
+                Forms\Components\Textarea::make('notes')
+                    ->label('Notes')
+                    ->rows(2)
+                    ->maxLength(1000)
+                    ->columnSpanFull()
+                    ->helperText('Internal notes about this link (optional).'),
+            ]);
+    }
 
     public function table(Table $table): Table
     {

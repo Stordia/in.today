@@ -20,6 +20,7 @@ class AffiliateLink extends Model
         'clicks_count',
         'conversions_count',
         'is_active',
+        'notes',
         'metadata',
     ];
 
