@@ -33,5 +33,9 @@ echo "--- STEP 4: Laravel cache clear ---"
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
+php artisan optimize:clear
+
+echo "--- STEP 5: Run database migrations ---"
+php artisan migrate --force
 
 echo "✅ DEPLOYMENT COMPLETED FOR in.today"
