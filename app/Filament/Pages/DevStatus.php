@@ -258,6 +258,84 @@ class DevStatus extends Page implements HasForms
                             ",
                         ]),
                 ]),
+
+            // Unified snapshot modal: exports all sections (Features, Tests, Todos) to one markdown document
+            Action::make('editAllAsText')
+                ->label('Edit All as Text')
+                ->icon('heroicon-o-document-duplicate')
+                ->color('primary')
+                ->modalHeading('Dev Status Snapshot')
+                ->modalDescription('Full markdown snapshot of Features, Tests, and Todos. Use headings (# Features, # Tests, # Todos) to separate sections.')
+                ->modalSubmitActionLabel('Save & Import')
+                ->modalWidth('5xl')
+                ->form([
+                    Textarea::make('snapshot')
+                        ->label('Full Snapshot (Markdown)')
+                        ->rows(30)
+                        ->helperText('Sections are separated by markdown headings: # Features, # Tests, # Todos. Each section uses its respective block format.')
+                        ->extraAttributes(['class' => 'font-mono text-sm']),
+                ])
+                ->fillForm(fn (): array => [
+                    'snapshot' => $this->exportAllToSnapshot(),
+                ])
+                ->action(function (array $data): void {
+                    $snapshot = $data['snapshot'] ?? '';
+
+                    try {
+                        $result = $this->importAllFromSnapshot($snapshot);
+
+                        Notification::make()
+                            ->title('Snapshot imported')
+                            ->body(sprintf(
+                                'Imported %d feature(s), %d test suite(s), %d todo(s).',
+                                $result['features_count'],
+                                $result['tests_count'],
+                                $result['todos_count']
+                            ))
+                            ->success()
+                            ->send();
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('Import failed')
+                            ->body('Could not parse snapshot: ' . $e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                })
+                ->extraModalFooterActions([
+                    Action::make('copySnapshotToClipboard')
+                        ->label('Copy to Clipboard')
+                        ->color('gray')
+                        ->extraAttributes([
+                            'x-on:click' => "
+                                const ta = \$el.closest('[role=dialog]').querySelector('textarea');
+                                if (ta) {
+                                    navigator.clipboard.writeText(ta.value);
+                                    \$tooltip('Copied!', { timeout: 1500 });
+                                }
+                            ",
+                        ]),
+                    Action::make('downloadSnapshot')
+                        ->label('Download .md')
+                        ->color('gray')
+                        ->extraAttributes([
+                            'x-on:click' => "
+                                const ta = \$el.closest('[role=dialog]').querySelector('textarea');
+                                if (ta) {
+                                    const blob = new Blob([ta.value], { type: 'text/markdown' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'devstatus-snapshot.md';
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(url);
+                                    \$tooltip('Downloaded!', { timeout: 1500 });
+                                }
+                            ",
+                        ]),
+                ]),
         ];
     }
 
@@ -443,7 +521,169 @@ class DevStatus extends Page implements HasForms
     }
 
     // =========================================================================
-    // EXPORT METHODS
+    // SNAPSHOT EXPORT/IMPORT (UNIFIED)
+    // =========================================================================
+
+    /**
+     * Export all sections (Features, Tests, Todos) to a unified markdown snapshot.
+     *
+     * Snapshot format:
+     * ```
+     * # Features
+     * [Feature]
+     * Name: ...
+     * ...
+     *
+     * # Tests
+     * [TestSuite]
+     * Name: ...
+     * ...
+     *
+     * # Todos
+     * [Todo]
+     * Title: ...
+     * ...
+     * ```
+     */
+    private function exportAllToSnapshot(): string
+    {
+        $sections = [];
+
+        // Features section
+        $featuresText = $this->exportFeaturesToText();
+        $sections[] = '# Features';
+        $sections[] = $featuresText;
+
+        // Tests section
+        $testsText = $this->exportTestsToText();
+        $sections[] = '# Tests';
+        $sections[] = $testsText;
+
+        // Todos section
+        $todosText = $this->exportTodosToText();
+        $sections[] = '# Todos';
+        $sections[] = $todosText;
+
+        return implode("\n", $sections);
+    }
+
+    /**
+     * Import all sections from a unified markdown snapshot.
+     *
+     * Parses the snapshot by splitting on markdown headings (# Features, # Tests, # Todos).
+     * Each section's content is then passed to the respective individual parser.
+     *
+     * BEHAVIOR FOR MISSING SECTIONS:
+     * - If a section heading is missing from the text, that section is left UNCHANGED.
+     * - This allows partial updates (e.g., only updating Features while keeping Tests/Todos).
+     * - To clear a section, include the heading with no blocks below it.
+     *
+     * @return array{features_count: int, tests_count: int, todos_count: int}
+     */
+    private function importAllFromSnapshot(string $snapshot): array
+    {
+        // Split snapshot into sections by markdown headings
+        $sections = $this->parseSnapshotSections($snapshot);
+
+        $featuresCount = 0;
+        $testsCount = 0;
+        $todosCount = 0;
+
+        // Process Features section if present
+        if (isset($sections['Features'])) {
+            $parsed = $this->importFeaturesFromText($sections['Features']);
+            $this->data['features'] = $parsed;
+            $featuresCount = count($parsed);
+
+            AppSettings::set(
+                'dev_status.features',
+                $parsed,
+                'dev_status',
+                'Features & modules status'
+            );
+        }
+
+        // Process Tests section if present
+        if (isset($sections['Tests'])) {
+            $parsed = $this->importTestsFromText($sections['Tests']);
+            $this->data['tests'] = $parsed;
+            $testsCount = count($parsed);
+
+            AppSettings::set(
+                'dev_status.tests',
+                $parsed,
+                'dev_status',
+                'Test suites & checks'
+            );
+        }
+
+        // Process Todos section if present
+        if (isset($sections['Todos'])) {
+            $parsed = $this->importTodosFromText($sections['Todos']);
+            $this->data['todos'] = $parsed;
+            $todosCount = count($parsed);
+
+            AppSettings::set(
+                'dev_status.todos',
+                $parsed,
+                'dev_status',
+                'Short todo list for dev/QA'
+            );
+        }
+
+        return [
+            'features_count' => $featuresCount,
+            'tests_count' => $testsCount,
+            'todos_count' => $todosCount,
+        ];
+    }
+
+    /**
+     * Parse a markdown snapshot into sections by heading.
+     *
+     * Looks for lines starting with "# " followed by section name.
+     * Returns array keyed by section name (Features, Tests, Todos) with content as value.
+     *
+     * @return array<string, string>
+     */
+    private function parseSnapshotSections(string $snapshot): array
+    {
+        $sections = [];
+        $lines = preg_split('/\r\n|\r|\n/', $snapshot);
+        $currentSection = null;
+        $currentContent = [];
+
+        foreach ($lines as $line) {
+            // Check for section heading (# Features, # Tests, # Todos)
+            if (preg_match('/^#\s+(Features|Tests|Todos)\s*$/i', $line, $matches)) {
+                // Save previous section if exists
+                if ($currentSection !== null) {
+                    $sections[$currentSection] = implode("\n", $currentContent);
+                }
+
+                // Start new section
+                $currentSection = ucfirst(strtolower($matches[1]));
+                $currentContent = [];
+
+                continue;
+            }
+
+            // Accumulate content for current section
+            if ($currentSection !== null) {
+                $currentContent[] = $line;
+            }
+        }
+
+        // Save last section
+        if ($currentSection !== null) {
+            $sections[$currentSection] = implode("\n", $currentContent);
+        }
+
+        return $sections;
+    }
+
+    // =========================================================================
+    // EXPORT METHODS (INDIVIDUAL SECTIONS)
     // =========================================================================
 
     private function exportFeaturesToText(): string
