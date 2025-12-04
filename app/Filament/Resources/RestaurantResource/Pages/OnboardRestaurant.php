@@ -383,7 +383,7 @@ class OnboardRestaurant extends Page implements HasForms
                 'created_by' => Auth::id(),
             ]);
 
-            $this->redirect(RestaurantResource::getUrl('edit', ['record' => $restaurant]));
+            $this->redirect(RestaurantResource::getUrl('index'));
 
         } catch (\Throwable $e) {
             Log::error('Restaurant onboarding failed', [
