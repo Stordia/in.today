@@ -118,6 +118,8 @@ class UsersRelationManager extends RelationManager
                         ->label('Remove Selected'),
                 ]),
             ])
-            ->defaultSort('pivot.role');
+            // Must use fully qualified column name to avoid SQL ambiguity
+            // (both users and restaurant_users tables have columns that could conflict)
+            ->defaultSort('users.name');
     }
 }
