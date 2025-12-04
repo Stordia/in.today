@@ -112,7 +112,8 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->belongsToMany(Restaurant::class, 'restaurant_users')
             ->withPivot(['role', 'is_active'])
-            ->withTimestamps();
+            ->withTimestamps()
+            ->orderBy('restaurants.name');
     }
 
     public function reservations(): HasMany

@@ -79,6 +79,6 @@ class RestaurantsRelationManager extends RelationManager
                     ->url(fn (Restaurant $record): string => RestaurantResource::getUrl('edit', ['record' => $record])),
             ])
             ->bulkActions([])
-            ->defaultSort('name');
+            ->defaultSort('restaurants.name');
     }
 }
