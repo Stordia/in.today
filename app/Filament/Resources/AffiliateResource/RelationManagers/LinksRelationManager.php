@@ -11,7 +11,6 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 
 class LinksRelationManager extends RelationManager
 {
@@ -48,13 +47,6 @@ class LinksRelationManager extends RelationManager
                     ->label('Active')
                     ->default(true)
                     ->helperText('Inactive links will not redirect visitors.'),
-
-                Forms\Components\Textarea::make('notes')
-                    ->label('Notes')
-                    ->rows(2)
-                    ->maxLength(1000)
-                    ->columnSpanFull()
-                    ->helperText('Internal notes about this link (optional).'),
             ]);
     }
 
