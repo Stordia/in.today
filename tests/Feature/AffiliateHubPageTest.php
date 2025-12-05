@@ -27,8 +27,8 @@ class AffiliateHubPageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Affiliate Hub');
-        $response->assertSee('Total Affiliates');
-        $response->assertSee('Outstanding Commission');
+        $response->assertSee('Overview');
+        $response->assertSee('How Affiliates Work');
     }
 
     public function test_regular_user_cannot_access_affiliate_hub(): void

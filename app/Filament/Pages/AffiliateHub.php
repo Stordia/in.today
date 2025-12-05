@@ -10,6 +10,7 @@ use App\Filament\Resources\AffiliateConversionResource;
 use App\Filament\Resources\AffiliateLinkResource;
 use App\Filament\Resources\AffiliatePayoutResource;
 use App\Filament\Resources\AffiliateResource;
+use App\Filament\Widgets\AffiliateStatsWidget;
 use App\Models\Affiliate;
 use App\Models\AffiliateConversion;
 use App\Models\AffiliateLink;
@@ -30,15 +31,6 @@ class AffiliateHub extends Page
     protected static string $view = 'filament.pages.affiliate-hub';
 
     public string $activeTab = 'overview';
-
-    // KPI data
-    public int $totalAffiliates = 0;
-
-    public int $totalConversions = 0;
-
-    public float $outstandingCommission = 0;
-
-    public float $totalPaid = 0;
 
     // Tab data collections
     public Collection $recentConversions;
@@ -61,6 +53,18 @@ class AffiliateHub extends Page
         return 'Affiliate Hub';
     }
 
+    public function getSubheading(): ?string
+    {
+        return 'Overview of affiliate partners, links, conversions and payouts.';
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AffiliateStatsWidget::class,
+        ];
+    }
+
     public static function canAccess(): bool
     {
         $user = auth()->user();
@@ -70,30 +74,12 @@ class AffiliateHub extends Page
 
     public function mount(): void
     {
-        $this->loadKPIs();
         $this->loadTabData();
     }
 
     public function setActiveTab(string $tab): void
     {
         $this->activeTab = $tab;
-    }
-
-    private function loadKPIs(): void
-    {
-        $this->totalAffiliates = Affiliate::count();
-        $this->totalConversions = AffiliateConversion::count();
-
-        // Outstanding = approved but not yet in a payout
-        $this->outstandingCommission = (float) AffiliateConversion::query()
-            ->where('status', AffiliateConversionStatus::Approved)
-            ->whereNull('affiliate_payout_id')
-            ->sum('commission_amount');
-
-        // Total paid = conversions with status = paid
-        $this->totalPaid = (float) AffiliateConversion::query()
-            ->where('status', AffiliateConversionStatus::Paid)
-            ->sum('commission_amount');
     }
 
     private function loadTabData(): void
