@@ -17,6 +17,9 @@ class AffiliateConversionApprovalTest extends TestCase
 
     public function test_commission_auto_calculates_from_order_amount_on_approval(): void
     {
+        // Set a known commission rate for this test
+        AppSettings::set('affiliate.default_commission_rate', 20, 'affiliate');
+
         // Create an affiliate
         $affiliate = Affiliate::create([
             'code' => 'test-affiliate',
@@ -38,8 +41,8 @@ class AffiliateConversionApprovalTest extends TestCase
         $orderAmount = (float) ($conversion->order_amount ?? 0);
         $commissionAmount = (float) ($conversion->commission_amount ?? 0);
 
-        // Default rate is 20% unless configured differently
-        $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+        // Get the rate from AppSettings (should be 20% as set above)
+        $rate = (float) AppSettings::get('affiliate.default_commission_rate', 20);
 
         if ($commissionAmount <= 0 && $orderAmount > 0) {
             $conversion->commission_amount = round($orderAmount * $rate / 100, 2);
@@ -77,7 +80,7 @@ class AffiliateConversionApprovalTest extends TestCase
         $orderAmount = (float) ($conversion->order_amount ?? 0);
         $commissionAmount = (float) ($conversion->commission_amount ?? 0);
 
-        $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+        $rate = (float) AppSettings::get('affiliate.default_commission_rate', 20);
 
         // Should NOT overwrite since commission is already > 0
         if ($commissionAmount <= 0 && $orderAmount > 0) {
@@ -115,7 +118,7 @@ class AffiliateConversionApprovalTest extends TestCase
         $orderAmount = (float) ($conversion->order_amount ?? 0);
         $commissionAmount = (float) ($conversion->commission_amount ?? 0);
 
-        $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+        $rate = (float) AppSettings::get('affiliate.default_commission_rate', 20);
 
         // Should NOT calculate since order_amount is 0
         if ($commissionAmount <= 0 && $orderAmount > 0) {

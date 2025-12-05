@@ -226,7 +226,7 @@ class ConversionsRelationManager extends RelationManager
         if ($commissionAmount > 0) {
             $lines[] = sprintf('Commission: €%.2f (already set).', $commissionAmount);
         } elseif ($orderAmount > 0) {
-            $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+            $rate = (float) AppSettings::get('affiliate.default_commission_rate', 20);
             $calculatedCommission = round($orderAmount * $rate / 100, 2);
             $lines[] = sprintf(
                 'Commission will be auto-calculated: €%.2f × %.0f%% = €%.2f',
@@ -251,7 +251,7 @@ class ConversionsRelationManager extends RelationManager
 
         // Auto-calculate commission if not set and order_amount exists
         if ($commissionAmount <= 0 && $orderAmount > 0) {
-            $rate = (float) AppSettings::get('affiliate_default_commission_rate', 20);
+            $rate = (float) AppSettings::get('affiliate.default_commission_rate', 20);
             $record->commission_amount = round($orderAmount * $rate / 100, 2);
         }
 

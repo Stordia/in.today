@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Services\AppSettings;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -29,6 +28,8 @@ class PlatformSettings extends Page implements HasForms
 
     public ?array $data = [];
 
+    public string $activeTab = 'email';
+
     public static function getNavigationLabel(): string
     {
         return 'Platform Settings';
@@ -37,6 +38,11 @@ class PlatformSettings extends Page implements HasForms
     public function getTitle(): string
     {
         return 'Platform Settings';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Global configuration for email, bookings, affiliates and technical flags.';
     }
 
     public static function canAccess(): bool
@@ -82,91 +88,87 @@ class PlatformSettings extends Page implements HasForms
         ]);
     }
 
+    public function setActiveTab(string $tab): void
+    {
+        $this->activeTab = $tab;
+    }
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Email')
-                    ->description('Global email configuration used across the platform.')
-                    ->schema([
-                        TextInput::make('email_from_address')
-                            ->label('From address')
-                            ->email()
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('email_from_name')
-                            ->label('From name')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('email_reply_to_address')
-                            ->label('Reply-to address')
-                            ->email()
-                            ->maxLength(255),
-                    ])
-                    ->columns(2),
+                // Email settings
+                TextInput::make('email_from_address')
+                    ->label('From address')
+                    ->email()
+                    ->required()
+                    ->maxLength(255)
+                    ->helperText('The sender email address for all system emails.'),
+                TextInput::make('email_from_name')
+                    ->label('From name')
+                    ->required()
+                    ->maxLength(255)
+                    ->helperText('The sender name shown in email clients.'),
+                TextInput::make('email_reply_to_address')
+                    ->label('Reply-to address')
+                    ->email()
+                    ->maxLength(255)
+                    ->helperText('Where replies to system emails will be sent.'),
 
-                Section::make('Bookings & Reservations')
-                    ->description('Defaults for the reservation system and public booking widget.')
-                    ->schema([
-                        Toggle::make('booking_send_customer_confirmation')
-                            ->label('Send confirmation to customer')
-                            ->helperText('Send an email confirmation to customers after they make a booking.'),
-                        Toggle::make('booking_send_restaurant_notification')
-                            ->label('Send notification to restaurant')
-                            ->helperText('Send an email notification to restaurants for new bookings.'),
-                        TextInput::make('booking_default_notification_email')
-                            ->label('Default restaurant notification email')
-                            ->email()
-                            ->maxLength(255)
-                            ->helperText('Used when a restaurant has no specific notification email configured.'),
-                    ])
-                    ->columns(2),
+                // Booking settings
+                Toggle::make('booking_send_customer_confirmation')
+                    ->label('Send confirmation to customer')
+                    ->helperText('Send an email confirmation to customers after they make a booking.'),
+                Toggle::make('booking_send_restaurant_notification')
+                    ->label('Send notification to restaurant')
+                    ->helperText('Send an email notification to restaurants for new bookings.'),
+                TextInput::make('booking_default_notification_email')
+                    ->label('Default restaurant notification email')
+                    ->email()
+                    ->maxLength(255)
+                    ->helperText('Used when a restaurant has no specific notification email configured.'),
 
-                Section::make('Affiliates')
-                    ->description('Defaults for the affiliate program.')
-                    ->schema([
-                        TextInput::make('affiliate_default_commission_rate')
-                            ->label('Default commission rate (%)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->maxValue(100)
-                            ->step(1)
-                            ->suffix('%')
-                            ->required(),
-                        TextInput::make('affiliate_payout_threshold')
-                            ->label('Payout threshold (EUR)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->step(1)
-                            ->prefix('€')
-                            ->required(),
-                        TextInput::make('affiliate_cookie_lifetime_days')
-                            ->label('Cookie lifetime (days)')
-                            ->numeric()
-                            ->minValue(1)
-                            ->step(1)
-                            ->suffix('days')
-                            ->required(),
-                    ])
-                    ->columns(3),
+                // Affiliate settings
+                TextInput::make('affiliate_default_commission_rate')
+                    ->label('Default commission rate (%)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->step(0.01)
+                    ->suffix('%')
+                    ->required()
+                    ->helperText('Default commission percentage for new affiliates.'),
+                TextInput::make('affiliate_payout_threshold')
+                    ->label('Payout threshold (EUR)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->step(0.01)
+                    ->prefix('€')
+                    ->required()
+                    ->helperText('Minimum balance required before an affiliate can request payout.'),
+                TextInput::make('affiliate_cookie_lifetime_days')
+                    ->label('Cookie lifetime (days)')
+                    ->numeric()
+                    ->minValue(1)
+                    ->step(1)
+                    ->suffix('days')
+                    ->required()
+                    ->helperText('How long the affiliate tracking cookie remains valid.'),
 
-                Section::make('Technical')
-                    ->description('Internal technical flags. Be careful when changing these.')
-                    ->schema([
-                        Toggle::make('technical_maintenance_mode')
-                            ->label('Logical maintenance flag')
-                            ->helperText('A logical flag for maintenance mode. Does NOT call artisan down/up.'),
-                        Select::make('technical_log_level')
-                            ->label('Log level')
-                            ->options([
-                                'debug' => 'Debug',
-                                'info' => 'Info',
-                                'warning' => 'Warning',
-                                'error' => 'Error',
-                            ])
-                            ->required(),
+                // Technical settings
+                Toggle::make('technical_maintenance_mode')
+                    ->label('Logical maintenance flag')
+                    ->helperText('A logical flag for maintenance mode. Does NOT call artisan down/up. Use this in middleware to show a maintenance page for non-admins.'),
+                Select::make('technical_log_level')
+                    ->label('Log level')
+                    ->options([
+                        'debug' => 'Debug',
+                        'info' => 'Info',
+                        'warning' => 'Warning',
+                        'error' => 'Error',
                     ])
-                    ->columns(2),
+                    ->required()
+                    ->helperText('Controls the runtime logging level. Keep on "info" in production.'),
             ])
             ->statePath('data');
     }
@@ -218,13 +220,13 @@ class PlatformSettings extends Page implements HasForms
         // Affiliate settings
         AppSettings::set(
             'affiliate.default_commission_rate',
-            (int) $data['affiliate_default_commission_rate'],
+            (float) $data['affiliate_default_commission_rate'],
             'affiliate',
             'Default commission rate for new affiliates (percentage).'
         );
         AppSettings::set(
             'affiliate.payout_threshold',
-            (int) $data['affiliate_payout_threshold'],
+            (float) $data['affiliate_payout_threshold'],
             'affiliate',
             'Minimum balance required for affiliate payout (in euros).'
         );
@@ -250,8 +252,8 @@ class PlatformSettings extends Page implements HasForms
         );
 
         Notification::make()
-            ->title('Settings updated')
-            ->body('Your platform configuration has been saved.')
+            ->title('Settings saved')
+            ->body('Your platform configuration has been saved successfully.')
             ->success()
             ->send();
     }
