@@ -1,10 +1,10 @@
 <x-filament-panels::page>
-    <form wire:submit="save">
+    <form wire:submit="save" x-data="{ activeTab: $wire.entangle('activeTab') }">
         {{-- Tabs Navigation --}}
         <x-filament::tabs contained>
             <x-filament::tabs.item
                 wire:click="setActiveTab('email')"
-                :alpine-active="'$wire.activeTab === \'email\''"
+                :alpine-active="'activeTab === \'email\''"
                 icon="heroicon-o-envelope"
             >
                 Email
@@ -12,7 +12,7 @@
 
             <x-filament::tabs.item
                 wire:click="setActiveTab('bookings')"
-                :alpine-active="'$wire.activeTab === \'bookings\''"
+                :alpine-active="'activeTab === \'bookings\''"
                 icon="heroicon-o-calendar-days"
             >
                 Bookings
@@ -20,7 +20,7 @@
 
             <x-filament::tabs.item
                 wire:click="setActiveTab('affiliates')"
-                :alpine-active="'$wire.activeTab === \'affiliates\''"
+                :alpine-active="'activeTab === \'affiliates\''"
                 icon="heroicon-o-user-group"
             >
                 Affiliates
@@ -28,14 +28,14 @@
 
             <x-filament::tabs.item
                 wire:click="setActiveTab('technical')"
-                :alpine-active="'$wire.activeTab === \'technical\''"
+                :alpine-active="'activeTab === \'technical\''"
                 icon="heroicon-o-wrench-screwdriver"
             >
                 Technical
             </x-filament::tabs.item>
         </x-filament::tabs>
 
-        {{-- Form Content (sections are shown/hidden via visible() in the form schema) --}}
+        {{-- Form Content (sections are shown/hidden via x-show in the form schema) --}}
         <div class="mt-6">
             {{ $this->form }}
         </div>

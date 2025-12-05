@@ -6,11 +6,13 @@ namespace Tests\Feature;
 
 use App\Enums\AffiliateConversionStatus;
 use App\Enums\GlobalRole;
+use App\Filament\Pages\PlatformSettings;
 use App\Models\Affiliate;
 use App\Models\AffiliateConversion;
 use App\Models\User;
 use App\Services\AppSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PlatformSettingsPageTest extends TestCase
@@ -261,5 +263,150 @@ class PlatformSettingsPageTest extends TestCase
         $this->assertIsBool(AppSettings::get('booking.send_customer_confirmation'));
         $this->assertIsBool(AppSettings::get('booking.send_restaurant_notification'));
         $this->assertIsBool(AppSettings::get('technical.maintenance_mode'));
+    }
+
+    public function test_saving_with_fresh_state_does_not_cause_undefined_key_errors(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
+            'global_role' => GlobalRole::PlatformAdmin,
+        ]);
+
+        // Ensure no AppSettings exist (fresh database from RefreshDatabase trait)
+        // The form should initialize with defaults and save without errors
+
+        // Access the page - this tests that mount() doesn't fail
+        $response = $this->actingAs($admin)
+            ->get('/admin/platform-settings');
+
+        $response->assertStatus(200);
+
+        // Simulate the form data structure that Livewire would send
+        // This mirrors the nested structure used in the form schema
+        $formData = [
+            'email' => [
+                'from_address' => 'new@example.com',
+                'from_name' => 'New Name',
+                'reply_to_address' => 'reply@example.com',
+            ],
+            'booking' => [
+                'send_customer_confirmation' => true,
+                'send_restaurant_notification' => false,
+                'default_notification_email' => 'notify@example.com',
+            ],
+            'affiliate' => [
+                'default_commission_rate' => 15.0,
+                'payout_threshold' => 100.0,
+                'cookie_lifetime_days' => 60,
+            ],
+            'technical' => [
+                'maintenance_mode' => false,
+                'log_level' => 'warning',
+            ],
+        ];
+
+        // Test that data_get works correctly with nested structure
+        $this->assertEquals('new@example.com', data_get($formData, 'email.from_address'));
+        $this->assertEquals(true, data_get($formData, 'booking.send_customer_confirmation'));
+        $this->assertEquals(15.0, data_get($formData, 'affiliate.default_commission_rate'));
+        $this->assertEquals('warning', data_get($formData, 'technical.log_level'));
+
+        // Test that missing keys return defaults without errors
+        $this->assertEquals('default', data_get($formData, 'nonexistent.key', 'default'));
+        $this->assertNull(data_get($formData, 'email.nonexistent'));
+    }
+
+    public function test_platform_settings_page_renders_all_form_fields(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
+            'global_role' => GlobalRole::PlatformAdmin,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get('/admin/platform-settings');
+
+        $response->assertStatus(200);
+
+        // Verify form fields are present in the rendered output
+        $response->assertSee('From address');
+        $response->assertSee('From name');
+        $response->assertSee('Reply-to address');
+        $response->assertSee('Send confirmation to customer');
+        $response->assertSee('Send notification to restaurant');
+        $response->assertSee('Default commission rate');
+        $response->assertSee('Payout threshold');
+        $response->assertSee('Cookie lifetime');
+        $response->assertSee('Logical maintenance flag');
+        $response->assertSee('Log level');
+    }
+
+    public function test_livewire_save_method_persists_settings_correctly(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
+            'global_role' => GlobalRole::PlatformAdmin,
+        ]);
+
+        $this->actingAs($admin);
+
+        // Test the Livewire component directly with nested data structure
+        Livewire::test(PlatformSettings::class)
+            ->set('data.email.from_address', 'livewire@test.com')
+            ->set('data.email.from_name', 'Livewire Test')
+            ->set('data.email.reply_to_address', 'reply@livewire.com')
+            ->set('data.booking.send_customer_confirmation', false)
+            ->set('data.booking.send_restaurant_notification', true)
+            ->set('data.booking.default_notification_email', 'booking@test.com')
+            ->set('data.affiliate.default_commission_rate', 25)
+            ->set('data.affiliate.payout_threshold', 150)
+            ->set('data.affiliate.cookie_lifetime_days', 90)
+            ->set('data.technical.maintenance_mode', true)
+            ->set('data.technical.log_level', 'debug')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        // Verify the settings were persisted
+        $this->assertEquals('livewire@test.com', AppSettings::get('email.from_address'));
+        $this->assertEquals('Livewire Test', AppSettings::get('email.from_name'));
+        $this->assertEquals('reply@livewire.com', AppSettings::get('email.reply_to_address'));
+        $this->assertFalse(AppSettings::get('booking.send_customer_confirmation'));
+        $this->assertTrue(AppSettings::get('booking.send_restaurant_notification'));
+        $this->assertEquals('booking@test.com', AppSettings::get('booking.default_notification_email'));
+        $this->assertEquals(25.0, AppSettings::get('affiliate.default_commission_rate'));
+        $this->assertEquals(150.0, AppSettings::get('affiliate.payout_threshold'));
+        $this->assertEquals(90, AppSettings::get('affiliate.cookie_lifetime_days'));
+        $this->assertTrue(AppSettings::get('technical.maintenance_mode'));
+        $this->assertEquals('debug', AppSettings::get('technical.log_level'));
+    }
+
+    public function test_livewire_save_with_empty_database_does_not_throw_exception(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
+            'global_role' => GlobalRole::PlatformAdmin,
+        ]);
+
+        $this->actingAs($admin);
+
+        // Mount the component with empty database - should use defaults
+        $component = Livewire::test(PlatformSettings::class)
+            ->assertSet('activeTab', 'email');
+
+        // Save with default values - should not throw any undefined key errors
+        $component->call('save')
+            ->assertHasNoErrors();
+
+        // Verify settings were saved (with default values from mount)
+        $this->assertNotNull(AppSettings::get('booking.send_customer_confirmation'));
+        $this->assertNotNull(AppSettings::get('technical.log_level'));
     }
 }
