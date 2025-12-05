@@ -227,4 +227,39 @@ class PlatformSettingsPageTest extends TestCase
 
         $this->assertEquals(10.00, (float) $conversion2->commission_amount);
     }
+
+    public function test_boolean_settings_are_correctly_cast_and_persisted(): void
+    {
+        // Test toggling boolean settings on and off
+
+        // Initially set to true
+        AppSettings::set('booking.send_customer_confirmation', true, 'booking');
+        AppSettings::set('booking.send_restaurant_notification', true, 'booking');
+        AppSettings::set('technical.maintenance_mode', false, 'technical');
+
+        // Verify initial state with proper boolean types
+        $this->assertTrue(AppSettings::get('booking.send_customer_confirmation'));
+        $this->assertTrue(AppSettings::get('booking.send_restaurant_notification'));
+        $this->assertFalse(AppSettings::get('technical.maintenance_mode'));
+
+        // Toggle all to opposite values
+        AppSettings::set('booking.send_customer_confirmation', false, 'booking');
+        AppSettings::set('booking.send_restaurant_notification', false, 'booking');
+        AppSettings::set('technical.maintenance_mode', true, 'technical');
+
+        // Clear cache to ensure we're reading fresh values
+        AppSettings::forget('booking.send_customer_confirmation');
+        AppSettings::forget('booking.send_restaurant_notification');
+        AppSettings::forget('technical.maintenance_mode');
+
+        // Verify toggled state - should be proper boolean types
+        $this->assertFalse(AppSettings::get('booking.send_customer_confirmation'));
+        $this->assertFalse(AppSettings::get('booking.send_restaurant_notification'));
+        $this->assertTrue(AppSettings::get('technical.maintenance_mode'));
+
+        // Verify the values are actually booleans, not strings
+        $this->assertIsBool(AppSettings::get('booking.send_customer_confirmation'));
+        $this->assertIsBool(AppSettings::get('booking.send_restaurant_notification'));
+        $this->assertIsBool(AppSettings::get('technical.maintenance_mode'));
+    }
 }
