@@ -9,8 +9,11 @@ use App\Enums\ReservationSource;
 use App\Enums\ReservationStatus;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\OpeningHour;
 use App\Models\Reservation;
 use App\Models\Restaurant;
+use App\Models\Table;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -83,6 +86,154 @@ class PublicBookingTest extends TestCase
         $response = $this->get('/book/test-restaurant');
 
         $response->assertStatus(404);
+    }
+
+    public function test_booking_page_loads_with_valid_restaurant(): void
+    {
+        // Create opening hours for tomorrow
+        $tomorrow = Carbon::now('Europe/Berlin')->addDay();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $tomorrow->dayOfWeek === 0 ? 6 : $tomorrow->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 4,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString());
+
+        $response->assertStatus(200);
+        $response->assertSee('Test Restaurant');
+        $response->assertSee('type="date"', false); // HTML5 date input (false = don't escape)
+    }
+
+    public function test_booking_page_shows_time_slots_when_available(): void
+    {
+        // Create opening hours for tomorrow
+        $tomorrow = Carbon::now('Europe/Berlin')->addDay();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $tomorrow->dayOfWeek === 0 ? 6 : $tomorrow->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table with capacity
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 6,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=4');
+
+        $response->assertStatus(200);
+        // Should see time slot buttons (12:00, 12:30, etc.)
+        $response->assertSee('12:00');
+        $response->assertSee('12:30');
+        // Should see the booking form section (step 3) - check for id attributes instead
+        $response->assertSee('id="name"', false);
+        $response->assertSee('id="email"', false);
+    }
+
+    public function test_booking_page_shows_no_slots_message_when_closed(): void
+    {
+        // Don't create any opening hours - restaurant is closed
+        $tomorrow = Carbon::now('Europe/Berlin')->addDay();
+
+        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString());
+
+        $response->assertStatus(200);
+        // Should see the "no availability" message
+        $response->assertSee(__('booking.step_2.no_slots_title'));
+    }
+
+    public function test_booking_page_shows_deposit_info_for_large_party(): void
+    {
+        // Enable deposits
+        $this->restaurant->update([
+            'booking_deposit_enabled' => true,
+            'booking_deposit_threshold_party_size' => 6,
+            'booking_deposit_type' => 'fixed_per_person',
+            'booking_deposit_amount' => 25.00,
+            'booking_deposit_currency' => 'EUR',
+        ]);
+
+        // Create opening hours for tomorrow
+        $tomorrow = Carbon::now('Europe/Berlin')->addDay();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $tomorrow->dayOfWeek === 0 ? 6 : $tomorrow->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create tables with enough capacity
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 10,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        // Request with party size above threshold
+        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=6');
+
+        $response->assertStatus(200);
+        // Should see deposit info
+        $response->assertSee(__('booking.deposit.title'));
+        $response->assertSee('accepted_deposit'); // Consent checkbox
+    }
+
+    public function test_booking_page_hides_deposit_info_for_small_party(): void
+    {
+        // Enable deposits with threshold of 6
+        $this->restaurant->update([
+            'booking_deposit_enabled' => true,
+            'booking_deposit_threshold_party_size' => 6,
+            'booking_deposit_type' => 'fixed_per_person',
+            'booking_deposit_amount' => 25.00,
+        ]);
+
+        // Create opening hours for tomorrow
+        $tomorrow = Carbon::now('Europe/Berlin')->addDay();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $tomorrow->dayOfWeek === 0 ? 6 : $tomorrow->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 10,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        // Request with party size below threshold
+        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=4');
+
+        $response->assertStatus(200);
+        // Should NOT see the deposit consent checkbox (look for the specific input name)
+        $response->assertDontSee('name="accepted_deposit"');
     }
 
     /*
