@@ -124,16 +124,33 @@ class RestaurantResource extends Resource
                     ])->columns(3),
 
                 Forms\Components\Section::make('Media')
+                    ->description('Upload a logo and cover image for your restaurant.')
                     ->schema([
-                        Forms\Components\TextInput::make('logo_url')
-                            ->label('Logo URL')
-                            ->url()
-                            ->maxLength(500),
-                        Forms\Components\TextInput::make('cover_image_url')
-                            ->label('Cover Image URL')
-                            ->url()
-                            ->maxLength(500),
-                    ])->columns(2),
+                        Forms\Components\FileUpload::make('logo_url')
+                            ->label('Logo')
+                            ->image()
+                            ->disk('public')
+                            ->directory('restaurants/logos')
+                            ->imageResizeMode('cover')
+                            ->imageCropAspectRatio('1:1')
+                            ->imageResizeTargetWidth('512')
+                            ->imageResizeTargetHeight('512')
+                            ->maxSize(2048)
+                            ->helperText('Recommended: 512×512px, square format. Max 2MB.'),
+                        Forms\Components\FileUpload::make('cover_image_url')
+                            ->label('Cover Image')
+                            ->image()
+                            ->disk('public')
+                            ->directory('restaurants/covers')
+                            ->imageResizeMode('cover')
+                            ->imageResizeTargetWidth('1920')
+                            ->imageResizeTargetHeight('1080')
+                            ->maxSize(5120)
+                            ->helperText('Recommended: 1920×1080px, landscape format. Max 5MB.'),
+                    ])
+                    ->columns(2)
+                    ->collapsible()
+                    ->collapsed(),
 
                 Forms\Components\Section::make('Owner')
                     ->description('Primary owner of this restaurant. Manage team members in the Users tab.')

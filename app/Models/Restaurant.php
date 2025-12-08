@@ -308,6 +308,48 @@ class Restaurant extends Model
 
     /*
     |--------------------------------------------------------------------------
+    | Media Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the logo URL (supports both external URLs and uploaded files).
+     */
+    public function getLogoUrl(): ?string
+    {
+        if (empty($this->logo_url)) {
+            return null;
+        }
+
+        // If it's already a full URL, return as-is (backwards compatibility)
+        if (str_starts_with($this->logo_url, 'http://') || str_starts_with($this->logo_url, 'https://')) {
+            return $this->logo_url;
+        }
+
+        // Otherwise, it's a storage path
+        return asset('storage/' . $this->logo_url);
+    }
+
+    /**
+     * Get the cover image URL (supports both external URLs and uploaded files).
+     */
+    public function getCoverImageUrl(): ?string
+    {
+        if (empty($this->cover_image_url)) {
+            return null;
+        }
+
+        // If it's already a full URL, return as-is (backwards compatibility)
+        if (str_starts_with($this->cover_image_url, 'http://') || str_starts_with($this->cover_image_url, 'https://')) {
+            return $this->cover_image_url;
+        }
+
+        // Otherwise, it's a storage path
+        return asset('storage/' . $this->cover_image_url);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Booking Helpers
     |--------------------------------------------------------------------------
     */
