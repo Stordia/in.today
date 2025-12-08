@@ -14,6 +14,7 @@ use App\Models\Restaurant;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -155,6 +156,85 @@ class RestaurantResource extends Resource
                     ])
                     ->collapsible()
                     ->collapsed(),
+
+                Forms\Components\Section::make('Bookings')
+                    ->description('Control how many guests can book online and which URL is used for the booking widget.')
+                    ->schema([
+                        Forms\Components\Toggle::make('booking_enabled')
+                            ->label('Enable online bookings')
+                            ->helperText('If disabled, the public booking page for this restaurant will not accept new reservations.')
+                            ->default(true)
+                            ->live(),
+
+                        Forms\Components\TextInput::make('booking_public_slug')
+                            ->label('Public booking URL slug')
+                            ->helperText('Used for /book/{slug}. Leave empty to auto-generate from the restaurant name on save.')
+                            ->maxLength(100)
+                            ->visible(fn (Get $get) => $get('booking_enabled')),
+
+                        Forms\Components\TextInput::make('booking_min_party_size')
+                            ->label('Minimum Party Size')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(50)
+                            ->default(2)
+                            ->required()
+                            ->suffix('guests')
+                            ->live(onBlur: true),
+
+                        Forms\Components\TextInput::make('booking_max_party_size')
+                            ->label('Maximum Party Size')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(100)
+                            ->default(8)
+                            ->required()
+                            ->suffix('guests')
+                            ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
+                                if ((int) $value < $minPartySize) {
+                                    $fail("The Maximum Party Size must be at least {$minPartySize} (the minimum party size).");
+                                }
+                            }),
+
+                        Forms\Components\TextInput::make('booking_default_duration_minutes')
+                            ->label('Default Reservation Duration')
+                            ->numeric()
+                            ->minValue(15)
+                            ->maxValue(480)
+                            ->default(90)
+                            ->required()
+                            ->suffix('minutes'),
+
+                        Forms\Components\TextInput::make('booking_min_lead_time_minutes')
+                            ->label('Minimum Lead Time')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(1440)
+                            ->default(60)
+                            ->required()
+                            ->suffix('minutes')
+                            ->helperText('How far in advance a reservation must be made.'),
+
+                        Forms\Components\TextInput::make('booking_max_lead_time_days')
+                            ->label('Maximum Lead Time')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(365)
+                            ->default(30)
+                            ->required()
+                            ->suffix('days')
+                            ->helperText('How far into the future reservations can be made.'),
+
+                        Forms\Components\Textarea::make('booking_notes_internal')
+                            ->label('Internal Booking Notes')
+                            ->rows(2)
+                            ->maxLength(1000)
+                            ->helperText('Private notes for staff about booking policies.')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
             ]);
     }
 

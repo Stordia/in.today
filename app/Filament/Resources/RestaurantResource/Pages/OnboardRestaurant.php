@@ -62,8 +62,9 @@ class OnboardRestaurant extends Page implements HasForms
         $this->form->fill([
             // Restaurant defaults
             'booking_enabled' => true,
-            'booking_min_party_size' => 1,
-            'booking_max_party_size' => 12,
+            'booking_public_slug' => '',
+            'booking_min_party_size' => 2,
+            'booking_max_party_size' => 8,
             'booking_default_duration_minutes' => 90,
             'booking_min_lead_time_minutes' => 60,
             'booking_max_lead_time_days' => 30,
@@ -183,14 +184,21 @@ class OnboardRestaurant extends Page implements HasForms
                         Toggle::make('booking_enabled')
                             ->label('Enable Public Booking')
                             ->helperText('When enabled, customers can make reservations online.')
-                            ->default(true),
+                            ->default(true)
+                            ->live(),
+
+                        TextInput::make('booking_public_slug')
+                            ->label('Public Booking URL Slug')
+                            ->helperText('Used for /book/{slug}. Leave empty to auto-generate from the restaurant name.')
+                            ->maxLength(100)
+                            ->visible(fn (Get $get) => $get('booking_enabled')),
 
                         TextInput::make('booking_min_party_size')
                             ->label('Minimum Party Size')
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(50)
-                            ->default(1)
+                            ->default(2)
                             ->required()
                             ->suffix('guests')
                             ->live(onBlur: true),
@@ -200,7 +208,7 @@ class OnboardRestaurant extends Page implements HasForms
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(100)
-                            ->default(12)
+                            ->default(8)
                             ->required()
                             ->suffix('guests')
                             ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -333,9 +341,11 @@ class OnboardRestaurant extends Page implements HasForms
                     'is_active' => true,
                     // Booking settings
                     'booking_enabled' => $data['booking_enabled'] ?? false,
-                    'booking_public_slug' => $data['booking_enabled'] ? Str::slug($data['name']) . '-' . Str::random(6) : null,
-                    'booking_min_party_size' => $data['booking_min_party_size'] ?? 1,
-                    'booking_max_party_size' => $data['booking_max_party_size'] ?? 12,
+                    'booking_public_slug' => $data['booking_enabled']
+                        ? (! empty($data['booking_public_slug']) ? $data['booking_public_slug'] : Str::slug($data['name']) . '-' . Str::random(6))
+                        : null,
+                    'booking_min_party_size' => $data['booking_min_party_size'] ?? 2,
+                    'booking_max_party_size' => $data['booking_max_party_size'] ?? 8,
                     'booking_default_duration_minutes' => $data['booking_default_duration_minutes'] ?? 90,
                     'booking_min_lead_time_minutes' => $data['booking_min_lead_time_minutes'] ?? 60,
                     'booking_max_lead_time_days' => $data['booking_max_lead_time_days'] ?? 30,

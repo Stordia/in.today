@@ -9,9 +9,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests for party size validation logic.
  *
- * These tests validate the closure-based validation rule used in
- * OnboardRestaurant.php and BookingSettings.php for ensuring
- * booking_max_party_size >= booking_min_party_size.
+ * These tests validate the closure-based validation rule used in:
+ * - OnboardRestaurant.php (wizard for new restaurants)
+ * - BookingSettings.php (restaurant panel settings)
+ * - RestaurantResource.php (admin restaurant editing)
+ *
+ * All three locations ensure booking_max_party_size >= booking_min_party_size.
  */
 class BookingPartySizeValidationTest extends TestCase
 {
