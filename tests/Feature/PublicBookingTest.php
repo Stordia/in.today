@@ -616,4 +616,125 @@ class PublicBookingTest extends TestCase
 
         Carbon::setTestNow(); // Reset
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Booking Submission & Email Tests
+    |--------------------------------------------------------------------------
+    */
+
+    public function test_booking_submission_sends_confirmation_emails(): void
+    {
+        // Mail is already faked in setUp()
+
+        // Set a fixed time for consistent testing
+        $now = Carbon::create(2025, 6, 15, 10, 0, 0, 'Europe/Berlin');
+        Carbon::setTestNow($now);
+
+        // Create opening hours for today
+        $today = $now->copy();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $today->dayOfWeek === 0 ? 6 : $today->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 6,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        // Ensure email sending is enabled in settings
+        \App\Services\AppSettings::set('booking.send_customer_confirmation', true);
+
+        // Submit a booking request from the booking page
+        $response = $this->from('/book/test-restaurant')
+            ->post('/book/test-restaurant/request', [
+                'date' => $today->toDateString(),
+                'time' => '12:00',
+                'party_size' => 2,
+                'name' => 'John Doe',
+                'email' => 'john@example.com',
+                'phone' => '+49123456789',
+                'notes' => 'Window seat preferred',
+                'accepted_terms' => '1',
+            ]);
+
+        // Should redirect back with success
+        $response->assertRedirect();
+        $response->assertSessionHas('booking_status', 'success');
+
+        // Verify reservation was created
+        $this->assertDatabaseHas('reservations', [
+            'restaurant_id' => $this->restaurant->id,
+            'customer_email' => 'john@example.com',
+            'customer_name' => 'John Doe',
+            'guests' => 2,
+        ]);
+
+        // Verify emails were queued (Mailables implement ShouldQueue)
+        Mail::assertQueued(\App\Mail\ReservationCustomerConfirmation::class, function ($mail) {
+            return $mail->hasTo('john@example.com');
+        });
+
+        Carbon::setTestNow(); // Reset
+    }
+
+    public function test_booking_submission_without_fatal_error(): void
+    {
+        // This test specifically verifies the Mailable $locale fix
+        // It should NOT throw: "Type of App\Mail\...::$locale must not be defined"
+
+        // Set a fixed time
+        $now = Carbon::create(2025, 6, 15, 10, 0, 0, 'Europe/Berlin');
+        Carbon::setTestNow($now);
+
+        // Create opening hours
+        $today = $now->copy();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $today->dayOfWeek === 0 ? 6 : $today->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 4,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        // Ensure email sending is enabled in settings
+        \App\Services\AppSettings::set('booking.send_customer_confirmation', true);
+
+        // Submit booking from the booking page - this should not throw any fatal error
+        $response = $this->from('/book/test-restaurant')
+            ->post('/book/test-restaurant/request', [
+                'date' => $today->toDateString(),
+                'time' => '12:00',
+                'party_size' => 2,
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'accepted_terms' => '1',
+            ]);
+
+        // If we get here without exception, the $locale fix is working
+        $response->assertRedirect();
+        $response->assertSessionHas('booking_status', 'success');
+
+        // Both mailable classes should be instantiable without error (queued, not sent directly)
+        Mail::assertQueued(\App\Mail\ReservationCustomerConfirmation::class);
+
+        Carbon::setTestNow();
+    }
 }

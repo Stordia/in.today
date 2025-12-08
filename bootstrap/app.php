@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'set.locale' => \App\Http\Middleware\SetLocale::class,
         ]);
+
+        // Exclude public booking form from CSRF (it has honeypot protection)
+        $middleware->validateCsrfTokens(except: [
+            'book/*/request',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

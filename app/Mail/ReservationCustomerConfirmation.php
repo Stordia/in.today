@@ -20,7 +20,7 @@ class ReservationCustomerConfirmation extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public string $locale;
+    public string $emailLocale;
 
     public string $formattedDate;
 
@@ -30,7 +30,8 @@ class ReservationCustomerConfirmation extends Mailable implements ShouldQueue
         public Reservation $reservation,
         public Restaurant $restaurant,
     ) {
-        $this->locale = $reservation->language ?? app()->getLocale();
+        $this->emailLocale = $reservation->language ?? app()->getLocale();
+        $this->locale($this->emailLocale);
         $this->computeFormattedDateTime();
     }
 
@@ -47,7 +48,7 @@ class ReservationCustomerConfirmation extends Mailable implements ShouldQueue
 
         return new Envelope(
             from: new Address($fromAddress, $fromName),
-            subject: __('emails.reservation.customer_subject', ['restaurant' => $this->restaurant->name], $this->locale),
+            subject: __('emails.reservation.customer_subject', ['restaurant' => $this->restaurant->name], $this->emailLocale),
         );
     }
 
@@ -58,7 +59,7 @@ class ReservationCustomerConfirmation extends Mailable implements ShouldQueue
             with: [
                 'reservation' => $this->reservation,
                 'restaurant' => $this->restaurant,
-                'locale' => $this->locale,
+                'locale' => $this->emailLocale,
                 'formattedDate' => $this->formattedDate,
                 'formattedTime' => $this->formattedTime,
             ],
