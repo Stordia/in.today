@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DepositStatus;
 use App\Enums\ReservationSource;
 use App\Enums\ReservationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +38,12 @@ class Reservation extends Model
         'confirmed_at',
         'cancelled_at',
         'completed_at',
+        // Deposit fields
+        'deposit_required',
+        'deposit_amount',
+        'deposit_currency',
+        'deposit_status',
+        'deposit_notes',
     ];
 
     protected function casts(): array
@@ -51,6 +58,10 @@ class Reservation extends Model
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'completed_at' => 'datetime',
+            // Deposit fields
+            'deposit_required' => 'boolean',
+            'deposit_amount' => 'decimal:2',
+            'deposit_status' => DepositStatus::class,
         ];
     }
 
@@ -193,5 +204,67 @@ class Reservation extends Model
     public function getEndTime(): string
     {
         return $this->time->copy()->addMinutes($this->duration_minutes)->format('H:i');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Deposit Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    public function hasDepositRequired(): bool
+    {
+        return $this->deposit_required ?? false;
+    }
+
+    public function isDepositPending(): bool
+    {
+        return $this->deposit_status === DepositStatus::Pending;
+    }
+
+    public function isDepositPaid(): bool
+    {
+        return $this->deposit_status === DepositStatus::Paid;
+    }
+
+    public function isDepositWaived(): bool
+    {
+        return $this->deposit_status === DepositStatus::Waived;
+    }
+
+    /**
+     * Get formatted deposit amount with currency.
+     */
+    public function getFormattedDepositAmount(): ?string
+    {
+        if (! $this->deposit_required || $this->deposit_amount === null) {
+            return null;
+        }
+
+        $currency = $this->deposit_currency ?? 'EUR';
+
+        return number_format((float) $this->deposit_amount, 2, ',', '.') . ' ' . $currency;
+    }
+
+    /**
+     * Mark deposit as paid.
+     */
+    public function markDepositPaid(?string $notes = null): void
+    {
+        $this->update([
+            'deposit_status' => DepositStatus::Paid,
+            'deposit_notes' => $notes ?? $this->deposit_notes,
+        ]);
+    }
+
+    /**
+     * Waive deposit requirement.
+     */
+    public function waiveDeposit(?string $notes = null): void
+    {
+        $this->update([
+            'deposit_status' => DepositStatus::Waived,
+            'deposit_notes' => $notes ?? $this->deposit_notes,
+        ]);
     }
 }

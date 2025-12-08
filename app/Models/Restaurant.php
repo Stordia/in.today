@@ -59,6 +59,13 @@ class Restaurant extends Model
         'booking_min_lead_time_minutes',
         'booking_max_lead_time_days',
         'booking_notes_internal',
+        // Deposit settings
+        'booking_deposit_enabled',
+        'booking_deposit_threshold_party_size',
+        'booking_deposit_type',
+        'booking_deposit_amount',
+        'booking_deposit_currency',
+        'booking_deposit_policy',
     ];
 
     protected function casts(): array
@@ -83,6 +90,10 @@ class Restaurant extends Model
             'booking_default_duration_minutes' => 'integer',
             'booking_min_lead_time_minutes' => 'integer',
             'booking_max_lead_time_days' => 'integer',
+            // Deposit settings
+            'booking_deposit_enabled' => 'boolean',
+            'booking_deposit_threshold_party_size' => 'integer',
+            'booking_deposit_amount' => 'decimal:2',
         ];
     }
 
@@ -313,5 +324,49 @@ class Restaurant extends Model
         }
 
         return url("/book/{$this->booking_public_slug}");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Deposit Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Check if deposit is required for a given party size.
+     */
+    public function requiresDeposit(int $partySize): bool
+    {
+        return $this->booking_deposit_enabled
+            && $partySize >= ($this->booking_deposit_threshold_party_size ?? 4);
+    }
+
+    /**
+     * Calculate deposit amount for a given party size.
+     */
+    public function calculateDepositAmount(int $partySize): float
+    {
+        if (! $this->requiresDeposit($partySize)) {
+            return 0.00;
+        }
+
+        $amount = (float) ($this->booking_deposit_amount ?? 0.00);
+
+        return match ($this->booking_deposit_type ?? 'fixed_per_person') {
+            'fixed_per_person' => $amount * $partySize,
+            'fixed_per_reservation' => $amount,
+            default => $amount,
+        };
+    }
+
+    /**
+     * Get formatted deposit amount with currency.
+     */
+    public function getFormattedDepositAmount(int $partySize): string
+    {
+        $amount = $this->calculateDepositAmount($partySize);
+        $currency = $this->booking_deposit_currency ?? 'EUR';
+
+        return number_format($amount, 2, ',', '.') . ' ' . $currency;
     }
 }

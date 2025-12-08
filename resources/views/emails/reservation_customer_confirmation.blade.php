@@ -79,6 +79,24 @@
         </ul>
     </div>
 
+    @if($reservation->deposit_required)
+        <div class="details" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;">
+            <h2 style="color: #92400e; margin-top: 0;">{{ __('emails.reservation.deposit_required_title', [], $locale) }}</h2>
+            <p style="color: #78350f; margin-bottom: 10px;">
+                {{ __('emails.reservation.deposit_amount', ['amount' => $reservation->getFormattedDepositAmount()], $locale) }}
+            </p>
+            <p style="color: #92400e; font-size: 14px;">
+                {{ __('emails.reservation.deposit_instructions', [], $locale) }}
+            </p>
+            @if(!empty($restaurant->booking_deposit_policy))
+                <p style="color: #a16207; font-size: 13px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #fde68a;">
+                    <strong>{{ __('emails.reservation.deposit_policy_title', [], $locale) }}:</strong><br>
+                    {{ $restaurant->booking_deposit_policy }}
+                </p>
+            @endif
+        </div>
+    @endif
+
     <p>{{ __('emails.reservation.customer_outro', [], $locale) }}</p>
 
     <div class="footer">

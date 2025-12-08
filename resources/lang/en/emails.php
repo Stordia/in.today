@@ -42,6 +42,17 @@ return [
         'restaurant_notes' => 'Notes',
         'restaurant_source' => 'Source',
         'restaurant_status' => 'Status',
+        'restaurant_deposit' => 'Deposit required',
+        'restaurant_deposit_yes' => 'Yes',
+        'restaurant_deposit_no' => 'No',
+        'restaurant_deposit_amount' => 'Deposit amount',
+        'restaurant_deposit_status' => 'Deposit status',
         'restaurant_signature' => 'Please log in to your in.today business dashboard to confirm or manage this reservation.',
+
+        // Customer email deposit section
+        'deposit_required_title' => 'Deposit Required',
+        'deposit_amount' => 'A deposit of :amount is required for your reservation.',
+        'deposit_instructions' => 'Please contact the restaurant directly to arrange payment. Your reservation will be confirmed once the deposit has been received.',
+        'deposit_policy_title' => 'Deposit Policy',
     ],
 ];

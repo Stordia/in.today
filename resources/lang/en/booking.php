@@ -38,6 +38,7 @@ return [
         'notes_optional' => 'optional',
         'submit' => 'Request booking',
         'terms_note' => 'By submitting, you agree to our booking terms. Your reservation request will be reviewed and confirmed by the restaurant.',
+        'terms_consent_label' => 'I accept the booking terms and privacy policy.',
     ],
 
     'info' => [
@@ -51,6 +52,9 @@ return [
     'success' => [
         'title' => 'Thank you!',
         'message' => 'Your booking request has been received. We will confirm your reservation as soon as possible.',
+        'deposit_title' => 'Deposit Required',
+        'deposit_message' => 'A deposit of :amount is required for this reservation.',
+        'deposit_instructions' => 'You will receive payment instructions by email shortly. Your reservation is conditional until the deposit is received.',
     ],
 
     'error' => [
@@ -59,5 +63,27 @@ return [
 
     'restaurant_info' => [
         'title' => 'Restaurant',
+    ],
+
+    'deposit' => [
+        'title' => 'Deposit Required',
+        'message' => 'For reservations of :threshold or more guests, a deposit of :amount :type is required.',
+        'per_person' => 'per person',
+        'per_reservation' => 'per reservation',
+        'payment_note' => 'You will receive payment instructions after submitting your request.',
+        'consent_label' => 'I understand that a deposit is required and must be paid according to the deposit policy.',
+    ],
+
+    'validation' => [
+        'date_too_early' => 'This date is not available for online bookings.',
+        'date_too_late' => 'This date is too far in the future for online bookings.',
+        'party_size_min' => 'Minimum party size is :min.',
+        'party_size_max' => 'Online bookings allow up to :max guests. For larger parties, please contact the restaurant directly.',
+        'name_too_short' => 'Please enter your full name.',
+        'terms_required' => 'Please confirm that you accept the booking terms and privacy policy.',
+        'deposit_consent_required' => 'Please confirm that you understand the deposit requirement.',
+        'phone_invalid' => 'Please enter a valid phone number.',
+        'slot_unavailable' => 'Unfortunately, this time slot just became unavailable. Please choose another one.',
+        'slot_too_soon' => 'This time slot is no longer available due to minimum lead time requirements.',
     ],
 ];

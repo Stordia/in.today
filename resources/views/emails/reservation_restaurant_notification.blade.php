@@ -137,6 +137,24 @@
                 <td>{{ __('emails.reservation.restaurant_status', [], $locale) }}</td>
                 <td><span class="badge badge-warning">{{ $reservation->status->label() }}</span></td>
             </tr>
+            @if($reservation->deposit_required)
+                <tr>
+                    <td>{{ __('emails.reservation.restaurant_deposit', [], $locale) }}</td>
+                    <td>
+                        <span class="badge" style="background-color: #fef3c7; color: #92400e;">
+                            {{ __('emails.reservation.restaurant_deposit_required', [], $locale) }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ __('emails.reservation.restaurant_deposit_amount', [], $locale) }}</td>
+                    <td><strong>{{ $reservation->getFormattedDepositAmount() }}</strong></td>
+                </tr>
+                <tr>
+                    <td>{{ __('emails.reservation.restaurant_deposit_status', [], $locale) }}</td>
+                    <td><span class="badge badge-warning">{{ $reservation->deposit_status->label() }}</span></td>
+                </tr>
+            @endif
         </table>
     </div>
 

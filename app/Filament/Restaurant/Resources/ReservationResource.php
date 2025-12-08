@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Restaurant\Resources;
 
+use App\Enums\DepositStatus;
 use App\Enums\ReservationSource;
 use App\Enums\ReservationStatus;
 use App\Filament\Restaurant\Resources\ReservationResource\Pages;
@@ -97,6 +98,34 @@ class ReservationResource extends Resource
                             ->default(ReservationSource::Phone),
                     ])->columns(3),
 
+                Forms\Components\Section::make('Deposit')
+                    ->schema([
+                        Forms\Components\Toggle::make('deposit_required')
+                            ->label('Deposit Required')
+                            ->reactive(),
+                        Forms\Components\TextInput::make('deposit_amount')
+                            ->label('Deposit Amount')
+                            ->numeric()
+                            ->prefix('€')
+                            ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
+                        Forms\Components\TextInput::make('deposit_currency')
+                            ->label('Currency')
+                            ->default('EUR')
+                            ->maxLength(3)
+                            ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
+                        Forms\Components\Select::make('deposit_status')
+                            ->label('Deposit Status')
+                            ->options(DepositStatus::class)
+                            ->default(DepositStatus::None)
+                            ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
+                        Forms\Components\Textarea::make('deposit_notes')
+                            ->label('Deposit Notes')
+                            ->rows(2)
+                            ->columnSpanFull()
+                            ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
+                    ])->columns(4)
+                    ->collapsible(),
+
                 Forms\Components\Section::make('Notes')
                     ->schema([
                         Forms\Components\Textarea::make('customer_notes')
@@ -178,6 +207,25 @@ class ReservationResource extends Resource
                         ReservationSource::Api => 'heroicon-o-code-bracket',
                     })
                     ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('deposit_status')
+                    ->label('Deposit')
+                    ->badge()
+                    ->color(fn (?DepositStatus $state): string => match ($state) {
+                        DepositStatus::Pending => 'warning',
+                        DepositStatus::Paid => 'success',
+                        DepositStatus::Waived => 'info',
+                        default => 'gray',
+                    })
+                    ->icon(fn (?DepositStatus $state): ?string => match ($state) {
+                        DepositStatus::Pending => 'heroicon-o-clock',
+                        DepositStatus::Paid => 'heroicon-o-check-circle',
+                        DepositStatus::Waived => 'heroicon-o-minus-circle',
+                        default => null,
+                    })
+                    ->formatStateUsing(fn (?DepositStatus $state, Reservation $record): string => $record->deposit_required
+                        ? ($state?->label() ?? 'Pending')
+                        : '—')
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime('M j, H:i')
@@ -208,6 +256,12 @@ class ReservationResource extends Resource
                     ->label('Source')
                     ->options(ReservationSource::class)
                     ->multiple(),
+                Tables\Filters\Filter::make('deposit_pending')
+                    ->label('Deposit Pending')
+                    ->query(fn (Builder $query): Builder => $query
+                        ->where('deposit_required', true)
+                        ->where('deposit_status', DepositStatus::Pending))
+                    ->toggle(),
                 Tables\Filters\Filter::make('date_range')
                     ->form([
                         Forms\Components\DatePicker::make('from')
@@ -311,6 +365,40 @@ class ReservationResource extends Resource
                                 ]);
                             }
                         }
+                    }),
+                Tables\Actions\Action::make('mark_deposit_paid')
+                    ->label('Mark Deposit Paid')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Mark Deposit as Paid')
+                    ->modalDescription(fn (Reservation $record): string => "Mark the deposit of {$record->getFormattedDepositAmount()} as paid?")
+                    ->visible(fn (Reservation $record): bool => $record->deposit_required && $record->isDepositPending())
+                    ->form([
+                        Forms\Components\Textarea::make('deposit_notes')
+                            ->label('Notes (optional)')
+                            ->rows(2)
+                            ->placeholder('e.g., Payment received via bank transfer'),
+                    ])
+                    ->action(function (Reservation $record, array $data): void {
+                        $record->markDepositPaid($data['deposit_notes'] ?? null);
+                    }),
+                Tables\Actions\Action::make('waive_deposit')
+                    ->label('Waive Deposit')
+                    ->icon('heroicon-o-minus-circle')
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalHeading('Waive Deposit')
+                    ->modalDescription('Are you sure you want to waive the deposit requirement for this reservation?')
+                    ->visible(fn (Reservation $record): bool => $record->deposit_required && $record->isDepositPending())
+                    ->form([
+                        Forms\Components\Textarea::make('deposit_notes')
+                            ->label('Reason for waiving')
+                            ->rows(2)
+                            ->placeholder('e.g., Regular customer, special occasion'),
+                    ])
+                    ->action(function (Reservation $record, array $data): void {
+                        $record->waiveDeposit($data['deposit_notes'] ?? null);
                     }),
             ])
             ->bulkActions([])

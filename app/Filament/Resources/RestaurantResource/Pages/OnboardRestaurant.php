@@ -69,6 +69,12 @@ class OnboardRestaurant extends Page implements HasForms
             'booking_min_lead_time_minutes' => 60,
             'booking_max_lead_time_days' => 30,
             'timezone' => config('app.timezone', 'Europe/Berlin'),
+            // Deposit defaults
+            'booking_deposit_enabled' => false,
+            'booking_deposit_threshold_party_size' => 4,
+            'booking_deposit_type' => 'fixed_per_person',
+            'booking_deposit_amount' => 0,
+            'booking_deposit_currency' => 'EUR',
             // Owner defaults
             'owner_mode' => 'new_user',
         ]);
@@ -256,6 +262,66 @@ class OnboardRestaurant extends Page implements HasForms
                     ])
                     ->columns(2),
 
+                Section::make('Deposit Settings')
+                    ->description('Require a deposit for larger groups (optional, can be configured later).')
+                    ->schema([
+                        Toggle::make('booking_deposit_enabled')
+                            ->label('Enable deposit requirement')
+                            ->helperText('When enabled, larger groups will be required to pay a deposit.')
+                            ->default(false)
+                            ->live(),
+
+                        TextInput::make('booking_deposit_threshold_party_size')
+                            ->label('Deposit threshold (party size)')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(50)
+                            ->default(4)
+                            ->suffix('guests')
+                            ->helperText('Deposit is required for this party size and above.')
+                            ->visible(fn (Get $get) => $get('booking_deposit_enabled'))
+                            ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
+                                if ((int) $value < $minPartySize) {
+                                    $fail("The deposit threshold must be at least {$minPartySize} (the minimum party size).");
+                                }
+                            }),
+
+                        Select::make('booking_deposit_type')
+                            ->label('Deposit type')
+                            ->options([
+                                'fixed_per_person' => 'Per person',
+                                'fixed_per_reservation' => 'Per reservation',
+                            ])
+                            ->default('fixed_per_person')
+                            ->visible(fn (Get $get) => $get('booking_deposit_enabled')),
+
+                        TextInput::make('booking_deposit_amount')
+                            ->label('Deposit amount')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(10000)
+                            ->default(0)
+                            ->prefix('€')
+                            ->visible(fn (Get $get) => $get('booking_deposit_enabled')),
+
+                        TextInput::make('booking_deposit_currency')
+                            ->label('Currency')
+                            ->maxLength(3)
+                            ->default('EUR')
+                            ->visible(fn (Get $get) => $get('booking_deposit_enabled')),
+
+                        Textarea::make('booking_deposit_policy')
+                            ->label('Deposit policy')
+                            ->rows(3)
+                            ->maxLength(2000)
+                            ->helperText('Explain your deposit / cancellation policy. This is shown to guests when a deposit is required.')
+                            ->visible(fn (Get $get) => $get('booking_deposit_enabled'))
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->collapsed(),
+
                 Section::make('Owner User')
                     ->description('Link an existing user or create a new owner account.')
                     ->schema([
@@ -350,6 +416,13 @@ class OnboardRestaurant extends Page implements HasForms
                     'booking_min_lead_time_minutes' => $data['booking_min_lead_time_minutes'] ?? 60,
                     'booking_max_lead_time_days' => $data['booking_max_lead_time_days'] ?? 30,
                     'booking_notes_internal' => $data['booking_notes_internal'] ?? null,
+                    // Deposit settings
+                    'booking_deposit_enabled' => $data['booking_deposit_enabled'] ?? false,
+                    'booking_deposit_threshold_party_size' => $data['booking_deposit_threshold_party_size'] ?? 4,
+                    'booking_deposit_type' => $data['booking_deposit_type'] ?? 'fixed_per_person',
+                    'booking_deposit_amount' => $data['booking_deposit_amount'] ?? 0.00,
+                    'booking_deposit_currency' => $data['booking_deposit_currency'] ?? 'EUR',
+                    'booking_deposit_policy' => $data['booking_deposit_policy'] ?? null,
                 ]);
 
                 // 2. Resolve or create the owner user

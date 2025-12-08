@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\DepositStatus;
 use App\Enums\ReservationSource;
 use App\Enums\ReservationStatus;
 use App\Mail\ReservationCustomerConfirmation;
@@ -36,8 +37,19 @@ class PublicBookingController extends Controller
         // Determine timezone
         $timezone = $restaurant->timezone ?? config('app.timezone', 'UTC');
 
-        // Get today's date in restaurant timezone
-        $today = Carbon::now($timezone)->startOfDay();
+        // Get current time in restaurant timezone
+        $now = Carbon::now($timezone);
+        $today = $now->copy()->startOfDay();
+
+        // Calculate minimum date considering lead time
+        $minLeadTimeMinutes = $restaurant->booking_min_lead_time_minutes ?? 60;
+        $earliestBookableTime = $now->copy()->addMinutes($minLeadTimeMinutes);
+        $minDate = $earliestBookableTime->startOfDay();
+
+        // If the earliest bookable time is tomorrow or later, adjust minDate
+        if ($earliestBookableTime->isAfter($today->copy()->endOfDay())) {
+            $minDate = $earliestBookableTime->copy()->startOfDay();
+        }
 
         // Parse and validate date from request
         $dateInput = $request->query('date');
@@ -45,9 +57,9 @@ class PublicBookingController extends Controller
             try {
                 $date = Carbon::parse($dateInput, $timezone)->startOfDay();
 
-                // Ensure date is not in the past
-                if ($date->lt($today)) {
-                    $date = $today;
+                // Ensure date is not before minimum date
+                if ($date->lt($minDate)) {
+                    $date = $minDate;
                 }
 
                 // Ensure date is not beyond max lead time
@@ -56,10 +68,10 @@ class PublicBookingController extends Controller
                     $date = $maxDate;
                 }
             } catch (\Exception) {
-                $date = $today;
+                $date = $minDate;
             }
         } else {
-            $date = $today;
+            $date = $minDate;
         }
 
         // Parse and validate party size from request
@@ -83,15 +95,27 @@ class PublicBookingController extends Controller
             partySize: $partySize,
         );
 
+        // Determine if deposit is required for this party size
+        $requiresDeposit = $restaurant->requiresDeposit($partySize);
+        $depositAmount = $requiresDeposit ? $restaurant->calculateDepositAmount($partySize) : 0;
+        $formattedDepositAmount = $requiresDeposit ? $restaurant->getFormattedDepositAmount($partySize) : null;
+
         return view('public.booking', [
             'restaurant' => $restaurant,
             'date' => $date->toDateString(),
             'partySize' => $partySize,
             'availability' => $availability,
-            'minDate' => $today->toDateString(),
+            'minDate' => $minDate->toDateString(),
             'maxDate' => $today->copy()->addDays($restaurant->booking_max_lead_time_days ?? 30)->toDateString(),
             'minPartySize' => $minPartySize,
             'maxPartySize' => $maxPartySize,
+            // Deposit info
+            'requiresDeposit' => $requiresDeposit,
+            'depositAmount' => $depositAmount,
+            'formattedDepositAmount' => $formattedDepositAmount,
+            'depositThreshold' => $restaurant->booking_deposit_threshold_party_size ?? 4,
+            'depositType' => $restaurant->booking_deposit_type ?? 'fixed_per_person',
+            'depositPolicy' => $restaurant->booking_deposit_policy,
         ]);
     }
 
@@ -109,31 +133,74 @@ class PublicBookingController extends Controller
 
         // Determine timezone and date boundaries
         $timezone = $restaurant->timezone ?? config('app.timezone', 'UTC');
-        $today = Carbon::now($timezone)->startOfDay();
+        $now = Carbon::now($timezone);
+        $today = $now->copy()->startOfDay();
+
+        // Calculate minimum date considering lead time
+        $minLeadTimeMinutes = $restaurant->booking_min_lead_time_minutes ?? 60;
+        $earliestBookableTime = $now->copy()->addMinutes($minLeadTimeMinutes);
+        $minDate = $earliestBookableTime->startOfDay();
+
+        // If the earliest bookable time is tomorrow or later, use tomorrow
+        if ($earliestBookableTime->isAfter($today->copy()->endOfDay())) {
+            $minDate = $earliestBookableTime->copy()->startOfDay();
+        }
+
         $maxDate = $today->copy()->addDays($restaurant->booking_max_lead_time_days ?? 30);
         $minPartySize = $restaurant->booking_min_party_size ?? 1;
         $maxPartySize = $restaurant->booking_max_party_size ?? 20;
 
-        // Validate input
-        $validated = $request->validate([
+        // Build validation rules
+        $rules = [
             'date' => [
                 'required',
                 'date',
-                'after_or_equal:'.$today->toDateString(),
-                'before_or_equal:'.$maxDate->toDateString(),
+                'after_or_equal:' . $minDate->toDateString(),
+                'before_or_equal:' . $maxDate->toDateString(),
             ],
             'time' => ['required', 'string', 'regex:/^\d{2}:\d{2}$/'],
-            'party_size' => ['required', 'integer', 'min:'.$minPartySize, 'max:'.$maxPartySize],
-            'name' => ['required', 'string', 'max:255'],
+            'party_size' => ['required', 'integer', 'min:' . $minPartySize, 'max:' . $maxPartySize],
+            'name' => ['required', 'string', 'min:2', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string', 'max:2000'],
+            'phone' => ['nullable', 'string', 'max:50', 'regex:/^[+]?[0-9\s\-\(\)]+$/'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'accepted_terms' => ['required', 'accepted'],
             'hp_website' => ['nullable', 'string', 'max:255'],
-        ]);
+        ];
+
+        // Custom error messages
+        $messages = [
+            'date.after_or_equal' => __('booking.validation.date_too_early'),
+            'date.before_or_equal' => __('booking.validation.date_too_late'),
+            'party_size.min' => __('booking.validation.party_size_min', ['min' => $minPartySize]),
+            'party_size.max' => __('booking.validation.party_size_max', ['max' => $maxPartySize]),
+            'name.min' => __('booking.validation.name_too_short'),
+            'accepted_terms.required' => __('booking.validation.terms_required'),
+            'accepted_terms.accepted' => __('booking.validation.terms_required'),
+            'phone.regex' => __('booking.validation.phone_invalid'),
+        ];
+
+        // Check if deposit is required - add deposit consent checkbox validation
+        $partySize = (int) $request->input('party_size', 0);
+        $requiresDeposit = $restaurant->requiresDeposit($partySize);
+
+        if ($requiresDeposit) {
+            $rules['accepted_deposit'] = ['required', 'accepted'];
+            $messages['accepted_deposit.required'] = __('booking.validation.deposit_consent_required');
+            $messages['accepted_deposit.accepted'] = __('booking.validation.deposit_consent_required');
+        }
+
+        // Validate input
+        $validated = $request->validate($rules, $messages);
 
         // Honeypot spam protection
         if (! empty($validated['hp_website'] ?? null)) {
             // Treat as spam: pretend success to not help spammers
+            Log::info('Honeypot triggered - blocking spam booking attempt', [
+                'ip' => $request->ip(),
+                'restaurant' => $slug,
+            ]);
+
             return redirect()
                 ->route('public.booking.show', [
                     'slug' => $slug,
@@ -174,19 +241,38 @@ class PublicBookingController extends Controller
                     'party_size' => $partySize,
                 ])
                 ->withInput()
-                ->withErrors(['time' => 'Selected time is no longer available. Please choose another slot.']);
+                ->withErrors(['time' => __('booking.validation.slot_unavailable')]);
         }
 
-        // Create reservation
-        $slotStart = $selectedDate->copy()->setTimeFromTimeString($selectedTime);
+        // Check if the selected slot is not in the past (considering lead time)
+        $slotDateTime = $selectedDate->copy()->setTimeFromTimeString($selectedTime);
+        $earliestAllowed = $now->copy()->addMinutes($minLeadTimeMinutes);
 
+        if ($slotDateTime->isBefore($earliestAllowed)) {
+            return redirect()
+                ->route('public.booking.show', [
+                    'slug' => $slug,
+                    'date' => $validated['date'],
+                    'party_size' => $partySize,
+                ])
+                ->withInput()
+                ->withErrors(['time' => __('booking.validation.slot_too_soon')]);
+        }
+
+        // Calculate deposit if required
+        $depositRequired = $restaurant->requiresDeposit($partySize);
+        $depositAmount = $depositRequired ? $restaurant->calculateDepositAmount($partySize) : null;
+        $depositCurrency = $depositRequired ? ($restaurant->booking_deposit_currency ?? 'EUR') : null;
+        $depositStatus = $depositRequired ? DepositStatus::Pending : DepositStatus::None;
+
+        // Create reservation
         $reservation = Reservation::create([
             'restaurant_id' => $restaurant->id,
-            'date' => $slotStart->toDateString(),
-            'time' => $slotStart->format('H:i:s'),
+            'date' => $slotDateTime->toDateString(),
+            'time' => $slotDateTime->format('H:i:s'),
             'guests' => $partySize,
             'duration_minutes' => $restaurant->booking_default_duration_minutes ?? 90,
-            'customer_name' => $validated['name'],
+            'customer_name' => trim($validated['name']),
             'customer_email' => $validated['email'],
             'customer_phone' => $validated['phone'] ?? null,
             'customer_notes' => $validated['notes'] ?? null,
@@ -195,6 +281,11 @@ class PublicBookingController extends Controller
             'language' => app()->getLocale(),
             'ip_address' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            // Deposit fields
+            'deposit_required' => $depositRequired,
+            'deposit_amount' => $depositAmount,
+            'deposit_currency' => $depositCurrency,
+            'deposit_status' => $depositStatus,
         ]);
 
         // Send confirmation emails (wrapped in try/catch to not break booking flow)
@@ -226,6 +317,19 @@ class PublicBookingController extends Controller
             ]);
         }
 
+        // Build success session data
+        $successData = [
+            'booking_status' => 'success',
+            'reservation_uuid' => $reservation->uuid,
+            'deposit_required' => $depositRequired,
+        ];
+
+        if ($depositRequired) {
+            $successData['deposit_amount'] = $depositAmount;
+            $successData['deposit_currency'] = $depositCurrency;
+            $successData['formatted_deposit_amount'] = $reservation->getFormattedDepositAmount();
+        }
+
         // Redirect back with success message
         return redirect()
             ->route('public.booking.show', [
@@ -233,6 +337,6 @@ class PublicBookingController extends Controller
                 'date' => $validated['date'],
                 'party_size' => $partySize,
             ])
-            ->with('booking_status', 'success');
+            ->with($successData);
     }
 }
