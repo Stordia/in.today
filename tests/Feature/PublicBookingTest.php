@@ -140,9 +140,12 @@ class PublicBookingTest extends TestCase
         $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=4');
 
         $response->assertStatus(200);
-        // Should see time slot buttons (12:00, 12:30, etc.)
+        // Should see time slot radio buttons (12:00, 12:30, etc.)
         $response->assertSee('12:00');
         $response->assertSee('12:30');
+        // Should see time radio inputs for slot selection
+        $response->assertSee('name="time"', false);
+        $response->assertSee('type="radio"', false);
         // Should see the booking form section (step 3) - check for id attributes instead
         $response->assertSee('id="name"', false);
         $response->assertSee('id="email"', false);
@@ -158,6 +161,8 @@ class PublicBookingTest extends TestCase
         $response->assertStatus(200);
         // Should see the "no availability" message
         $response->assertSee(__('booking.step_2.no_slots_title'));
+        // Should NOT see any time radio inputs
+        $response->assertDontSee('name="time"');
     }
 
     public function test_booking_page_shows_deposit_info_for_large_party(): void

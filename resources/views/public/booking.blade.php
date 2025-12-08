@@ -142,6 +142,11 @@
                         </form>
                     </div>
 
+                    @php
+                        $bookableSlots = collect($availability->slots)->filter(fn($slot) => $slot->isBookable);
+                        $selectedTime = old('time', $bookableSlots->first()?->getStartTime());
+                    @endphp
+
                     {{-- Step 2: Time Slots --}}
                     <div class="bg-card rounded-2xl shadow-sm border border-default p-6 sm:p-8">
                         <h2 class="text-lg font-semibold text-primary mb-2 flex items-center gap-3">
@@ -165,7 +170,7 @@
                             </span>
                         </p>
 
-                        @if(! $availability->hasAnySlots())
+                        @if(! $availability->hasAnySlots() || $bookableSlots->isEmpty())
                             <div class="text-center py-12 px-4">
                                 <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                                     <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,32 +181,32 @@
                                 <p class="text-sm text-secondary">{{ __('booking.step_2.no_slots_hint') }}</p>
                             </div>
                         @else
-                            @php
-                                $bookableSlots = collect($availability->slots)->filter(fn($slot) => $slot->isBookable);
-                                $selectedTime = old('time', $bookableSlots->first()?->getStartTime());
-                            @endphp
-
-                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3" x-data="{ selectedTime: '{{ $selectedTime }}' }">
+                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                                 @foreach($availability->slots as $slot)
                                     @if($slot->isBookable)
-                                        <button
-                                            type="button"
-                                            @click="selectedTime = '{{ $slot->getStartTime() }}'"
-                                            :class="selectedTime === '{{ $slot->getStartTime() }}'
-                                                ? 'bg-brand text-white border-brand ring-2 ring-brand ring-offset-2'
-                                                : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50 hover:border-green-400 dark:hover:border-green-600'"
-                                            class="relative rounded-xl border p-3 text-center transition-all duration-150 focus:outline-none"
-                                        >
-                                            <span class="block text-lg font-semibold">{{ $slot->getStartTime() }}</span>
-                                            <span class="block text-xs mt-0.5 opacity-75">{{ __('booking.step_2.available') }}</span>
-                                            <template x-if="selectedTime === '{{ $slot->getStartTime() }}'">
-                                                <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-brand rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-900">
-                                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                </span>
-                                            </template>
-                                        </button>
+                                        @php $timeValue = $slot->getStartTime(); @endphp
+                                        <label class="relative cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="time"
+                                                value="{{ $timeValue }}"
+                                                form="booking-form"
+                                                class="sr-only peer"
+                                                @checked(old('time', $selectedTime) === $timeValue)
+                                            >
+                                            <div class="rounded-xl border p-3 text-center transition-all duration-150
+                                                        bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50
+                                                        hover:border-green-400 dark:hover:border-green-600
+                                                        peer-checked:bg-brand peer-checked:text-white peer-checked:border-brand peer-checked:ring-2 peer-checked:ring-brand peer-checked:ring-offset-2">
+                                                <span class="block text-lg font-semibold">{{ $timeValue }}</span>
+                                                <span class="block text-xs mt-0.5 opacity-75">{{ __('booking.step_2.available') }}</span>
+                                            </div>
+                                            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-brand rounded-full items-center justify-center ring-2 ring-white dark:ring-gray-900 hidden peer-checked:flex">
+                                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </span>
+                                        </label>
                                     @else
                                         <div class="rounded-xl border border-default bg-gray-50 dark:bg-gray-800/50 p-3 text-center opacity-50 cursor-not-allowed">
                                             <span class="block text-lg font-semibold text-secondary">{{ $slot->getStartTime() }}</span>
@@ -220,12 +225,8 @@
                     </div>
 
                     {{-- Step 3: Booking Form --}}
-                    @php
-                        $bookableSlots = collect($availability->slots)->filter(fn($slot) => $slot->isBookable);
-                    @endphp
-
                     @if($bookableSlots->isNotEmpty())
-                        <div class="bg-card rounded-2xl shadow-sm border border-default p-6 sm:p-8" x-data="{ selectedTime: '{{ old('time', $bookableSlots->first()?->getStartTime()) }}' }">
+                        <div class="bg-card rounded-2xl shadow-sm border border-default p-6 sm:p-8">
                             <h2 class="text-lg font-semibold text-primary mb-5 flex items-center gap-3">
                                 <span class="flex-shrink-0 w-8 h-8 rounded-full bg-brand/10 text-brand flex items-center justify-center text-sm font-bold">3</span>
                                 {{ __('booking.step_3.title') }}
@@ -245,7 +246,7 @@
                                         <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <span x-text="selectedTime"></span>
+                                        <span id="selected-time-display">{{ $selectedTime }}</span>
                                     </span>
                                     <span class="inline-flex items-center gap-1.5">
                                         <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,13 +257,12 @@
                                 </div>
                             </div>
 
-                            <form method="POST" action="{{ route('public.booking.request', $restaurant->booking_public_slug) }}">
+                            <form id="booking-form" method="POST" action="{{ route('public.booking.request', $restaurant->booking_public_slug) }}">
                                 @csrf
 
                                 {{-- Hidden fields --}}
                                 <input type="hidden" name="date" value="{{ $date }}">
                                 <input type="hidden" name="party_size" value="{{ $partySize }}">
-                                <input type="hidden" name="time" x-model="selectedTime">
 
                                 {{-- Honeypot field (spam protection) --}}
                                 <input type="text" name="hp_website" autocomplete="off" class="hidden" tabindex="-1" aria-hidden="true">
@@ -496,20 +496,20 @@
         </div>
     </div>
 
-    {{-- Alpine.js for time slot sync --}}
+    {{-- Update time display when selection changes --}}
     @push('scripts')
     <script>
-        document.addEventListener('alpine:init', () => {
-            // Sync time slot selection between step 2 grid and step 3 form
-            Alpine.effect(() => {
-                const step2Data = Alpine.$data(document.querySelector('[x-data*="selectedTime"]'));
-                const step3Forms = document.querySelectorAll('form input[name="time"]');
-                if (step2Data && step3Forms.length) {
-                    step3Forms.forEach(input => {
-                        input.value = step2Data.selectedTime;
+        document.addEventListener('DOMContentLoaded', () => {
+            const timeRadios = document.querySelectorAll('input[name="time"]');
+            const timeDisplay = document.getElementById('selected-time-display');
+
+            if (timeRadios.length && timeDisplay) {
+                timeRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        timeDisplay.textContent = radio.value;
                     });
-                }
-            });
+                });
+            }
         });
     </script>
     @endpush
