@@ -344,4 +344,93 @@ class RestaurantBookingSettingsTest extends TestCase
 
         $this->assertEquals('custom-slug', $result3['booking_public_slug']);
     }
+
+    /**
+     * Test that EditRestaurant form validates max party size must be >= min party size.
+     * This test specifically covers a bug where the validation error message showed
+     * "at least 1" instead of the actual min value (e.g., "at least 4").
+     */
+    public function test_edit_restaurant_validates_max_party_size_greater_than_min(): void
+    {
+        $this->actingAs($this->admin);
+
+        $restaurant = Restaurant::create([
+            'name' => 'Party Size Test Restaurant',
+            'city_id' => $this->city->id,
+            'timezone' => 'Europe/Berlin',
+            'booking_enabled' => true,
+            'booking_min_party_size' => 2,
+            'booking_max_party_size' => 8,
+        ]);
+
+        // Try to set min=4, max=3 which should fail validation
+        Livewire::test(EditRestaurant::class, ['record' => $restaurant->id])
+            ->set('data.booking_min_party_size', 4)
+            ->set('data.booking_max_party_size', 3)
+            ->call('save')
+            ->assertHasErrors(['data.booking_max_party_size']);
+
+        // Verify the restaurant was NOT updated with invalid values
+        $restaurant->refresh();
+        $this->assertEquals(2, $restaurant->booking_min_party_size);
+        $this->assertEquals(8, $restaurant->booking_max_party_size);
+    }
+
+    /**
+     * Test that EditRestaurant allows saving when max >= min.
+     */
+    public function test_edit_restaurant_allows_valid_party_size_values(): void
+    {
+        $this->actingAs($this->admin);
+
+        $restaurant = Restaurant::create([
+            'name' => 'Valid Party Size Restaurant',
+            'city_id' => $this->city->id,
+            'timezone' => 'Europe/Berlin',
+            'booking_enabled' => true,
+            'booking_min_party_size' => 2,
+            'booking_max_party_size' => 8,
+        ]);
+
+        // Set min=4, max=10 which should pass validation
+        Livewire::test(EditRestaurant::class, ['record' => $restaurant->id])
+            ->set('data.booking_min_party_size', 4)
+            ->set('data.booking_max_party_size', 10)
+            ->call('save')
+            ->assertHasNoErrors(['data.booking_max_party_size']);
+
+        // Verify the restaurant WAS updated
+        $restaurant->refresh();
+        $this->assertEquals(4, $restaurant->booking_min_party_size);
+        $this->assertEquals(10, $restaurant->booking_max_party_size);
+    }
+
+    /**
+     * Test that EditRestaurant allows min=max (equal values).
+     */
+    public function test_edit_restaurant_allows_equal_min_max_party_size(): void
+    {
+        $this->actingAs($this->admin);
+
+        $restaurant = Restaurant::create([
+            'name' => 'Equal Party Size Restaurant',
+            'city_id' => $this->city->id,
+            'timezone' => 'Europe/Berlin',
+            'booking_enabled' => true,
+            'booking_min_party_size' => 2,
+            'booking_max_party_size' => 8,
+        ]);
+
+        // Set min=6, max=6 which should pass validation
+        Livewire::test(EditRestaurant::class, ['record' => $restaurant->id])
+            ->set('data.booking_min_party_size', 6)
+            ->set('data.booking_max_party_size', 6)
+            ->call('save')
+            ->assertHasNoErrors(['data.booking_max_party_size']);
+
+        // Verify the restaurant WAS updated
+        $restaurant->refresh();
+        $this->assertEquals(6, $restaurant->booking_min_party_size);
+        $this->assertEquals(6, $restaurant->booking_max_party_size);
+    }
 }

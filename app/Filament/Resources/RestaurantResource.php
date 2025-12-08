@@ -190,12 +190,14 @@ class RestaurantResource extends Resource
                             ->default(8)
                             ->required()
                             ->suffix('guests')
-                            ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
-                                if ((int) $value < $minPartySize) {
-                                    $fail("The Maximum Party Size must be at least {$minPartySize} (the minimum party size).");
-                                }
-                            }),
+                            ->rules([
+                                fn (Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                    $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
+                                    if ((int) $value < $minPartySize) {
+                                        $fail("The Maximum Party Size must be at least {$minPartySize} (the minimum party size).");
+                                    }
+                                },
+                            ]),
 
                         Forms\Components\TextInput::make('booking_default_duration_minutes')
                             ->label('Default Reservation Duration')
