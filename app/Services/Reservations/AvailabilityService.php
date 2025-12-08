@@ -93,6 +93,7 @@ class AvailabilityService
 
         // Generate slots from opening hours
         $slots = $this->generateSlots(
+            restaurant: $restaurant,
             date: $date,
             openingHours: $openingHours,
             blockedRanges: $blockedRanges,
@@ -212,6 +213,7 @@ class AvailabilityService
      * @return array<TimeSlotAvailability>
      */
     private function generateSlots(
+        Restaurant $restaurant,
         CarbonInterface $date,
         Collection $openingHours,
         array $blockedRanges,
@@ -221,6 +223,9 @@ class AvailabilityService
         int $totalCapacity,
     ): array {
         $slots = [];
+
+        // Calculate lead time cutoff for "today" filtering
+        $leadTimeCutoff = $this->calculateLeadTimeCutoff($restaurant, $date);
 
         foreach ($openingHours as $opening) {
             $openTime = $this->parseTimeOnDate($date, $opening->open_time);
@@ -251,6 +256,13 @@ class AvailabilityService
                     continue;
                 }
 
+                // Skip slots that violate the minimum lead time (for today only)
+                if ($leadTimeCutoff !== null && $slotStart->lt($leadTimeCutoff)) {
+                    $current->addMinutes(self::SLOT_INTERVAL_MINUTES);
+
+                    continue;
+                }
+
                 // Calculate available capacity for this slot
                 $occupiedGuests = $this->calculateOccupiedCapacityForSlot(
                     $slotStart,
@@ -258,10 +270,6 @@ class AvailabilityService
                 );
 
                 $availableCapacity = max(0, $totalCapacity - $occupiedGuests);
-
-                // TODO: Future extension - enforce max covers per shift
-                // TODO: Future extension - check per-channel limits (widget vs phone)
-                // TODO: Future extension - integrate deposit requirements
 
                 // Check if party can fit
                 $isBookable = $this->canFitParty(
@@ -292,6 +300,27 @@ class AvailabilityService
         usort($slots, fn ($a, $b) => $a->start->timestamp <=> $b->start->timestamp);
 
         return $slots;
+    }
+
+    /**
+     * Calculate the lead time cutoff for "today" filtering.
+     *
+     * Returns null for future dates (no cutoff needed).
+     * For today, returns the current time + lead time in the restaurant's timezone.
+     */
+    private function calculateLeadTimeCutoff(Restaurant $restaurant, CarbonInterface $date): ?Carbon
+    {
+        $timezone = $restaurant->timezone ?? config('app.timezone');
+        $now = Carbon::now($timezone);
+
+        // Only apply cutoff if the requested date is today in the restaurant's timezone
+        if (! $date->isSameDay($now)) {
+            return null;
+        }
+
+        $leadTimeMinutes = $restaurant->booking_min_lead_time_minutes ?? 0;
+
+        return $now->copy()->addMinutes($leadTimeMinutes);
     }
 
     /**

@@ -472,4 +472,148 @@ class PublicBookingTest extends TestCase
         $this->assertFalse(DepositStatus::Paid->requiresAction());
         $this->assertFalse(DepositStatus::Waived->requiresAction());
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lead Time Tests
+    |--------------------------------------------------------------------------
+    */
+
+    public function test_today_slots_respect_minimum_lead_time(): void
+    {
+        // Set "now" to 14:00 in Europe/Berlin
+        $now = Carbon::create(2025, 6, 15, 14, 0, 0, 'Europe/Berlin');
+        Carbon::setTestNow($now);
+
+        // Update restaurant with 60-minute lead time
+        $this->restaurant->update([
+            'booking_min_lead_time_minutes' => 60,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        // Create opening hours for today (Sunday = 6 in our format)
+        $today = $now->copy();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $today->dayOfWeek === 0 ? 6 : $today->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 6,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        $response = $this->get('/book/test-restaurant?date=' . $today->toDateString() . '&party_size=2');
+
+        $response->assertStatus(200);
+
+        // At 14:00 with 60 min lead time, earliest slot should be 15:00
+        // Slots 12:00, 12:30, 13:00, 13:30, 14:00, 14:30 should NOT be visible
+        $response->assertDontSee('value="12:00"');
+        $response->assertDontSee('value="12:30"');
+        $response->assertDontSee('value="13:00"');
+        $response->assertDontSee('value="13:30"');
+        $response->assertDontSee('value="14:00"');
+        $response->assertDontSee('value="14:30"');
+
+        // But 15:00 and later should be available
+        $response->assertSee('value="15:00"', false);
+        $response->assertSee('value="15:30"', false);
+
+        Carbon::setTestNow(); // Reset
+    }
+
+    public function test_today_shows_no_slots_when_lead_time_excludes_all(): void
+    {
+        // Set "now" to 21:30 in Europe/Berlin (close to closing time)
+        $now = Carbon::create(2025, 6, 15, 21, 30, 0, 'Europe/Berlin');
+        Carbon::setTestNow($now);
+
+        // Update restaurant with 60-minute lead time
+        $this->restaurant->update([
+            'booking_min_lead_time_minutes' => 60,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        // Create opening hours for today - closes at 22:00
+        $today = $now->copy();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $today->dayOfWeek === 0 ? 6 : $today->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 6,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        $response = $this->get('/book/test-restaurant?date=' . $today->toDateString() . '&party_size=2');
+
+        $response->assertStatus(200);
+
+        // At 21:30 with 60 min lead time, cutoff is 22:30 - but restaurant closes at 22:00
+        // So no slots should be available
+        $response->assertSee(__('booking.step_2.no_slots_title'));
+        $response->assertDontSee('name="time"');
+
+        Carbon::setTestNow(); // Reset
+    }
+
+    public function test_future_date_shows_all_slots_regardless_of_current_time(): void
+    {
+        // Set "now" to 21:00 in Europe/Berlin (evening)
+        $now = Carbon::create(2025, 6, 15, 21, 0, 0, 'Europe/Berlin');
+        Carbon::setTestNow($now);
+
+        // Update restaurant with 60-minute lead time
+        $this->restaurant->update([
+            'booking_min_lead_time_minutes' => 60,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        // Create opening hours for tomorrow
+        $tomorrow = $now->copy()->addDay();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $tomorrow->dayOfWeek === 0 ? 6 : $tomorrow->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 6,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=2');
+
+        $response->assertStatus(200);
+
+        // For tomorrow, all slots should be visible from opening time
+        // regardless of current time or lead time
+        $response->assertSee('value="12:00"', false);
+        $response->assertSee('value="12:30"', false);
+        $response->assertSee('value="13:00"', false);
+
+        Carbon::setTestNow(); // Reset
+    }
 }

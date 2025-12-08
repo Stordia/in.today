@@ -124,7 +124,7 @@ class RestaurantResource extends Resource
                     ])->columns(3),
 
                 Forms\Components\Section::make('Media')
-                    ->description('Logo and cover images used on booking pages and emails.')
+                    ->description('Logo and cover images used on booking pages and emails. If thumbnails don\'t load, ensure /storage is correctly configured on the server.')
                     ->schema([
                         Forms\Components\FileUpload::make('logo_url')
                             ->label('Logo')

@@ -348,6 +348,26 @@ class Restaurant extends Model
         return asset('storage/' . $this->cover_image_url);
     }
 
+    /**
+     * Get the logo URL or a placeholder if not set.
+     */
+    public function getLogoUrlOrPlaceholder(): string
+    {
+        return $this->logo_url
+            ? $this->getLogoUrl()
+            : asset('images/placeholders/restaurant-logo.png');
+    }
+
+    /**
+     * Get the cover image URL or a placeholder if not set.
+     */
+    public function getCoverImageUrlOrPlaceholder(): string
+    {
+        return $this->cover_image_url
+            ? $this->getCoverImageUrl()
+            : asset('images/placeholders/restaurant-cover.jpg');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Booking Helpers
