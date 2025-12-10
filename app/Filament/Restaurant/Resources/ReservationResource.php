@@ -31,6 +31,41 @@ class ReservationResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    /**
+     * Currency symbols map for common currencies.
+     */
+    private const CURRENCY_SYMBOLS = [
+        'EUR' => '€',
+        'USD' => '$',
+        'GBP' => '£',
+        'CHF' => 'CHF',
+        'PLN' => 'zł',
+        'CZK' => 'Kč',
+        'SEK' => 'kr',
+        'NOK' => 'kr',
+        'DKK' => 'kr',
+    ];
+
+    /**
+     * Get the current restaurant's currency code.
+     */
+    private static function getRestaurantCurrency(): string
+    {
+        $restaurant = CurrentRestaurant::model();
+
+        return $restaurant?->booking_deposit_currency ?? 'EUR';
+    }
+
+    /**
+     * Get the currency symbol for the current restaurant's currency.
+     */
+    private static function getRestaurantCurrencySymbol(): string
+    {
+        $currency = self::getRestaurantCurrency();
+
+        return self::CURRENCY_SYMBOLS[$currency] ?? $currency;
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -106,24 +141,21 @@ class ReservationResource extends Resource
                         Forms\Components\TextInput::make('deposit_amount')
                             ->label('Deposit Amount')
                             ->numeric()
-                            ->prefix('€')
+                            ->prefix(fn (): string => self::getRestaurantCurrencySymbol())
                             ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
-                        Forms\Components\TextInput::make('deposit_currency')
-                            ->label('Currency')
-                            ->default('EUR')
-                            ->maxLength(3)
-                            ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
+                        Forms\Components\Hidden::make('deposit_currency')
+                            ->default(fn (): string => self::getRestaurantCurrency()),
                         Forms\Components\Select::make('deposit_status')
                             ->label('Deposit Status')
                             ->options(DepositStatus::class)
-                            ->default(DepositStatus::None)
+                            ->default(DepositStatus::Pending)
                             ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
                         Forms\Components\Textarea::make('deposit_notes')
                             ->label('Deposit Notes')
                             ->rows(2)
                             ->columnSpanFull()
                             ->visible(fn (Forms\Get $get): bool => (bool) $get('deposit_required')),
-                    ])->columns(4)
+                    ])->columns(3)
                     ->collapsible(),
 
                 Forms\Components\Section::make('Notes')
@@ -309,6 +341,9 @@ class ReservationResource extends Resource
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
+                    ->modalHeading('Confirm Reservation')
+                    ->modalDescription('Confirm this reservation? The customer will be notified via email.')
+                    ->modalSubmitActionLabel('Yes, confirm')
                     ->visible(fn (Reservation $record): bool => $record->isPending())
                     ->action(function (Reservation $record): void {
                         $record->update([
@@ -329,7 +364,8 @@ class ReservationResource extends Resource
                                 ]);
                             }
                         }
-                    }),
+                    })
+                    ->successNotificationTitle('Reservation confirmed'),
                 Tables\Actions\Action::make('no_show')
                     ->label('Mark No-Show')
                     ->icon('heroicon-o-user-minus')
@@ -337,24 +373,30 @@ class ReservationResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Mark as No-Show')
                     ->modalDescription('Are you sure this guest did not show up for their reservation?')
+                    ->modalSubmitActionLabel('Yes, mark as no-show')
                     ->visible(fn (Reservation $record): bool => $record->isConfirmed())
                     ->action(function (Reservation $record): void {
                         $record->update([
                             'status' => ReservationStatus::NoShow,
                         ]);
-                    }),
+                    })
+                    ->successNotificationTitle('Reservation marked as no-show'),
                 Tables\Actions\Action::make('complete')
                     ->label('Complete')
                     ->icon('heroicon-o-check-circle')
                     ->color('info')
                     ->requiresConfirmation()
+                    ->modalHeading('Mark as Completed')
+                    ->modalDescription('Mark this reservation as completed?')
+                    ->modalSubmitActionLabel('Yes, mark completed')
                     ->visible(fn (Reservation $record): bool => $record->isConfirmed())
                     ->action(function (Reservation $record): void {
                         $record->update([
                             'status' => ReservationStatus::Completed,
                             'completed_at' => now(),
                         ]);
-                    }),
+                    })
+                    ->successNotificationTitle('Reservation completed'),
                 Tables\Actions\Action::make('cancel')
                     ->label('Cancel')
                     ->icon('heroicon-o-x-circle')
@@ -362,6 +404,7 @@ class ReservationResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Cancel Reservation')
                     ->modalDescription('Are you sure you want to cancel this reservation? The customer will be notified via email.')
+                    ->modalSubmitActionLabel('Yes, cancel reservation')
                     ->visible(fn (Reservation $record): bool => $record->isPending() || $record->isConfirmed())
                     ->action(function (Reservation $record): void {
                         $record->update([
@@ -382,7 +425,8 @@ class ReservationResource extends Resource
                                 ]);
                             }
                         }
-                    }),
+                    })
+                    ->successNotificationTitle('Reservation cancelled'),
                 Tables\Actions\Action::make('mark_deposit_paid')
                     ->label('Mark Deposit Paid')
                     ->icon('heroicon-o-banknotes')
@@ -420,6 +464,7 @@ class ReservationResource extends Resource
             ])
             ->bulkActions([])
             ->defaultSort('date', 'asc')
+            ->persistFiltersInSession()
             ->emptyStateHeading('No reservations yet')
             ->emptyStateDescription('As soon as guests start booking via your widget, they will appear here.')
             ->emptyStateIcon('heroicon-o-calendar-days');

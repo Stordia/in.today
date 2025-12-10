@@ -18,4 +18,24 @@ class ListReservations extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    /**
+     * Disable query string tracking for table filters.
+     * Filters will be persisted in session instead.
+     */
+    protected function getTableQueryStringIdentifier(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Persist filter state in session for better UX.
+     * - No cluttered URLs
+     * - Filters survive page refreshes within session
+     * - Default "Upcoming only" applies on first visit
+     */
+    public function getTableFiltersSessionKey(): string
+    {
+        return 'reservation-list-filters';
+    }
 }
