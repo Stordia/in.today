@@ -4,6 +4,34 @@
 @section('meta_description', __('booking.page_subtitle'))
 @section('robots', 'noindex,nofollow')
 
+@php
+    // Safely resolve cuisine name (relation object vs string)
+    $cuisineName = null;
+    if ($restaurant->cuisine) {
+        $cuisineName = is_object($restaurant->cuisine)
+            ? ($restaurant->cuisine->name ?? null)
+            : $restaurant->cuisine;
+    }
+
+    // Safely resolve city name (relation object vs string)
+    $cityName = null;
+    $countryName = null;
+    if ($restaurant->city) {
+        if (is_object($restaurant->city)) {
+            $cityName = $restaurant->city->name ?? null;
+            // City has both 'country' relation and 'country' legacy text field
+            // Try the relation first, fall back to the text field
+            if ($restaurant->city->relationLoaded('country') && $restaurant->city->country) {
+                $countryName = $restaurant->city->country->name ?? null;
+            } elseif (is_string($restaurant->city->country)) {
+                $countryName = $restaurant->city->country;
+            }
+        } else {
+            $cityName = $restaurant->city;
+        }
+    }
+@endphp
+
 @section('content')
     {{-- Hero Header with Restaurant Branding --}}
     <div class="relative">
@@ -39,26 +67,26 @@
                             <h1 class="text-2xl sm:text-3xl font-bold text-primary">{{ $restaurant->name }}</h1>
 
                             {{-- Cuisine & Location --}}
-                            @if($restaurant->cuisine || $restaurant->city)
+                            @if($cuisineName || $cityName)
                                 <p class="text-secondary mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
-                                    @if($restaurant->cuisine)
+                                    @if($cuisineName)
                                         <span class="inline-flex items-center gap-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                             </svg>
-                                            {{ $restaurant->cuisine->name }}
+                                            {{ $cuisineName }}
                                         </span>
                                     @endif
-                                    @if($restaurant->cuisine && $restaurant->city)
+                                    @if($cuisineName && $cityName)
                                         <span class="text-secondary/50">&middot;</span>
                                     @endif
-                                    @if($restaurant->city)
+                                    @if($cityName)
                                         <span class="inline-flex items-center gap-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                            {{ $restaurant->city->name }}@if($restaurant->city->country), {{ $restaurant->city->country->name }}@endif
+                                            {{ $cityName }}@if($countryName), {{ $countryName }}@endif
                                         </span>
                                     @endif
                                 </p>
