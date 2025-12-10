@@ -5,7 +5,92 @@
 @section('robots', 'noindex,nofollow')
 
 @section('content')
-    <div class="pt-24 pb-16 min-h-screen">
+    {{-- Hero Header with Restaurant Branding --}}
+    <div class="relative">
+        {{-- Cover Image --}}
+        <div class="h-48 sm:h-56 md:h-64 w-full overflow-hidden">
+            <img
+                src="{{ $restaurant->getCoverImageUrlOrPlaceholder() }}"
+                alt="{{ $restaurant->name }}"
+                class="w-full h-full object-cover"
+            >
+            {{-- Gradient Overlay --}}
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-transparent"></div>
+        </div>
+
+        {{-- Restaurant Logo & Name Card --}}
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative -mt-16 sm:-mt-20">
+                <div class="bg-card rounded-2xl shadow-lg border border-default p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                        {{-- Logo --}}
+                        <div class="flex-shrink-0 -mt-12 sm:-mt-16">
+                            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-card shadow-lg bg-card">
+                                <img
+                                    src="{{ $restaurant->getLogoUrlOrPlaceholder() }}"
+                                    alt="{{ $restaurant->name }} logo"
+                                    class="w-full h-full object-cover"
+                                >
+                            </div>
+                        </div>
+
+                        {{-- Restaurant Info --}}
+                        <div class="flex-1 text-center sm:text-left">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-primary">{{ $restaurant->name }}</h1>
+
+                            {{-- Cuisine & Location --}}
+                            @if($restaurant->cuisine || $restaurant->city)
+                                <p class="text-secondary mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+                                    @if($restaurant->cuisine)
+                                        <span class="inline-flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                            </svg>
+                                            {{ $restaurant->cuisine->name }}
+                                        </span>
+                                    @endif
+                                    @if($restaurant->cuisine && $restaurant->city)
+                                        <span class="text-secondary/50">&middot;</span>
+                                    @endif
+                                    @if($restaurant->city)
+                                        <span class="inline-flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            {{ $restaurant->city->name }}@if($restaurant->city->country), {{ $restaurant->city->country->name }}@endif
+                                        </span>
+                                    @endif
+                                </p>
+                            @endif
+
+                            {{-- Address --}}
+                            @if($restaurant->address_street)
+                                <p class="text-sm text-secondary mt-2 flex items-center justify-center sm:justify-start gap-1.5">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <span>
+                                        {{ $restaurant->address_street }}@if($restaurant->address_postal), {{ $restaurant->address_postal }}@endif
+                                    </span>
+                                </p>
+                            @endif
+                        </div>
+
+                        {{-- Badge: Online Booking --}}
+                        <div class="hidden sm:flex flex-shrink-0">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                {{ __('booking.header.online_booking') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="py-8 sm:py-12">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
             {{-- Success Message --}}
@@ -72,16 +157,6 @@
 
                 {{-- Left Column: Booking Steps --}}
                 <div class="lg:col-span-2 space-y-6">
-
-                    {{-- Page Header --}}
-                    <div class="mb-2">
-                        <h1 class="text-3xl sm:text-4xl font-bold text-primary">
-                            {{ __('booking.page_title') }}
-                        </h1>
-                        <p class="mt-2 text-lg text-secondary">
-                            {{ __('booking.page_subtitle') }}
-                        </p>
-                    </div>
 
                     {{-- Step 1: Date & Party Size --}}
                     <div class="bg-card rounded-2xl shadow-sm border border-default p-6 sm:p-8">
@@ -181,11 +256,12 @@
                                 <p class="text-sm text-secondary">{{ __('booking.step_2.no_slots_hint') }}</p>
                             </div>
                         @else
-                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                            {{-- Time Slot Grid - Pill/Button Style --}}
+                            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
                                 @foreach($availability->slots as $slot)
                                     @if($slot->isBookable)
                                         @php $timeValue = $slot->getStartTime(); @endphp
-                                        <label class="relative cursor-pointer">
+                                        <label class="relative cursor-pointer group">
                                             <input
                                                 type="radio"
                                                 name="time"
@@ -194,32 +270,45 @@
                                                 class="sr-only peer"
                                                 @checked(old('time', $selectedTime) === $timeValue)
                                             >
-                                            <div class="rounded-xl border p-3 text-center transition-all duration-150
-                                                        bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50
-                                                        hover:border-green-400 dark:hover:border-green-600
-                                                        peer-checked:bg-brand peer-checked:text-white peer-checked:border-brand peer-checked:ring-2 peer-checked:ring-brand peer-checked:ring-offset-2">
-                                                <span class="block text-lg font-semibold">{{ $timeValue }}</span>
-                                                <span class="block text-xs mt-0.5 opacity-75">{{ __('booking.step_2.available') }}</span>
+                                            <div class="rounded-xl border-2 py-3 px-2 text-center transition-all duration-150
+                                                        border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20
+                                                        hover:border-green-400 dark:hover:border-green-600 hover:bg-green-100 dark:hover:bg-green-900/30
+                                                        peer-checked:bg-brand peer-checked:text-white peer-checked:border-brand
+                                                        peer-checked:shadow-lg peer-checked:shadow-brand/25 peer-checked:scale-[1.02]
+                                                        peer-focus:ring-2 peer-focus:ring-brand peer-focus:ring-offset-2">
+                                                <span class="block text-lg font-bold text-green-700 dark:text-green-400 peer-checked:text-white">{{ $timeValue }}</span>
                                             </div>
-                                            <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-brand rounded-full items-center justify-center ring-2 ring-white dark:ring-gray-900 hidden peer-checked:flex">
+                                            {{-- Checkmark Badge --}}
+                                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-brand rounded-full items-center justify-center ring-2 ring-card hidden peer-checked:flex shadow-sm">
                                                 <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                                                 </svg>
                                             </span>
                                         </label>
                                     @else
-                                        <div class="rounded-xl border border-default bg-gray-50 dark:bg-gray-800/50 p-3 text-center opacity-50 cursor-not-allowed">
-                                            <span class="block text-lg font-semibold text-secondary">{{ $slot->getStartTime() }}</span>
-                                            <span class="block text-xs mt-0.5 text-secondary">{{ __('booking.step_2.not_available') }}</span>
+                                        {{-- Unavailable Slot --}}
+                                        <div class="rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 py-3 px-2 text-center opacity-50 cursor-not-allowed">
+                                            <span class="block text-lg font-bold text-gray-400 dark:text-gray-600 line-through">{{ $slot->getStartTime() }}</span>
                                         </div>
                                     @endif
                                 @endforeach
                             </div>
 
-                            <div class="mt-5 pt-5 border-t border-default">
+                            <div class="mt-5 pt-5 border-t border-default flex flex-wrap items-center justify-between gap-4">
                                 <p class="text-sm text-secondary">
                                     {{ __('booking.step_2.slots_summary', ['available' => $availability->bookableSlotCount(), 'total' => $availability->totalSlots()]) }}
                                 </p>
+                                {{-- Legend --}}
+                                <div class="flex items-center gap-4 text-xs text-secondary">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="w-3 h-3 rounded bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700"></span>
+                                        {{ __('booking.step_2.legend_available') }}
+                                    </span>
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="w-3 h-3 rounded bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600"></span>
+                                        {{ __('booking.step_2.legend_unavailable') }}
+                                    </span>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -231,31 +320,6 @@
                                 <span class="flex-shrink-0 w-8 h-8 rounded-full bg-brand/10 text-brand flex items-center justify-center text-sm font-bold">3</span>
                                 {{ __('booking.step_3.title') }}
                             </h2>
-
-                            {{-- Booking Summary --}}
-                            <div class="mb-6 p-4 rounded-xl bg-brand/5 dark:bg-brand/10 border border-brand/20">
-                                <h3 class="text-sm font-medium text-brand mb-2">{{ __('booking.step_3.summary_title') }}</h3>
-                                <div class="flex flex-wrap gap-4 text-sm text-primary">
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        {{ \Carbon\Carbon::parse($date)->translatedFormat('D, j M') }}
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span id="selected-time-display">{{ $selectedTime }}</span>
-                                    </span>
-                                    <span class="inline-flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        {{ $partySize }} {{ $partySize === 1 ? 'guest' : 'guests' }}
-                                    </span>
-                                </div>
-                            </div>
 
                             <form id="booking-form" method="POST" action="{{ route('public.booking.request', $restaurant->booking_public_slug) }}">
                                 @csrf
@@ -284,6 +348,9 @@
                                                 placeholder="{{ __('booking.step_3.name_placeholder') }}"
                                                 class="w-full px-4 py-3 rounded-xl border border-default bg-page text-primary placeholder-secondary/50 focus:ring-2 focus:ring-brand focus:border-transparent transition @error('name') border-red-500 ring-1 ring-red-500 @enderror"
                                             >
+                                            @error('name')
+                                                <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                                            @enderror
                                         </div>
 
                                         <div>
@@ -300,6 +367,9 @@
                                                 placeholder="{{ __('booking.step_3.email_placeholder') }}"
                                                 class="w-full px-4 py-3 rounded-xl border border-default bg-page text-primary placeholder-secondary/50 focus:ring-2 focus:ring-brand focus:border-transparent transition @error('email') border-red-500 ring-1 ring-red-500 @enderror"
                                             >
+                                            @error('email')
+                                                <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                                            @enderror
                                         </div>
                                     </div>
 
@@ -336,68 +406,92 @@
                                         >{{ old('notes') }}</textarea>
                                     </div>
 
-                                    {{-- Deposit Info Box (shown when deposit is required) --}}
+                                    {{-- Deposit Section --}}
                                     @if($requiresDeposit)
-                                        <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
-                                            <h4 class="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                {{ __('booking.deposit.title') }}
-                                            </h4>
-                                            <p class="text-amber-700 dark:text-amber-400 mt-2 text-sm">
-                                                {{ __('booking.deposit.message', [
-                                                    'threshold' => $depositThreshold,
-                                                    'amount' => $formattedDepositAmount,
-                                                    'type' => $depositType === 'fixed_per_person' ? __('booking.deposit.per_person') : __('booking.deposit.per_reservation')
-                                                ]) }}
-                                            </p>
-                                            @if($depositPolicy)
-                                                <p class="text-amber-600 dark:text-amber-500 mt-2 text-sm">
-                                                    {{ $depositPolicy }}
-                                                </p>
-                                            @endif
-                                            <p class="text-amber-600 dark:text-amber-500 mt-2 text-sm">
-                                                {{ __('booking.deposit.payment_note') }}
-                                            </p>
+                                        {{-- Deposit Info Card --}}
+                                        <div class="p-5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
+                                            <div class="flex items-start gap-3">
+                                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center">
+                                                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-semibold text-amber-800 dark:text-amber-300">
+                                                        {{ __('booking.deposit.info_title') }}
+                                                    </h4>
+                                                    <p class="text-amber-700 dark:text-amber-400 mt-1 text-sm">
+                                                        {{ __('booking.deposit.info_message', ['amount' => $formattedDepositAmount]) }}
+                                                    </p>
+                                                    <p class="text-amber-600 dark:text-amber-500 mt-2 text-sm">
+                                                        {{ __('booking.deposit.payment_instructions') }}
+                                                    </p>
+                                                    @if($depositPolicy)
+                                                        <p class="text-amber-600 dark:text-amber-500 mt-2 text-sm italic">
+                                                            {{ $depositPolicy }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {{-- Deposit Consent Checkbox --}}
-                                        <div class="flex items-start gap-3">
+                                        <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-default @error('accepted_deposit') border-red-500 @enderror">
                                             <input
                                                 type="checkbox"
                                                 id="accepted_deposit"
                                                 name="accepted_deposit"
                                                 value="1"
                                                 {{ old('accepted_deposit') ? 'checked' : '' }}
-                                                class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:bg-gray-800 @error('accepted_deposit') border-red-500 @enderror"
+                                                class="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:bg-gray-800"
                                             >
-                                            <label for="accepted_deposit" class="text-sm text-primary">
-                                                {{ __('booking.deposit.consent_label') }} <span class="text-red-500">*</span>
+                                            <label for="accepted_deposit" class="text-sm text-primary leading-relaxed">
+                                                {{ __('booking.deposit.consent_text', ['amount' => $formattedDepositAmount]) }}
+                                                <span class="text-red-500">*</span>
                                             </label>
+                                        </div>
+                                        @error('accepted_deposit')
+                                            <p class="-mt-3 text-xs text-red-500">{{ $message }}</p>
+                                        @enderror
+                                    @else
+                                        {{-- No Deposit Required --}}
+                                        <div class="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center">
+                                                    <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm text-green-700 dark:text-green-400">
+                                                    {{ __('booking.deposit.not_required') }}
+                                                </p>
+                                            </div>
                                         </div>
                                     @endif
 
                                     {{-- Terms & Privacy Checkbox --}}
-                                    <div class="flex items-start gap-3">
+                                    <div class="flex items-start gap-3 @error('accepted_terms') text-red-500 @enderror">
                                         <input
                                             type="checkbox"
                                             id="accepted_terms"
                                             name="accepted_terms"
                                             value="1"
                                             {{ old('accepted_terms') ? 'checked' : '' }}
-                                            class="mt-1 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:bg-gray-800 @error('accepted_terms') border-red-500 @enderror"
+                                            class="mt-0.5 w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand focus:ring-brand dark:bg-gray-800 @error('accepted_terms') border-red-500 @enderror"
                                         >
                                         <label for="accepted_terms" class="text-sm text-primary">
                                             {{ __('booking.step_3.terms_consent_label') }} <span class="text-red-500">*</span>
                                         </label>
                                     </div>
+                                    @error('accepted_terms')
+                                        <p class="-mt-3 text-xs text-red-500">{{ $message }}</p>
+                                    @enderror
 
                                     {{-- Submit Button --}}
                                     <div class="pt-3">
                                         <button
                                             type="submit"
-                                            class="w-full sm:w-auto px-8 py-3.5 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition focus:ring-2 focus:ring-brand focus:ring-offset-2 flex items-center justify-center gap-2"
+                                            class="w-full sm:w-auto px-8 py-3.5 bg-brand text-white font-semibold rounded-xl hover:bg-brand-hover transition focus:ring-2 focus:ring-brand focus:ring-offset-2 flex items-center justify-center gap-2 shadow-lg shadow-brand/25"
                                         >
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -412,82 +506,166 @@
 
                 </div>
 
-                {{-- Right Column: Restaurant Info Card --}}
+                {{-- Right Column: Summary & Info --}}
                 <div class="lg:col-span-1">
-                    <div class="sticky top-24">
-                        {{-- Restaurant Card --}}
-                        <div class="bg-card rounded-2xl shadow-sm border border-default p-6">
-                            <h3 class="text-sm font-medium text-secondary uppercase tracking-wide mb-4">
-                                {{ __('booking.restaurant_info.title') }}
-                            </h3>
+                    <div class="sticky top-24 space-y-6">
 
-                            <div class="space-y-4">
-                                {{-- Restaurant Name --}}
-                                <div>
-                                    <h4 class="text-xl font-bold text-primary">{{ $restaurant->name }}</h4>
-                                    @if($restaurant->cuisine || $restaurant->city)
-                                        <p class="text-secondary mt-1">
-                                            @if($restaurant->cuisine)
-                                                {{ $restaurant->cuisine->name }}
-                                            @endif
-                                            @if($restaurant->cuisine && $restaurant->city)
-                                                &middot;
-                                            @endif
-                                            @if($restaurant->city)
-                                                {{ $restaurant->city->name }}@if($restaurant->country), {{ $restaurant->country }}@endif
-                                            @endif
-                                        </p>
-                                    @endif
+                        {{-- Reservation Summary Card --}}
+                        @if($bookableSlots->isNotEmpty())
+                            <div class="bg-card rounded-2xl shadow-sm border border-default overflow-hidden">
+                                <div class="bg-brand/5 dark:bg-brand/10 px-6 py-4 border-b border-brand/20">
+                                    <h3 class="font-semibold text-primary flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        {{ __('booking.summary.title') }}
+                                    </h3>
                                 </div>
 
-                                {{-- Divider --}}
-                                <hr class="border-default">
-
-                                {{-- Booking Rules --}}
-                                <div class="space-y-3 text-sm">
-                                    <h5 class="font-medium text-primary">{{ __('booking.info.title') }}</h5>
-
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
+                                <div class="p-6 space-y-4">
+                                    {{-- Restaurant --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                            <img src="{{ $restaurant->getLogoUrlOrPlaceholder() }}" alt="" class="w-full h-full object-cover">
                                         </div>
-                                        <p class="text-secondary">
-                                            {{ __('booking.info.party_size', ['min' => $minPartySize, 'max' => $maxPartySize]) }}
-                                        </p>
+                                        <div>
+                                            <p class="font-medium text-primary">{{ $restaurant->name }}</p>
+                                            @if($restaurant->city)
+                                                <p class="text-xs text-secondary">{{ $restaurant->city->name }}</p>
+                                            @endif
+                                        </div>
                                     </div>
 
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <hr class="border-default">
+
+                                    {{-- Date --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
-                                        <p class="text-secondary">
-                                            {{ __('booking.info.lead_time_days', ['days' => $restaurant->booking_max_lead_time_days ?? 30]) }}
-                                        </p>
+                                        <div>
+                                            <p class="text-xs text-secondary uppercase tracking-wide">{{ __('booking.summary.date') }}</p>
+                                            <p class="font-medium text-primary">{{ \Carbon\Carbon::parse($date)->translatedFormat('l, j F Y') }}</p>
+                                        </div>
                                     </div>
 
-                                    @if(($restaurant->booking_min_lead_time_minutes ?? 0) > 0)
-                                        <div class="flex items-start gap-3">
-                                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    {{-- Time --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-secondary uppercase tracking-wide">{{ __('booking.summary.time') }}</p>
+                                            <p class="font-medium text-primary" id="summary-time-display">{{ $selectedTime ?? '—' }}</p>
+                                        </div>
+                                    </div>
+
+                                    {{-- Party Size --}}
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-secondary uppercase tracking-wide">{{ __('booking.summary.guests') }}</p>
+                                            <p class="font-medium text-primary">{{ trans_choice('booking.summary.guests_count', $partySize, ['count' => $partySize]) }}</p>
+                                        </div>
+                                    </div>
+
+                                    {{-- Deposit Info in Summary --}}
+                                    @if($requiresDeposit)
+                                        <hr class="border-default">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <p class="text-secondary">
-                                                @if($restaurant->booking_min_lead_time_minutes >= 60)
-                                                    {{ __('booking.info.lead_time_hours', ['hours' => floor($restaurant->booking_min_lead_time_minutes / 60)]) }}
-                                                @else
-                                                    {{ __('booking.info.lead_time_minutes', ['minutes' => $restaurant->booking_min_lead_time_minutes]) }}
-                                                @endif
-                                            </p>
+                                            <div>
+                                                <p class="text-xs text-secondary uppercase tracking-wide">{{ __('booking.summary.deposit') }}</p>
+                                                <p class="font-medium text-amber-700 dark:text-amber-400">{{ $formattedDepositAmount }}</p>
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
                             </div>
+                        @endif
+
+                        {{-- Booking Rules Card --}}
+                        <div class="bg-card rounded-2xl shadow-sm border border-default p-6">
+                            <h3 class="text-sm font-medium text-secondary uppercase tracking-wide mb-4">
+                                {{ __('booking.info.title') }}
+                            </h3>
+
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-secondary">
+                                        {{ __('booking.info.party_size', ['min' => $minPartySize, 'max' => $maxPartySize]) }}
+                                    </p>
+                                </div>
+
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-secondary">
+                                        {{ __('booking.info.lead_time_days', ['days' => $restaurant->booking_max_lead_time_days ?? 30]) }}
+                                    </p>
+                                </div>
+
+                                @if(($restaurant->booking_min_lead_time_minutes ?? 0) > 0)
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-secondary">
+                                            @if($restaurant->booking_min_lead_time_minutes >= 60)
+                                                {{ __('booking.info.lead_time_hours', ['hours' => floor($restaurant->booking_min_lead_time_minutes / 60)]) }}
+                                            @else
+                                                {{ __('booking.info.lead_time_minutes', ['minutes' => $restaurant->booking_min_lead_time_minutes]) }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                @endif
+
+                                {{-- Deposit threshold info --}}
+                                @if($restaurant->booking_deposit_enabled && ($restaurant->booking_deposit_threshold_party_size ?? 0) > 0)
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-secondary">
+                                            {{ __('booking.info.deposit_threshold', ['threshold' => $restaurant->booking_deposit_threshold_party_size]) }}
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
+
+                        {{-- Powered by in.today --}}
+                        <div class="text-center">
+                            <a href="{{ url('/') }}" class="inline-flex items-center gap-1.5 text-xs text-secondary hover:text-primary transition">
+                                {{ __('booking.footer.powered_by') }}
+                                <span class="font-semibold">in.today</span>
+                            </a>
+                        </div>
+
                     </div>
                 </div>
 
@@ -501,12 +679,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const timeRadios = document.querySelectorAll('input[name="time"]');
-            const timeDisplay = document.getElementById('selected-time-display');
+            const summaryTimeDisplay = document.getElementById('summary-time-display');
 
-            if (timeRadios.length && timeDisplay) {
+            if (timeRadios.length && summaryTimeDisplay) {
                 timeRadios.forEach(radio => {
                     radio.addEventListener('change', () => {
-                        timeDisplay.textContent = radio.value;
+                        summaryTimeDisplay.textContent = radio.value;
                     });
                 });
             }

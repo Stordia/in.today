@@ -12,20 +12,17 @@ class ListReservations extends ListRecords
 {
     protected static string $resource = ReservationResource::class;
 
+    /**
+     * Completely disable query string syncing for table state.
+     * This prevents filters, sort, and search from appearing in the URL.
+     */
+    protected ?string $tableQueryStringIdentifier = null;
+
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make(),
         ];
-    }
-
-    /**
-     * Disable query string tracking for table filters.
-     * Filters will be persisted in session instead.
-     */
-    protected function getTableQueryStringIdentifier(): ?string
-    {
-        return null;
     }
 
     /**

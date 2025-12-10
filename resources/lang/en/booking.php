@@ -4,8 +4,12 @@ return [
     'page_title' => 'Book a table',
     'page_subtitle' => 'Check availability and request a booking for your visit.',
 
+    'header' => [
+        'online_booking' => 'Online Booking',
+    ],
+
     'step_1' => [
-        'title' => '1. Choose date & party size',
+        'title' => 'Choose date & party size',
         'date_label' => 'Date',
         'party_size_label' => 'Party size',
         'party_size_hint' => ':min–:max guests',
@@ -13,7 +17,7 @@ return [
     ],
 
     'step_2' => [
-        'title' => '2. Choose your time',
+        'title' => 'Choose your time',
         'for_date' => 'For :date',
         'party_of' => 'Party of :count',
         'available' => 'Available',
@@ -21,10 +25,12 @@ return [
         'no_slots_title' => 'No availability for this date',
         'no_slots_hint' => 'Please try another day or adjust your party size.',
         'slots_summary' => ':available of :total time slots available',
+        'legend_available' => 'Available',
+        'legend_unavailable' => 'Unavailable',
     ],
 
     'step_3' => [
-        'title' => '3. Your details',
+        'title' => 'Your details',
         'summary_title' => 'Your booking',
         'name_label' => 'Name',
         'name_placeholder' => 'Your full name',
@@ -41,12 +47,22 @@ return [
         'terms_consent_label' => 'I accept the booking terms and privacy policy.',
     ],
 
+    'summary' => [
+        'title' => 'Reservation Summary',
+        'date' => 'Date',
+        'time' => 'Time',
+        'guests' => 'Guests',
+        'guests_count' => '{1} :count guest|[2,*] :count guests',
+        'deposit' => 'Deposit',
+    ],
+
     'info' => [
         'title' => 'Booking information',
         'party_size' => 'We accept online booking requests for :min–:max guests.',
         'lead_time_days' => 'You can book up to :days days in advance.',
         'lead_time_hours' => 'Reservations must be made at least :hours hour(s) in advance.',
         'lead_time_minutes' => 'Reservations must be made at least :minutes minutes in advance.',
+        'deposit_threshold' => 'Deposit required for parties of :threshold or more.',
     ],
 
     'success' => [
@@ -67,11 +83,20 @@ return [
 
     'deposit' => [
         'title' => 'Deposit Required',
+        'info_title' => 'Deposit Required',
+        'info_message' => 'For this reservation, a deposit of :amount is required.',
+        'payment_instructions' => 'You\'ll receive payment instructions in the confirmation email from the restaurant.',
         'message' => 'For reservations of :threshold or more guests, a deposit of :amount :type is required.',
         'per_person' => 'per person',
         'per_reservation' => 'per reservation',
         'payment_note' => 'You will receive payment instructions after submitting your request.',
         'consent_label' => 'I understand that a deposit is required and must be paid according to the deposit policy.',
+        'consent_text' => 'I understand that a deposit of :amount may be required to confirm this reservation.',
+        'not_required' => 'No deposit is required for this reservation.',
+    ],
+
+    'footer' => [
+        'powered_by' => 'Powered by',
     ],
 
     'validation' => [
