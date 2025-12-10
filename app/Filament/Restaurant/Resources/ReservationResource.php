@@ -206,25 +206,40 @@ class ReservationResource extends Resource
                         ReservationSource::WalkIn => 'heroicon-o-user',
                         ReservationSource::Api => 'heroicon-o-code-bracket',
                     })
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('deposit_status')
                     ->label('Deposit')
                     ->badge()
-                    ->color(fn (?DepositStatus $state): string => match ($state) {
-                        DepositStatus::Pending => 'warning',
-                        DepositStatus::Paid => 'success',
-                        DepositStatus::Waived => 'info',
-                        default => 'gray',
+                    ->color(fn (?DepositStatus $state, Reservation $record): string => ! $record->deposit_required
+                        ? 'gray'
+                        : match ($state) {
+                            DepositStatus::Pending => 'warning',
+                            DepositStatus::Paid => 'success',
+                            DepositStatus::Waived => 'info',
+                            default => 'warning',
+                        })
+                    ->icon(fn (?DepositStatus $state, Reservation $record): ?string => ! $record->deposit_required
+                        ? null
+                        : match ($state) {
+                            DepositStatus::Pending => 'heroicon-o-clock',
+                            DepositStatus::Paid => 'heroicon-o-check-circle',
+                            DepositStatus::Waived => 'heroicon-o-minus-circle',
+                            default => 'heroicon-o-clock',
+                        })
+                    ->formatStateUsing(function (?DepositStatus $state, Reservation $record): string {
+                        if (! $record->deposit_required) {
+                            return '—';
+                        }
+
+                        $amount = $record->getFormattedDepositAmount();
+
+                        return match ($state) {
+                            DepositStatus::Pending => "Required: {$amount}",
+                            DepositStatus::Paid => "Paid: {$amount}",
+                            DepositStatus::Waived => 'Waived',
+                            default => "Required: {$amount}",
+                        };
                     })
-                    ->icon(fn (?DepositStatus $state): ?string => match ($state) {
-                        DepositStatus::Pending => 'heroicon-o-clock',
-                        DepositStatus::Paid => 'heroicon-o-check-circle',
-                        DepositStatus::Waived => 'heroicon-o-minus-circle',
-                        default => null,
-                    })
-                    ->formatStateUsing(fn (?DepositStatus $state, Reservation $record): string => $record->deposit_required
-                        ? ($state?->label() ?? 'Pending')
-                        : '—')
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
@@ -316,10 +331,12 @@ class ReservationResource extends Resource
                         }
                     }),
                 Tables\Actions\Action::make('no_show')
-                    ->label('No Show')
-                    ->icon('heroicon-o-x-mark')
+                    ->label('Mark No-Show')
+                    ->icon('heroicon-o-user-minus')
                     ->color('danger')
                     ->requiresConfirmation()
+                    ->modalHeading('Mark as No-Show')
+                    ->modalDescription('Are you sure this guest did not show up for their reservation?')
                     ->visible(fn (Reservation $record): bool => $record->isConfirmed())
                     ->action(function (Reservation $record): void {
                         $record->update([
@@ -402,7 +419,10 @@ class ReservationResource extends Resource
                     }),
             ])
             ->bulkActions([])
-            ->defaultSort('date', 'desc');
+            ->defaultSort('date', 'asc')
+            ->emptyStateHeading('No reservations yet')
+            ->emptyStateDescription('As soon as guests start booking via your widget, they will appear here.')
+            ->emptyStateIcon('heroicon-o-calendar-days');
     }
 
     public static function getRelations(): array
