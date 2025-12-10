@@ -20,6 +20,11 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
+/**
+ * Booking Settings page for the Business panel.
+ *
+ * @deprecated Use RestaurantSettings instead. This page now redirects to Settings → Bookings tab.
+ */
 class BookingSettings extends Page implements HasForms
 {
     use InteractsWithForms;
@@ -35,6 +40,9 @@ class BookingSettings extends Page implements HasForms
     protected static ?string $title = 'Booking Settings';
 
     protected static string $view = 'filament.restaurant.pages.booking-settings';
+
+    // Hide from navigation - use Settings instead
+    protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 

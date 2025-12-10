@@ -124,7 +124,7 @@ class RestaurantResource extends Resource
                     ])->columns(3),
 
                 Forms\Components\Section::make('Media')
-                    ->description('Logo and cover images used on booking pages and emails. If thumbnails don\'t load, ensure /storage is correctly configured on the server.')
+                    ->description('Logo and cover images used on booking pages, emails, and public listings. These help guests recognize your restaurant.')
                     ->schema([
                         Forms\Components\FileUpload::make('logo_url')
                             ->label('Logo')
@@ -135,7 +135,7 @@ class RestaurantResource extends Resource
                             ->maxSize(2048)
                             ->openable()
                             ->downloadable()
-                            ->helperText('Recommended: 512×512px, square format. Max 2MB.'),
+                            ->helperText('Square image, at least 512×512 px. PNG, JPG, or SVG. Max 2MB. Displayed in booking confirmations and the booking page header.'),
                         Forms\Components\FileUpload::make('cover_image_url')
                             ->label('Cover Image')
                             ->image()
@@ -145,7 +145,7 @@ class RestaurantResource extends Resource
                             ->maxSize(5120)
                             ->openable()
                             ->downloadable()
-                            ->helperText('Recommended: 1920×1080px, landscape format. Max 5MB.'),
+                            ->helperText('Landscape image, ideally 1920×1080 px (16:9 ratio). PNG or JPG. Max 5MB. Used as the hero banner on the public booking page.'),
                     ])
                     ->columns(2)
                     ->collapsible()

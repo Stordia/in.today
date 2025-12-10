@@ -25,8 +25,7 @@ use Illuminate\Support\HtmlString;
 /**
  * Restaurant Profile page for the Business panel.
  *
- * Allows restaurant owners/managers to edit core information about their restaurant
- * including basic info, contact details, location, and timezone.
+ * @deprecated Use RestaurantSettings instead. This page now redirects to Settings → Profile tab.
  */
 class RestaurantProfile extends Page implements HasForms
 {
@@ -36,13 +35,16 @@ class RestaurantProfile extends Page implements HasForms
 
     protected static ?string $navigationGroup = 'Operations';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Restaurant Profile';
 
     protected static ?string $title = 'Restaurant Profile';
 
     protected static string $view = 'filament.restaurant.pages.restaurant-profile';
+
+    // Hide from navigation - use Settings instead
+    protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 

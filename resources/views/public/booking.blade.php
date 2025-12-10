@@ -66,22 +66,19 @@
                         <div class="flex-1 text-center sm:text-left">
                             <h1 class="text-2xl sm:text-3xl font-bold text-primary">{{ $restaurant->name }}</h1>
 
-                            {{-- Cuisine & Location --}}
+                            {{-- Cuisine Badge & Location --}}
                             @if($cuisineName || $cityName)
-                                <p class="text-secondary mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+                                <div class="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                     @if($cuisineName)
-                                        <span class="inline-flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-sm font-medium">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                             </svg>
                                             {{ $cuisineName }}
                                         </span>
                                     @endif
-                                    @if($cuisineName && $cityName)
-                                        <span class="text-secondary/50">&middot;</span>
-                                    @endif
                                     @if($cityName)
-                                        <span class="inline-flex items-center gap-1">
+                                        <span class="inline-flex items-center gap-1.5 text-secondary text-sm">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -89,7 +86,7 @@
                                             {{ $cityName }}@if($countryName), {{ $countryName }}@endif
                                         </span>
                                     @endif
-                                </p>
+                                </div>
                             @endif
 
                             {{-- Address --}}
@@ -195,38 +192,59 @@
 
                         <form method="GET" action="{{ route('public.booking.show', $restaurant->booking_public_slug) }}">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                {{-- Date Input --}}
+                                {{-- Date Input with Calendar Icon --}}
                                 <div>
                                     <label for="check_date" class="block text-sm font-medium text-primary mb-2">
                                         {{ __('booking.step_1.date_label') }}
                                     </label>
-                                    <input
-                                        type="date"
-                                        id="check_date"
-                                        name="date"
-                                        value="{{ $date }}"
-                                        min="{{ $minDate }}"
-                                        max="{{ $maxDate }}"
-                                        required
-                                        class="w-full px-4 py-3 rounded-xl border border-default bg-page text-primary focus:ring-2 focus:ring-brand focus:border-transparent transition"
-                                    >
+                                    <div class="relative">
+                                        <input
+                                            type="date"
+                                            id="check_date"
+                                            name="date"
+                                            value="{{ $date }}"
+                                            min="{{ $minDate }}"
+                                            max="{{ $maxDate }}"
+                                            required
+                                            class="w-full px-4 py-3 pr-12 rounded-xl border border-default bg-page text-primary focus:ring-2 focus:ring-brand focus:border-transparent transition"
+                                        >
+                                        <button
+                                            type="button"
+                                            onclick="openDatePicker()"
+                                            class="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-lg text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                            aria-label="{{ __('booking.step_1.date_label') }}"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {{-- Party Size Input --}}
+                                {{-- Party Size Dropdown --}}
                                 <div>
                                     <label for="check_party_size" class="block text-sm font-medium text-primary mb-2">
                                         {{ __('booking.step_1.party_size_label') }}
                                     </label>
-                                    <input
-                                        type="number"
-                                        id="check_party_size"
-                                        name="party_size"
-                                        value="{{ $partySize }}"
-                                        min="{{ $minPartySize }}"
-                                        max="{{ $maxPartySize }}"
-                                        required
-                                        class="w-full px-4 py-3 rounded-xl border border-default bg-page text-primary focus:ring-2 focus:ring-brand focus:border-transparent transition"
-                                    >
+                                    <div class="relative">
+                                        <select
+                                            id="check_party_size"
+                                            name="party_size"
+                                            required
+                                            class="w-full px-4 py-3 pr-10 rounded-xl border border-default bg-page text-primary focus:ring-2 focus:ring-brand focus:border-transparent transition appearance-none cursor-pointer"
+                                        >
+                                            @for($i = $minPartySize; $i <= $maxPartySize; $i++)
+                                                <option value="{{ $i }}" @selected($partySize === $i)>
+                                                    {{ trans_choice('booking.summary.guests_count', $i, ['count' => $i]) }}
+                                                </option>
+                                            @endfor
+                                        </select>
+                                        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                            <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
                                     <p class="mt-1.5 text-xs text-secondary">
                                         {{ __('booking.step_1.party_size_hint', ['min' => $minPartySize, 'max' => $maxPartySize]) }}
                                     </p>
@@ -702,9 +720,28 @@
         </div>
     </div>
 
-    {{-- Update time display when selection changes --}}
+    {{-- Update time display when selection changes + Date picker helper --}}
     @push('scripts')
     <script>
+        // Open native date picker when calendar icon is clicked
+        function openDatePicker() {
+            const dateInput = document.getElementById('check_date');
+            if (dateInput) {
+                // Prefer showPicker() if supported (Chrome 99+, Safari 16+, Edge 99+)
+                if (typeof dateInput.showPicker === 'function') {
+                    try {
+                        dateInput.showPicker();
+                    } catch (e) {
+                        // Fallback for edge cases where showPicker fails
+                        dateInput.focus();
+                    }
+                } else {
+                    // Fallback for older browsers
+                    dateInput.focus();
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const timeRadios = document.querySelectorAll('input[name="time"]');
             const summaryTimeDisplay = document.getElementById('summary-time-display');
