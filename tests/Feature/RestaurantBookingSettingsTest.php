@@ -257,6 +257,7 @@ class RestaurantBookingSettingsTest extends TestCase
         $restaurant = Restaurant::create([
             'name' => 'Restaurant Without Slug',
             'city_id' => $this->city->id,
+            'country_id' => $this->country->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => false,
             'booking_public_slug' => null,
@@ -265,8 +266,19 @@ class RestaurantBookingSettingsTest extends TestCase
         ]);
 
         Livewire::test(EditRestaurant::class, ['record' => $restaurant->id])
-            ->set('data.booking_enabled', true)
-            ->set('data.booking_public_slug', '')
+            ->fillForm([
+                'name' => 'Restaurant Without Slug',
+                'country_id' => $this->country->id,
+                'city_id' => $this->city->id,
+                'timezone' => 'Europe/Berlin',
+                'booking_enabled' => true,
+                'booking_public_slug' => '',
+                'booking_min_party_size' => 2,
+                'booking_max_party_size' => 8,
+                'booking_default_duration_minutes' => 90,
+                'booking_min_lead_time_minutes' => 60,
+                'booking_max_lead_time_days' => 30,
+            ])
             ->call('save');
 
         $restaurant->refresh();
@@ -387,6 +399,7 @@ class RestaurantBookingSettingsTest extends TestCase
         $restaurant = Restaurant::create([
             'name' => 'Valid Party Size Restaurant',
             'city_id' => $this->city->id,
+            'country_id' => $this->country->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
             'booking_min_party_size' => 2,
@@ -395,8 +408,18 @@ class RestaurantBookingSettingsTest extends TestCase
 
         // Set min=4, max=10 which should pass validation
         Livewire::test(EditRestaurant::class, ['record' => $restaurant->id])
-            ->set('data.booking_min_party_size', 4)
-            ->set('data.booking_max_party_size', 10)
+            ->fillForm([
+                'name' => 'Valid Party Size Restaurant',
+                'country_id' => $this->country->id,
+                'city_id' => $this->city->id,
+                'timezone' => 'Europe/Berlin',
+                'booking_enabled' => true,
+                'booking_min_party_size' => 4,
+                'booking_max_party_size' => 10,
+                'booking_default_duration_minutes' => 90,
+                'booking_min_lead_time_minutes' => 60,
+                'booking_max_lead_time_days' => 30,
+            ])
             ->call('save')
             ->assertHasNoErrors(['data.booking_max_party_size']);
 
@@ -416,6 +439,7 @@ class RestaurantBookingSettingsTest extends TestCase
         $restaurant = Restaurant::create([
             'name' => 'Equal Party Size Restaurant',
             'city_id' => $this->city->id,
+            'country_id' => $this->country->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
             'booking_min_party_size' => 2,
@@ -424,8 +448,18 @@ class RestaurantBookingSettingsTest extends TestCase
 
         // Set min=6, max=6 which should pass validation
         Livewire::test(EditRestaurant::class, ['record' => $restaurant->id])
-            ->set('data.booking_min_party_size', 6)
-            ->set('data.booking_max_party_size', 6)
+            ->fillForm([
+                'name' => 'Equal Party Size Restaurant',
+                'country_id' => $this->country->id,
+                'city_id' => $this->city->id,
+                'timezone' => 'Europe/Berlin',
+                'booking_enabled' => true,
+                'booking_min_party_size' => 6,
+                'booking_max_party_size' => 6,
+                'booking_default_duration_minutes' => 90,
+                'booking_min_lead_time_minutes' => 60,
+                'booking_max_lead_time_days' => 30,
+            ])
             ->call('save')
             ->assertHasNoErrors(['data.booking_max_party_size']);
 
