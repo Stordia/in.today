@@ -30,6 +30,25 @@ class SwitchRestaurant extends Page implements HasForms
 
     public function mount(): void
     {
+        // Check if restaurant_id is provided in query params (from venue switcher)
+        $requestedRestaurantId = request()->query('restaurant_id');
+
+        if ($requestedRestaurantId && CurrentRestaurant::userHasAccess((int) $requestedRestaurantId)) {
+            // Directly switch to the requested restaurant
+            CurrentRestaurant::set((int) $requestedRestaurantId);
+
+            $restaurant = Restaurant::find((int) $requestedRestaurantId);
+
+            Notification::make()
+                ->title('Restaurant Switched')
+                ->body("You are now managing: {$restaurant->name}")
+                ->success()
+                ->send();
+
+            $this->redirect(route('filament.business.pages.dashboard'));
+            return;
+        }
+
         $this->restaurant_id = CurrentRestaurant::id();
     }
 

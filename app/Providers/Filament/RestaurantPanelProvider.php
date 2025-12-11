@@ -37,6 +37,10 @@ class RestaurantPanelProvider extends PanelProvider
                 'panels::head.end',
                 fn () => '<meta name="robots" content="noindex, nofollow">'
             )
+            ->renderHook(
+                'panels::topbar.start',
+                fn () => view('filament.restaurant.components.venue-switcher')
+            )
             ->colors([
                 'primary' => Color::Sky,
                 'danger' => Color::Rose,
@@ -50,13 +54,7 @@ class RestaurantPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Bookings'),
             ])
-            ->userMenuItems([
-                'restaurant-switcher' => MenuItem::make()
-                    ->label(fn () => static::getCurrentRestaurantLabel())
-                    ->icon('heroicon-o-building-storefront')
-                    ->url(fn () => route('filament.business.pages.switch-restaurant'))
-                    ->visible(fn () => static::hasMultipleRestaurants()),
-            ])
+            ->userMenuItems([])
             ->discoverResources(in: app_path('Filament/Restaurant/Resources'), for: 'App\\Filament\\Restaurant\\Resources')
             ->discoverPages(in: app_path('Filament/Restaurant/Pages'), for: 'App\\Filament\\Restaurant\\Pages')
             ->pages([
@@ -81,23 +79,5 @@ class RestaurantPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->authGuard('web');
-    }
-
-    protected static function getCurrentRestaurantLabel(): string
-    {
-        $restaurant = CurrentRestaurant::get();
-
-        return $restaurant ? "Switch: {$restaurant->name}" : 'Switch Restaurant';
-    }
-
-    protected static function hasMultipleRestaurants(): bool
-    {
-        $user = Auth::user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return CurrentRestaurant::getUserRestaurants($user)->count() > 1;
     }
 }
