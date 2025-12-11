@@ -985,8 +985,32 @@ class DevStatus extends Page implements HasForms
         return implode("\n", $values);
     }
 
-    private function normalizeFeatureStatus(string $status): string
+    private function normalizeFeatureStatus(string|array $status): string
     {
+        // Handle array input - extract scalar value
+        if (is_array($status)) {
+            // Try common array structures
+            if (isset($status['value']) && is_scalar($status['value'])) {
+                $status = (string) $status['value'];
+            } elseif (isset($status['status']) && is_scalar($status['status'])) {
+                $status = (string) $status['status'];
+            } else {
+                // Try to get first scalar element
+                $filtered = array_filter($status, 'is_scalar');
+                if (! empty($filtered)) {
+                    $status = (string) reset($filtered);
+                } else {
+                    // No usable value found
+                    return 'unknown';
+                }
+            }
+        }
+
+        // Ensure we have a string
+        if (! is_string($status)) {
+            return 'unknown';
+        }
+
         $status = strtolower(trim($status));
 
         $map = [
@@ -1002,6 +1026,7 @@ class DevStatus extends Page implements HasForms
             'tested ok' => 'tested_ok',
             'tested' => 'tested_ok',
             'blocked' => 'blocked',
+            'unknown' => 'unknown',
         ];
 
         return $map[$status] ?? 'in_progress';
