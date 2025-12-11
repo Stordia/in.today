@@ -83,7 +83,6 @@ class RestaurantProfileSchema
             TextInput::make('website_url')
                 ->label('Website URL')
                 ->maxLength(500)
-                ->prefix('https://')
                 ->placeholder('meraki.bar')
                 ->dehydrateStateUsing(function (?string $state): ?string {
                     if (empty($state)) {
@@ -100,7 +99,7 @@ class RestaurantProfileSchema
 
                     return $trimmed;
                 })
-                ->helperText('Your website (optional). You can enter just the domain name (e.g. meraki.bar).'),
+                ->helperText('You can enter just the domain (e.g. meraki.bar). We\'ll add https:// automatically if missing.'),
         ];
     }
 
