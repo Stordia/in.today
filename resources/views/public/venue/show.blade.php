@@ -73,14 +73,16 @@
             {{-- Main Column --}}
             <div class="lg:col-span-2 space-y-8">
                 {{-- Description --}}
-                @if($description)
-                    <div class="bg-card rounded-xl shadow-sm border border-default p-6">
-                        <h2 class="text-xl font-semibold text-primary mb-4">About</h2>
-                        <div class="prose prose-sm max-w-none text-secondary">
+                <div class="bg-card rounded-xl shadow-sm border border-default p-6">
+                    <h2 class="text-xl font-semibold text-primary mb-4">About</h2>
+                    <div class="prose prose-sm max-w-none text-secondary">
+                        @if($description)
                             {!! nl2br(e($description)) !!}
-                        </div>
+                        @else
+                            <p class="italic text-secondary/70">This venue has not added a description yet.</p>
+                        @endif
                     </div>
-                @endif
+                </div>
 
                 {{-- Main CTAs --}}
                 <div class="bg-card rounded-xl shadow-sm border border-default p-6">
@@ -162,12 +164,67 @@
                     </div>
                 </div>
 
-                {{-- Opening Hours Info --}}
+                {{-- Opening Hours --}}
                 <div class="bg-card rounded-xl shadow-sm border border-default p-6">
-                    <h2 class="text-lg font-semibold text-primary mb-4">Hours</h2>
-                    <p class="text-sm text-secondary">
-                        View available booking times on the <a href="{{ route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) }}" class="text-primary hover:underline">booking page</a>.
-                    </p>
+                    <h2 class="text-lg font-semibold text-primary mb-4">Booking Hours</h2>
+                    @if($openingHours->isNotEmpty())
+                        @php
+                            $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                            $hoursGrouped = $openingHours->groupBy('day_of_week');
+                            $todayIsOpen = false;
+
+                            // Check if today is open
+                            if (isset($hoursGrouped[$todayDayOfWeek])) {
+                                $todayHours = $hoursGrouped[$todayDayOfWeek];
+                                $todayIsOpen = $todayHours->contains('is_open', true);
+                            }
+                        @endphp
+
+                        <div class="space-y-2 text-sm">
+                            @foreach($dayNames as $dayIndex => $dayName)
+                                @php
+                                    $dayHours = $hoursGrouped->get($dayIndex);
+                                    $isToday = $dayIndex === $todayDayOfWeek;
+                                @endphp
+                                <div class="flex justify-between items-center py-1 {{ $isToday ? 'font-semibold' : '' }}">
+                                    <span class="text-secondary">
+                                        {{ $dayName }}
+                                        @if($isToday)
+                                            <span class="ml-1 text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full">Today</span>
+                                        @endif
+                                    </span>
+                                    <span class="text-secondary">
+                                        @if($dayHours && $dayHours->where('is_open', true)->isNotEmpty())
+                                            @foreach($dayHours->where('is_open', true) as $hours)
+                                                {{ $hours->open_time ? $hours->open_time->format('H:i') : '' }} – {{ $hours->close_time ? $hours->close_time->format('H:i') : '' }}
+                                                @if(!$loop->last), @endif
+                                            @endforeach
+                                        @else
+                                            <span class="text-secondary/60">Closed</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if($todayIsOpen === false && $todayDayOfWeek !== null)
+                            <p class="mt-4 text-sm text-secondary/70 italic">
+                                Closed for online bookings today.
+                            </p>
+                        @endif
+                    @else
+                        <p class="text-sm text-secondary">
+                            View available booking times on the <a href="{{ route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) }}" class="text-primary hover:underline">booking page</a>.
+                        </p>
+                    @endif
+                </div>
+
+                {{-- Map Placeholder --}}
+                <div class="bg-card rounded-xl shadow-sm border border-default p-6">
+                    <h2 class="text-lg font-semibold text-primary mb-4">Location</h2>
+                    <div class="flex items-center justify-center h-40 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <p class="text-sm text-secondary">Map coming soon</p>
+                    </div>
                 </div>
             </div>
         </div>

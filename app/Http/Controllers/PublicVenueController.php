@@ -120,6 +120,17 @@ class PublicVenueController extends Controller
             $websiteUrl = 'https://' . $websiteUrl;
         }
 
+        // Get booking opening hours for the week
+        $openingHours = $restaurant->openingHours()
+            ->where('profile', 'booking')
+            ->orderBy('day_of_week')
+            ->get();
+
+        // Determine today's day of week (0=Monday, 6=Sunday in OpeningHour model)
+        $timezone = $restaurant->timezone ?? config('app.timezone', 'UTC');
+        $now = now($timezone);
+        $todayDayOfWeek = ($now->dayOfWeek + 6) % 7; // Convert PHP's 0=Sunday to 0=Monday
+
         return view('public.venue.show', [
             'restaurant' => $restaurant,
             'cuisineName' => $cuisineName,
@@ -134,6 +145,8 @@ class PublicVenueController extends Controller
             'websiteUrl' => $websiteUrl,
             'phone' => $phone,
             'email' => $email,
+            'openingHours' => $openingHours,
+            'todayDayOfWeek' => $todayDayOfWeek,
         ]);
     }
 
