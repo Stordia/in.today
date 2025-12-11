@@ -9,9 +9,11 @@ use App\Enums\RestaurantRole;
 use App\Filament\Resources\RestaurantResource;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Cuisine;
 use App\Models\Restaurant;
 use App\Models\RestaurantUser;
 use App\Models\User;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -104,6 +106,14 @@ class OnboardRestaurant extends Page implements HasForms
                             ->unique('restaurants', 'slug')
                             ->helperText('Leave blank to auto-generate from name.'),
 
+                        Select::make('cuisine_id')
+                            ->label('Main Cuisine')
+                            ->options(fn () => Cuisine::query()->ordered()->pluck('name_en', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Select the main cuisine')
+                            ->helperText('Choose the main cuisine that guests will see on the public profile.'),
+
                         TextInput::make('tagline')
                             ->label('Tagline')
                             ->maxLength(150)
@@ -112,7 +122,8 @@ class OnboardRestaurant extends Page implements HasForms
                         Textarea::make('description')
                             ->label('Description')
                             ->rows(3)
-                            ->maxLength(1000),
+                            ->maxLength(1000)
+                            ->columnSpanFull(),
 
                         TextInput::make('phone')
                             ->label('Phone Number')
@@ -126,8 +137,10 @@ class OnboardRestaurant extends Page implements HasForms
 
                         TextInput::make('website_url')
                             ->label('Website URL')
-                            ->url()
-                            ->maxLength(500),
+                            ->maxLength(500)
+                            ->prefix('https://')
+                            ->placeholder('meraki.bar')
+                            ->helperText('Your website (optional). You can enter just the domain name.'),
                     ])
                     ->columns(2),
 
@@ -322,6 +335,30 @@ class OnboardRestaurant extends Page implements HasForms
                     ->columns(2)
                     ->collapsed(),
 
+                Section::make('Media')
+                    ->description('Logo and cover images for the booking page (optional but recommended).')
+                    ->schema([
+                        FileUpload::make('logo_url')
+                            ->label('Logo')
+                            ->image()
+                            ->imagePreviewHeight('80')
+                            ->disk('public')
+                            ->directory('restaurants/logos')
+                            ->maxSize(2048)
+                            ->helperText('Square image, at least 512×512 px. PNG, JPG, or SVG. Max 2MB.'),
+
+                        FileUpload::make('cover_image_url')
+                            ->label('Cover Image')
+                            ->image()
+                            ->imagePreviewHeight('120')
+                            ->disk('public')
+                            ->directory('restaurants/covers')
+                            ->maxSize(5120)
+                            ->helperText('Landscape image, ideally 1920×1080 px (16:9 ratio). PNG or JPG. Max 5MB.'),
+                    ])
+                    ->columns(2)
+                    ->collapsed(),
+
                 Section::make('Owner User')
                     ->description('Link an existing user or create a new owner account.')
                     ->schema([
@@ -385,18 +422,32 @@ class OnboardRestaurant extends Page implements HasForms
 
         try {
             $restaurant = DB::transaction(function () use ($data) {
-                // 1. Create the restaurant
+                // 1. Normalize website URL
+                $websiteUrl = null;
+                if (! empty($data['website_url'])) {
+                    $trimmed = trim($data['website_url']);
+                    if (! empty($trimmed)) {
+                        if (! preg_match('/^https?:\/\//i', $trimmed)) {
+                            $websiteUrl = 'https://' . $trimmed;
+                        } else {
+                            $websiteUrl = $trimmed;
+                        }
+                    }
+                }
+
+                // 2. Create the restaurant
                 $settings = array_filter([
                     'tagline' => $data['tagline'] ?? null,
                     'description' => $data['description'] ?? null,
                     'phone' => $data['phone'] ?? null,
                     'email' => $data['email'] ?? null,
-                    'website_url' => $data['website_url'] ?? null,
+                    'website_url' => $websiteUrl,
                 ]);
 
                 $restaurant = Restaurant::create([
                     'name' => $data['name'],
                     'slug' => $data['slug'] ?: Str::slug($data['name']),
+                    'cuisine_id' => $data['cuisine_id'] ?? null,
                     'country_id' => $data['country_id'],
                     'city_id' => $data['city_id'],
                     'address_street' => $data['address_street'] ?? null,
@@ -405,6 +456,9 @@ class OnboardRestaurant extends Page implements HasForms
                     'timezone' => $data['timezone'],
                     'settings' => ! empty($settings) ? $settings : null,
                     'is_active' => true,
+                    // Media
+                    'logo_url' => $data['logo_url'] ?? null,
+                    'cover_image_url' => $data['cover_image_url'] ?? null,
                     // Booking settings
                     'booking_enabled' => $data['booking_enabled'] ?? false,
                     'booking_public_slug' => $data['booking_enabled']
@@ -425,7 +479,7 @@ class OnboardRestaurant extends Page implements HasForms
                     'booking_deposit_policy' => $data['booking_deposit_policy'] ?? null,
                 ]);
 
-                // 2. Resolve or create the owner user
+                // 3. Resolve or create the owner user
                 if ($data['owner_mode'] === 'existing_user') {
                     $ownerUser = User::findOrFail($data['owner_user_id']);
                 } else {
@@ -438,7 +492,7 @@ class OnboardRestaurant extends Page implements HasForms
                     ]);
                 }
 
-                // 3. Create the RestaurantUser pivot
+                // 4. Create the RestaurantUser pivot
                 RestaurantUser::create([
                     'restaurant_id' => $restaurant->id,
                     'user_id' => $ownerUser->id,
@@ -454,8 +508,8 @@ class OnboardRestaurant extends Page implements HasForms
                 : "created new user: {$data['owner_email']}";
 
             Notification::make()
-                ->title('Restaurant Created Successfully')
-                ->body("Restaurant \"{$restaurant->name}\" has been created and {$ownerInfo}.")
+                ->title('Restaurant Onboarded Successfully')
+                ->body("Restaurant \"{$restaurant->name}\" has been created and {$ownerInfo}. You can now edit additional details or configure opening hours.")
                 ->success()
                 ->send();
 
@@ -466,7 +520,7 @@ class OnboardRestaurant extends Page implements HasForms
                 'created_by' => Auth::id(),
             ]);
 
-            $this->redirect(RestaurantResource::getUrl('index'));
+            $this->redirect(RestaurantResource::getUrl('edit', ['record' => $restaurant]));
 
         } catch (\Throwable $e) {
             Log::error('Restaurant onboarding failed', [

@@ -10,6 +10,7 @@ use App\Filament\Resources\RestaurantResource\Pages\EditRestaurant;
 use App\Filament\Resources\RestaurantResource\Pages\OnboardRestaurant;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Cuisine;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -432,5 +433,231 @@ class RestaurantBookingSettingsTest extends TestCase
         $restaurant->refresh();
         $this->assertEquals(6, $restaurant->booking_min_party_size);
         $this->assertEquals(6, $restaurant->booking_max_party_size);
+    }
+
+    /**
+     * Test that onboard wizard can create restaurant with cuisine selection.
+     */
+    public function test_onboard_restaurant_with_cuisine_selection(): void
+    {
+        $this->actingAs($this->admin);
+
+        $cuisine = Cuisine::create([
+            'name_en' => 'Italian',
+            'slug' => 'italian',
+        ]);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'Italian Restaurant')
+            ->set('data.cuisine_id', $cuisine->id)
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'new_user')
+            ->set('data.owner_name', 'Restaurant Owner')
+            ->set('data.owner_email', 'owner@italian.com')
+            ->call('create');
+
+        $restaurant = Restaurant::where('name', 'Italian Restaurant')->first();
+
+        $this->assertNotNull($restaurant);
+        $this->assertEquals($cuisine->id, $restaurant->cuisine_id);
+        $this->assertEquals('Italian', $restaurant->cuisine->getName());
+    }
+
+    /**
+     * Test that onboard wizard normalizes website URL correctly.
+     */
+    public function test_onboard_restaurant_normalizes_website_url(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'Restaurant With Website')
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.website_url', 'meraki.bar')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'new_user')
+            ->set('data.owner_name', 'Restaurant Owner')
+            ->set('data.owner_email', 'owner@website.com')
+            ->call('create');
+
+        $restaurant = Restaurant::where('name', 'Restaurant With Website')->first();
+
+        $this->assertNotNull($restaurant);
+        $this->assertEquals('https://meraki.bar', $restaurant->settings['website_url']);
+    }
+
+    /**
+     * Test that onboard wizard stores website URL with existing https prefix.
+     */
+    public function test_onboard_restaurant_preserves_existing_https_prefix(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'Restaurant With HTTPS')
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.website_url', 'https://example.com')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'new_user')
+            ->set('data.owner_name', 'Restaurant Owner')
+            ->set('data.owner_email', 'owner@https.com')
+            ->call('create');
+
+        $restaurant = Restaurant::where('name', 'Restaurant With HTTPS')->first();
+
+        $this->assertNotNull($restaurant);
+        $this->assertEquals('https://example.com', $restaurant->settings['website_url']);
+    }
+
+    /**
+     * Test that onboard wizard can create restaurant without media uploads (optional fields).
+     */
+    public function test_onboard_restaurant_without_media_uploads(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'Restaurant Without Media')
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'new_user')
+            ->set('data.owner_name', 'Restaurant Owner')
+            ->set('data.owner_email', 'owner@media.com')
+            ->call('create');
+
+        $restaurant = Restaurant::where('name', 'Restaurant Without Media')->first();
+
+        $this->assertNotNull($restaurant);
+        $this->assertNull($restaurant->logo_url);
+        $this->assertNull($restaurant->cover_image_url);
+    }
+
+    /**
+     * Test that onboard wizard redirects to edit page after creation.
+     */
+    public function test_onboard_restaurant_redirects_to_edit_page(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'Redirect Test Restaurant')
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'new_user')
+            ->set('data.owner_name', 'Restaurant Owner')
+            ->set('data.owner_email', 'owner@redirect.com')
+            ->call('create')
+            ->assertRedirect();
+
+        $restaurant = Restaurant::where('name', 'Redirect Test Restaurant')->first();
+        $this->assertNotNull($restaurant);
+    }
+
+    /**
+     * Test that onboard wizard can attach existing user as owner.
+     */
+    public function test_onboard_restaurant_attaches_existing_user_as_owner(): void
+    {
+        $this->actingAs($this->admin);
+
+        $existingUser = User::create([
+            'name' => 'Existing User',
+            'email' => 'existing@user.com',
+            'password' => bcrypt('password'),
+            'global_role' => GlobalRole::User,
+        ]);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'Existing Owner Restaurant')
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'existing_user')
+            ->set('data.owner_user_id', $existingUser->id)
+            ->call('create');
+
+        $restaurant = Restaurant::where('name', 'Existing Owner Restaurant')->first();
+
+        $this->assertNotNull($restaurant);
+        $this->assertEquals($existingUser->id, $restaurant->owner()->id);
+        $this->assertEquals('Existing User', $restaurant->owner()->name);
+
+        // Verify no new user was created
+        $this->assertEquals(2, User::count()); // admin + existing user
+    }
+
+    /**
+     * Test that onboard wizard creates new user when email doesn't exist.
+     */
+    public function test_onboard_restaurant_creates_new_user_as_owner(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(OnboardRestaurant::class)
+            ->set('data.name', 'New Owner Restaurant')
+            ->set('data.country_id', $this->country->id)
+            ->set('data.city_id', $this->city->id)
+            ->set('data.timezone', 'Europe/Berlin')
+            ->set('data.booking_enabled', true)
+            ->set('data.booking_min_party_size', 2)
+            ->set('data.booking_max_party_size', 8)
+            ->set('data.booking_default_duration_minutes', 90)
+            ->set('data.booking_min_lead_time_minutes', 60)
+            ->set('data.booking_max_lead_time_days', 30)
+            ->set('data.owner_mode', 'new_user')
+            ->set('data.owner_name', 'Brand New Owner')
+            ->set('data.owner_email', 'newowner@restaurant.com')
+            ->call('create');
+
+        $restaurant = Restaurant::where('name', 'New Owner Restaurant')->first();
+
+        $this->assertNotNull($restaurant);
+        $this->assertEquals('Brand New Owner', $restaurant->owner()->name);
+        $this->assertEquals('newowner@restaurant.com', $restaurant->owner()->email);
+
+        // Verify new user was created
+        $this->assertEquals(2, User::count()); // admin + new owner
     }
 }
