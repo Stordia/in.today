@@ -185,7 +185,7 @@
                             {{ __('booking.step_1.title') }}
                         </h2>
 
-                        <form method="POST" action="{{ route('public.booking.show', $restaurant->booking_public_slug) }}">
+                        <form method="GET" action="{{ isset($country) ? route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) : route('public.booking.show', $restaurant->booking_public_slug) }}">
                             @csrf
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {{-- Date Input with Calendar Icon --}}
@@ -363,7 +363,7 @@
                                 {{ __('booking.step_3.title') }}
                             </h2>
 
-                            <form id="booking-form" method="POST" action="{{ route('public.booking.request', $restaurant->booking_public_slug) }}">
+                            <form id="booking-form" method="POST" action="{{ isset($country) ? route('public.venue.book.request', ['country' => $country, 'city' => $city, 'venue' => $venue]) : route('public.booking.request', $restaurant->booking_public_slug) }}">
                                 @csrf
 
                                 {{-- Hidden fields --}}

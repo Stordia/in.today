@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AffiliateRedirectController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\PublicVenueController;
+use App\Http\Controllers\PublicVenueBookingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -40,8 +42,8 @@ Route::group([
     })->name('privacy');
 });
 
-// Public booking page (no locale prefix for now)
-// Accepts both GET (initial load) and POST (check availability)
+// TEMPORARY: Old booking routes for backward compatibility during transition
+// These will be removed after full migration to new venue routing is complete
 Route::match(['get', 'post'], '/book/{slug}', [App\Http\Controllers\PublicBookingController::class, 'show'])
     ->name('public.booking.show');
 
@@ -62,3 +64,40 @@ Route::get('/admin/attachments/{path}', function (string $path) {
     ->where('path', '.*')
     ->middleware(['auth', 'verified'])
     ->name('admin.attachment.download');
+
+/*
+|--------------------------------------------------------------------------
+| Global Public Venue Routes
+|--------------------------------------------------------------------------
+|
+| New URL structure for venues, bookings, and menus:
+| /{country}/{city}/{venue}
+| /{country}/{city}/{venue}/book
+| /{country}/{city}/{venue}/menu
+|
+| These routes must be placed AFTER all admin/business/auth routes to avoid conflicts.
+|
+*/
+
+Route::group([
+    'where' => [
+        'country' => '[a-z]{2}',
+        'city' => '[a-z0-9\-]+',
+        'venue' => '[a-z0-9\-\.]+',
+    ],
+], function () {
+    // Venue public profile page
+    Route::get('/{country}/{city}/{venue}', [PublicVenueController::class, 'show'])
+        ->name('public.venue.show');
+
+    // Venue booking page (GET = show form, POST = submit booking)
+    Route::get('/{country}/{city}/{venue}/book', [PublicVenueBookingController::class, 'show'])
+        ->name('public.venue.book.show');
+
+    Route::post('/{country}/{city}/{venue}/book', [PublicVenueBookingController::class, 'request'])
+        ->name('public.venue.book.request');
+
+    // Venue menu page (skeleton for now)
+    Route::get('/{country}/{city}/{venue}/menu', [PublicVenueController::class, 'showMenu'])
+        ->name('public.venue.menu.show');
+});
