@@ -10,6 +10,7 @@
 @if($currentRestaurant && $hasMultipleRestaurants)
     <div class="fi-topbar-item flex items-center justify-center relative" x-data="{ open: false }">
         <button
+            x-ref="button"
             type="button"
             @click="open = !open"
             @click.away="open = false"
@@ -31,8 +32,9 @@
             x-show="open"
             x-transition
             x-cloak
-            class="absolute top-full right-0 mt-2 w-64 rounded-lg bg-white shadow-lg ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 z-50"
-            style="display: none;"
+            class="absolute right-0 mt-2 w-64 rounded-lg bg-white shadow-lg ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 z-50 max-h-96 overflow-y-auto"
+            style="display: none; top: 100%;"
+            x-anchor.bottom-end="$refs.button"
         >
             <div class="p-2">
                 <div class="mb-2 px-3 py-2 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
