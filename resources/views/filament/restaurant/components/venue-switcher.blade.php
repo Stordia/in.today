@@ -32,18 +32,17 @@
             x-show="open"
             x-transition
             x-cloak
-            class="absolute right-0 mt-2 w-64 rounded-lg bg-white shadow-lg ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 z-50 max-h-96 overflow-y-auto"
+            class="absolute right-0 mt-2 w-auto min-w-[220px] max-w-[360px] rounded-lg bg-white shadow-lg ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 z-50 max-h-96 overflow-y-auto"
             style="display: none; top: 100%;"
             x-anchor.bottom-end="$refs.button"
         >
             <div class="p-2">
-                <div class="mb-2 px-3 py-2 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                <div class="mb-2 px-3 py-2 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">
                     Switch Venue
                 </div>
                 @foreach($restaurants as $restaurant)
                     <a
                         href="{{ route('filament.business.pages.switch-restaurant') }}?restaurant_id={{ $restaurant->id }}"
-                        wire:navigate
                         @click="open = false"
                         class="flex items-center gap-3 rounded-md px-3 py-2 text-sm {{ $restaurant->id === $currentRestaurant->id ? 'bg-gray-50 font-semibold text-gray-900 dark:bg-white/5 dark:text-white' : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5' }} transition"
                     >
@@ -55,10 +54,10 @@
                         @else
                             <span class="w-4"></span>
                         @endif
-                        <div class="flex-1">
-                            <div>{{ $restaurant->name }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="whitespace-nowrap">{{ $restaurant->name }}</div>
                             @if($restaurant->city)
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                <div class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                     {{ $restaurant->city->name }}
                                 </div>
                             @endif

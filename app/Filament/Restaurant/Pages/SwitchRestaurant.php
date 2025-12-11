@@ -45,7 +45,13 @@ class SwitchRestaurant extends Page implements HasForms
                 ->success()
                 ->send();
 
-            $this->redirect(route('filament.business.pages.dashboard'));
+            // Redirect back to the referring page, or dashboard if none
+            $referer = request()->header('referer');
+            $redirectUrl = $referer && str_starts_with($referer, url('/business'))
+                ? $referer
+                : route('filament.business.pages.dashboard');
+
+            $this->redirect($redirectUrl);
             return;
         }
 
