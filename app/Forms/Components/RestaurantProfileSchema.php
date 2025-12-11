@@ -135,8 +135,8 @@ class RestaurantProfileSchema
                                 ->pluck('name', 'id');
                         })
                         ->searchable()
-                        ->preload()
                         ->required()
+                        ->live()
                         ->helperText('Select a country first.'),
                 ]),
 
