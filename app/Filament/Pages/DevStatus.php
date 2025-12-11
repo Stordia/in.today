@@ -1032,9 +1032,44 @@ class DevStatus extends Page implements HasForms
         return $map[$status] ?? 'in_progress';
     }
 
-    private function normalizeTestResult(string $result): string
+    private function normalizeTestResult(string|array|null $result): string
     {
-        $result = strtolower(trim($result));
+        // Handle null input
+        if ($result === null) {
+            return 'unknown';
+        }
+
+        // Handle array input - extract scalar value
+        if (is_array($result)) {
+            // Try common array structures
+            if (isset($result['value']) && is_scalar($result['value'])) {
+                $result = (string) $result['value'];
+            } elseif (isset($result['result']) && is_scalar($result['result'])) {
+                $result = (string) $result['result'];
+            } else {
+                // Try to get first scalar element
+                $filtered = array_filter($result, 'is_scalar');
+                if (! empty($filtered)) {
+                    $result = (string) reset($filtered);
+                } else {
+                    // No usable value found
+                    return 'unknown';
+                }
+            }
+        }
+
+        // Ensure we have a string
+        if (! is_string($result)) {
+            return 'unknown';
+        }
+
+        // Handle empty string
+        $result = trim($result);
+        if ($result === '') {
+            return 'unknown';
+        }
+
+        $result = strtolower($result);
 
         $map = [
             'unknown' => 'unknown',
