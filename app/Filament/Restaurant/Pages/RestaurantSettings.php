@@ -123,7 +123,7 @@ class RestaurantSettings extends Page implements HasForms
             return 'No Restaurant Selected';
         }
 
-        return 'Settings';
+        return 'Business Settings';
     }
 
     public function getSubheading(): ?string
@@ -134,7 +134,7 @@ class RestaurantSettings extends Page implements HasForms
             return 'Please select a restaurant to manage its settings.';
         }
 
-        return "Manage settings for {$restaurant->name}";
+        return 'Manage your business profile, booking options, and contact details.';
     }
 
     public function setActiveTab(string $tab): void
@@ -237,9 +237,9 @@ class RestaurantSettings extends Page implements HasForms
 
                     TextInput::make('website_url')
                         ->label('Website URL')
-                        ->url()
                         ->maxLength(500)
                         ->prefix('https://')
+                        ->placeholder('meraki.bar')
                         ->dehydrateStateUsing(function (?string $state): ?string {
                             if (empty($state)) {
                                 return null;
@@ -254,7 +254,7 @@ class RestaurantSettings extends Page implements HasForms
                             }
                             return $trimmed;
                         })
-                        ->helperText('Your website (optional). You can enter just the domain name.'),
+                        ->helperText('Your website (optional). You can enter just the domain name (e.g. meraki.bar).'),
                 ]),
 
             Section::make('Location')

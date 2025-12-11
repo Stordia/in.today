@@ -330,13 +330,9 @@ class PublicBookingController extends Controller
             $successData['formatted_deposit_amount'] = $reservation->getFormattedDepositAmount();
         }
 
-        // Redirect back with success message
+        // Redirect back with success message (no query parameters)
         return redirect()
-            ->route('public.booking.show', [
-                'slug' => $slug,
-                'date' => $validated['date'],
-                'party_size' => $partySize,
-            ])
+            ->route('public.booking.show', ['slug' => $slug])
             ->with($successData);
     }
 }

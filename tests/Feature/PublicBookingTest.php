@@ -750,6 +750,55 @@ class PublicBookingTest extends TestCase
         Carbon::setTestNow(); // Reset
     }
 
+    public function test_booking_submission_redirects_without_query_params(): void
+    {
+        // Set a fixed time for consistent testing
+        $now = Carbon::create(2025, 6, 15, 10, 0, 0, 'Europe/Berlin');
+        Carbon::setTestNow($now);
+
+        // Create opening hours for today
+        $today = $now->copy();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $today->dayOfWeek === 0 ? 6 : $today->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        // Create a table
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 6,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        // Submit a booking request
+        $response = $this->from('/book/test-restaurant')
+            ->post('/book/test-restaurant/request', [
+                'date' => $today->toDateString(),
+                'time' => '12:00',
+                'party_size' => 2,
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'phone' => '+49123456789',
+                'accepted_terms' => '1',
+            ]);
+
+        // Should redirect to booking page WITHOUT query parameters
+        $response->assertRedirect('/book/test-restaurant');
+        $response->assertSessionHas('booking_status', 'success');
+
+        // Follow the redirect and verify success message appears
+        $followResponse = $this->get($response->headers->get('Location'));
+        $followResponse->assertStatus(200);
+        $followResponse->assertSee('Test Restaurant');
+
+        Carbon::setTestNow(); // Reset
+    }
+
     public function test_booking_submission_without_fatal_error(): void
     {
         // This test specifically verifies the Mailable $locale fix
