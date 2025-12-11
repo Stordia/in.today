@@ -24,6 +24,18 @@ class CreateRestaurant extends CreateRecord
             $data['booking_public_slug'] = Str::slug($data['name']) . '-' . Str::random(6);
         }
 
+        // Move form fields into settings JSON column
+        $settings = [];
+        $settings['tagline'] = $data['tagline'] ?? null;
+        $settings['description'] = $data['description'] ?? null;
+        $settings['phone'] = $data['phone'] ?? null;
+        $settings['email'] = $data['email'] ?? null;
+        $settings['website_url'] = $data['website_url'] ?? null;
+        $data['settings'] = $settings;
+
+        // Remove the individual fields from $data since they're now in settings
+        unset($data['tagline'], $data['description'], $data['phone'], $data['email'], $data['website_url']);
+
         return $data;
     }
 }

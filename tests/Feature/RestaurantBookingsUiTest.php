@@ -60,7 +60,7 @@ class RestaurantBookingsUiTest extends TestCase
 
         // Assert the Bookings section is present
         $response->assertSee('Bookings');
-        $response->assertSee('Enable online bookings');
+        $response->assertSee('Enable Online Bookings');
         $response->assertSee('booking_enabled');
         $response->assertSee('Minimum Party Size');
         $response->assertSee('Maximum Party Size');
@@ -84,7 +84,7 @@ class RestaurantBookingsUiTest extends TestCase
 
         // Assert the Bookings section is present
         $response->assertSee('Bookings');
-        $response->assertSee('Enable online bookings');
+        $response->assertSee('Enable Online Bookings');
         $response->assertSee('booking_enabled');
     }
 }

@@ -7,6 +7,7 @@ namespace App\Filament\Resources;
 use App\Enums\RestaurantPlan;
 use App\Filament\Resources\RestaurantResource\Pages;
 use App\Filament\Resources\RestaurantResource\RelationManagers;
+use App\Forms\Components\RestaurantProfileSchema;
 use App\Models\Agency;
 use App\Models\City;
 use App\Models\Cuisine;
@@ -33,38 +34,56 @@ class RestaurantResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Basic Information')
+                Forms\Components\Section::make('Profile')
+                    ->description('Core business information visible to customers.')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
+                        Forms\Components\Grid::make(2)
+                            ->schema(RestaurantProfileSchema::getBasicInformationSchema()),
+
                         Forms\Components\TextInput::make('slug')
+                            ->label('URL Slug')
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('Leave blank to auto-generate from name'),
+                    ])
+                    ->columns(1),
+
+                Forms\Components\Section::make('Contact Information')
+                    ->description('Customer-facing contact details.')
+                    ->schema(RestaurantProfileSchema::getContactInformationSchema()),
+
+                Forms\Components\Section::make('Location')
+                    ->description('Business location and address.')
+                    ->schema([
+                        ...RestaurantProfileSchema::getLocationSchema(),
+
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('address_country')
+                                    ->label('Country (Legacy Text)')
+                                    ->maxLength(100)
+                                    ->helperText('Legacy field. Use Country relation instead.'),
+                                Forms\Components\TextInput::make('latitude')
+                                    ->label('Latitude')
+                                    ->numeric()
+                                    ->step(0.00000001),
+                                Forms\Components\TextInput::make('longitude')
+                                    ->label('Longitude')
+                                    ->numeric()
+                                    ->step(0.00000001),
+                            ]),
+                    ]),
+
+                Forms\Components\Section::make('System Settings')
+                    ->description('Platform-specific configuration and metadata.')
+                    ->schema([
                         Forms\Components\Select::make('agency_id')
                             ->label('Agency')
                             ->relationship('agency', 'name')
                             ->searchable()
                             ->preload()
                             ->placeholder('Direct customer (no agency)'),
-                        Forms\Components\Select::make('country_id')
-                            ->label('Country')
-                            ->relationship('country', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->placeholder('Select a country'),
-                        Forms\Components\Select::make('city_id')
-                            ->label('City')
-                            ->relationship('city', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->required(),
-                        Forms\Components\Select::make('cuisine_id')
-                            ->label('Cuisine')
-                            ->relationship('cuisine', 'name_en')
-                            ->searchable()
-                            ->preload(),
+
                         Forms\Components\Select::make('timezone')
                             ->label('Timezone')
                             ->options(fn () => array_combine(
@@ -74,29 +93,8 @@ class RestaurantResource extends Resource
                             ->searchable()
                             ->required()
                             ->default(config('app.timezone', 'Europe/Berlin')),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Address')
-                    ->schema([
-                        Forms\Components\TextInput::make('address_street')
-                            ->label('Street')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('address_district')
-                            ->label('District')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('address_postal')
-                            ->label('Postal Code')
-                            ->maxLength(20),
-                        Forms\Components\TextInput::make('address_country')
-                            ->label('Country')
-                            ->maxLength(100),
-                        Forms\Components\TextInput::make('latitude')
-                            ->numeric()
-                            ->step(0.00000001),
-                        Forms\Components\TextInput::make('longitude')
-                            ->numeric()
-                            ->step(0.00000001),
-                    ])->columns(3),
+                    ])
+                    ->columns(2),
 
                 Forms\Components\Section::make('Classification')
                     ->schema([
@@ -177,72 +175,13 @@ class RestaurantResource extends Resource
                     ->description('Control how many guests can book online and which URL is used for the booking widget.')
                     ->schema([
                         Forms\Components\Toggle::make('booking_enabled')
-                            ->label('Enable online bookings')
+                            ->label('Enable Online Bookings')
                             ->helperText('If disabled, the public booking page for this restaurant will not accept new reservations.')
                             ->default(true)
                             ->live(),
 
-                        Forms\Components\TextInput::make('booking_public_slug')
-                            ->label('Public booking URL slug')
-                            ->helperText('Used for /book/{slug}. Leave empty to auto-generate from the restaurant name on save.')
-                            ->maxLength(100)
-                            ->visible(fn (Get $get) => $get('booking_enabled')),
-
-                        Forms\Components\TextInput::make('booking_min_party_size')
-                            ->label('Minimum Party Size')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(50)
-                            ->default(2)
-                            ->required()
-                            ->suffix('guests')
-                            ->live(onBlur: true),
-
-                        Forms\Components\TextInput::make('booking_max_party_size')
-                            ->label('Maximum Party Size')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(100)
-                            ->default(8)
-                            ->required()
-                            ->suffix('guests')
-                            ->rules([
-                                fn (Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                    $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
-                                    if ((int) $value < $minPartySize) {
-                                        $fail("The Maximum Party Size must be at least {$minPartySize} (the minimum party size).");
-                                    }
-                                },
-                            ]),
-
-                        Forms\Components\TextInput::make('booking_default_duration_minutes')
-                            ->label('Default Reservation Duration')
-                            ->numeric()
-                            ->minValue(15)
-                            ->maxValue(480)
-                            ->default(90)
-                            ->required()
-                            ->suffix('minutes'),
-
-                        Forms\Components\TextInput::make('booking_min_lead_time_minutes')
-                            ->label('Minimum Lead Time')
-                            ->numeric()
-                            ->minValue(0)
-                            ->maxValue(1440)
-                            ->default(60)
-                            ->required()
-                            ->suffix('minutes')
-                            ->helperText('How far in advance a reservation must be made.'),
-
-                        Forms\Components\TextInput::make('booking_max_lead_time_days')
-                            ->label('Maximum Lead Time')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(365)
-                            ->default(30)
-                            ->required()
-                            ->suffix('days')
-                            ->helperText('How far into the future reservations can be made.'),
+                        Forms\Components\Grid::make(2)
+                            ->schema(RestaurantProfileSchema::getBookingConfigurationSchema(showPublicSlug: true)),
 
                         Forms\Components\Textarea::make('booking_notes_internal')
                             ->label('Internal Booking Notes')

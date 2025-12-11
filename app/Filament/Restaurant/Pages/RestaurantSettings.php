@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Restaurant\Pages;
 
+use App\Forms\Components\RestaurantProfileSchema;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Cuisine;
@@ -182,131 +183,22 @@ class RestaurantSettings extends Page implements HasForms
             Section::make('Basic Information')
                 ->description('Core information about your business that guests will see.')
                 ->schema([
-                    TextInput::make('name')
-                        ->label('Business Name')
-                        ->required()
-                        ->maxLength(255)
-                        ->helperText('The name displayed on your booking page and in emails.'),
+                    ...RestaurantProfileSchema::getBasicInformationSchema(),
 
                     TextInput::make('slug')
                         ->label('URL Slug')
                         ->disabled()
                         ->helperText('Your URL identifier. Contact support to change this.'),
-
-                    Select::make('cuisine_id')
-                        ->label('Main Cuisine')
-                        ->options(fn () => Cuisine::query()->ordered()->pluck('name_en', 'id'))
-                        ->searchable()
-                        ->preload()
-                        ->placeholder('Select your main cuisine')
-                        ->helperText('Choose the main cuisine your guests will see on your profile.'),
-
-                    TextInput::make('tagline')
-                        ->label('Tagline')
-                        ->maxLength(150)
-                        ->placeholder('e.g., Authentic Italian Cuisine')
-                        ->helperText('A short phrase describing your business style.'),
-
-                    Textarea::make('description')
-                        ->label('Description')
-                        ->rows(3)
-                        ->maxLength(1000)
-                        ->helperText('A brief description for your booking page.'),
                 ])
                 ->columns(1),
 
             Section::make('Contact Information')
                 ->description('How customers can reach you. This appears on your booking page.')
-                ->schema([
-                    Grid::make(2)
-                        ->schema([
-                            TextInput::make('phone')
-                                ->label('Phone Number')
-                                ->tel()
-                                ->maxLength(50)
-                                ->placeholder('+49 123 456789')
-                                ->helperText('For customer inquiries and reservations.'),
-
-                            TextInput::make('email')
-                                ->label('Public Email')
-                                ->email()
-                                ->maxLength(255)
-                                ->placeholder('info@restaurant.com')
-                                ->helperText('For customer inquiries.'),
-                        ]),
-
-                    TextInput::make('website_url')
-                        ->label('Website URL')
-                        ->maxLength(500)
-                        ->prefix('https://')
-                        ->placeholder('meraki.bar')
-                        ->dehydrateStateUsing(function (?string $state): ?string {
-                            if (empty($state)) {
-                                return null;
-                            }
-                            $trimmed = trim($state);
-                            if (empty($trimmed)) {
-                                return null;
-                            }
-                            // Add https:// if no scheme is present
-                            if (! preg_match('/^https?:\/\//i', $trimmed)) {
-                                return 'https://' . $trimmed;
-                            }
-                            return $trimmed;
-                        })
-                        ->helperText('Your website (optional). You can enter just the domain name (e.g. meraki.bar).'),
-                ]),
+                ->schema(RestaurantProfileSchema::getContactInformationSchema()),
 
             Section::make('Location')
                 ->description('Your business address, shown on the booking page.')
-                ->schema([
-                    Grid::make(2)
-                        ->schema([
-                            Select::make('country_id')
-                                ->label('Country')
-                                ->options(fn () => Country::query()->orderBy('name')->pluck('name', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->required()
-                                ->live()
-                                ->afterStateUpdated(fn (Set $set) => $set('city_id', null)),
-
-                            Select::make('city_id')
-                                ->label('City')
-                                ->options(function (Get $get) {
-                                    $countryId = $get('country_id');
-                                    if (! $countryId) {
-                                        return [];
-                                    }
-
-                                    return City::query()
-                                        ->where('country_id', $countryId)
-                                        ->orderBy('name')
-                                        ->pluck('name', 'id');
-                                })
-                                ->searchable()
-                                ->preload()
-                                ->required()
-                                ->helperText('Select a country first.'),
-                        ]),
-
-                    Grid::make(3)
-                        ->schema([
-                            TextInput::make('address_street')
-                                ->label('Street Address')
-                                ->maxLength(255)
-                                ->columnSpan(2),
-
-                            TextInput::make('address_postal')
-                                ->label('Postal Code')
-                                ->maxLength(20),
-                        ]),
-
-                    TextInput::make('address_district')
-                        ->label('District / Neighborhood')
-                        ->maxLength(255)
-                        ->helperText('Optional neighborhood or area name.'),
-                ]),
+                ->schema(RestaurantProfileSchema::getLocationSchema()),
 
             Section::make('Timezone')
                 ->description('All reservation times are shown in this timezone.')
@@ -375,75 +267,11 @@ class RestaurantSettings extends Page implements HasForms
                 ])
                 ->columns(1),
 
-            Section::make('Party Size')
-                ->description('How many guests can book online? Larger groups will be asked to contact you directly.')
-                ->schema([
-                    Grid::make(2)
-                        ->schema([
-                            TextInput::make('booking_min_party_size')
-                                ->label('Minimum Guests')
-                                ->numeric()
-                                ->minValue(1)
-                                ->maxValue(50)
-                                ->default(1)
-                                ->required()
-                                ->suffix('guests')
-                                ->helperText('Smallest party you accept online.')
-                                ->live(onBlur: true),
-
-                            TextInput::make('booking_max_party_size')
-                                ->label('Maximum Guests')
-                                ->numeric()
-                                ->minValue(1)
-                                ->maxValue(100)
-                                ->default(20)
-                                ->required()
-                                ->suffix('guests')
-                                ->helperText('Largest party for online booking.')
-                                ->rule(fn (Get $get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                    $minPartySize = max(1, (int) ($get('booking_min_party_size') ?? 1));
-                                    if ((int) $value < $minPartySize) {
-                                        $fail("Maximum guests must be at least {$minPartySize}.");
-                                    }
-                                }),
-                        ]),
-                ]),
-
-            Section::make('Timing')
-                ->description('Control when guests can book and how long reservations last.')
+            Section::make('Booking Configuration')
+                ->description('Party size limits and timing rules for online bookings.')
                 ->schema([
                     Grid::make(3)
-                        ->schema([
-                            TextInput::make('booking_default_duration_minutes')
-                                ->label('Table Time')
-                                ->numeric()
-                                ->minValue(15)
-                                ->maxValue(480)
-                                ->default(90)
-                                ->required()
-                                ->suffix('minutes')
-                                ->helperText('How long each reservation blocks the table.'),
-
-                            TextInput::make('booking_min_lead_time_minutes')
-                                ->label('Minimum Notice')
-                                ->numeric()
-                                ->minValue(0)
-                                ->maxValue(1440)
-                                ->default(60)
-                                ->required()
-                                ->suffix('minutes')
-                                ->helperText('How much advance notice you need.'),
-
-                            TextInput::make('booking_max_lead_time_days')
-                                ->label('Book Ahead')
-                                ->numeric()
-                                ->minValue(1)
-                                ->maxValue(365)
-                                ->default(30)
-                                ->required()
-                                ->suffix('days')
-                                ->helperText('How far ahead guests can book.'),
-                        ]),
+                        ->schema(RestaurantProfileSchema::getBookingConfigurationSchema(showPublicSlug: false)),
                 ]),
 
             Section::make('Staff Notes')
