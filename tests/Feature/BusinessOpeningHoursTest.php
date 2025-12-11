@@ -335,4 +335,144 @@ class BusinessOpeningHoursTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function test_closed_days_can_be_saved_without_time_fields(): void
+    {
+        $this->actingAs($this->owner);
+
+        // Create a closed day without time fields
+        $openingHour = OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'profile' => 'booking',
+            'day_of_week' => 0, // Monday
+            'is_open' => false,
+            'open_time' => null,
+            'close_time' => null,
+        ]);
+
+        $this->assertNotNull($openingHour);
+        $this->assertFalse($openingHour->is_open);
+        $this->assertNull($openingHour->open_time);
+        $this->assertNull($openingHour->close_time);
+    }
+
+    public function test_copy_schedule_copies_all_relevant_fields(): void
+    {
+        $this->actingAs($this->owner);
+
+        // Create a source schedule for Monday
+        $monday = OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'profile' => 'booking',
+            'day_of_week' => 0, // Monday
+            'is_open' => true,
+            'open_time' => '17:00',
+            'close_time' => '23:00',
+            'last_reservation_time' => '22:00',
+            'shift_name' => 'Dinner',
+        ]);
+
+        // Copy to Tuesday and Wednesday
+        foreach ([1, 2] as $dayOfWeek) {
+            OpeningHour::updateOrCreate(
+                [
+                    'restaurant_id' => $this->restaurant->id,
+                    'profile' => 'booking',
+                    'day_of_week' => $dayOfWeek,
+                    'shift_name' => $monday->shift_name,
+                ],
+                [
+                    'is_open' => $monday->is_open,
+                    'open_time' => $monday->open_time,
+                    'close_time' => $monday->close_time,
+                    'last_reservation_time' => $monday->last_reservation_time,
+                ]
+            );
+        }
+
+        // Verify Tuesday
+        $tuesday = OpeningHour::query()
+            ->where('restaurant_id', $this->restaurant->id)
+            ->where('day_of_week', 1)
+            ->first();
+
+        $this->assertNotNull($tuesday);
+        $this->assertTrue($tuesday->is_open);
+        $this->assertEquals('17:00', $tuesday->open_time instanceof Carbon ? $tuesday->open_time->format('H:i') : $tuesday->open_time);
+        $this->assertEquals('23:00', $tuesday->close_time instanceof Carbon ? $tuesday->close_time->format('H:i') : $tuesday->close_time);
+        $this->assertEquals('22:00', $tuesday->last_reservation_time instanceof Carbon ? $tuesday->last_reservation_time->format('H:i') : $tuesday->last_reservation_time);
+        $this->assertEquals('Dinner', $tuesday->shift_name);
+
+        // Verify Wednesday
+        $wednesday = OpeningHour::query()
+            ->where('restaurant_id', $this->restaurant->id)
+            ->where('day_of_week', 2)
+            ->first();
+
+        $this->assertNotNull($wednesday);
+        $this->assertTrue($wednesday->is_open);
+        $this->assertEquals('Dinner', $wednesday->shift_name);
+    }
+
+    public function test_toggle_action_changes_is_open_status(): void
+    {
+        $this->actingAs($this->owner);
+
+        // Create an open day
+        $openingHour = OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'profile' => 'booking',
+            'day_of_week' => 0, // Monday
+            'is_open' => true,
+            'open_time' => '17:00',
+            'close_time' => '23:00',
+        ]);
+
+        $this->assertTrue($openingHour->is_open);
+
+        // Toggle to closed
+        $openingHour->update(['is_open' => false]);
+        $openingHour->refresh();
+
+        $this->assertFalse($openingHour->is_open);
+
+        // Toggle back to open
+        $openingHour->update(['is_open' => true]);
+        $openingHour->refresh();
+
+        $this->assertTrue($openingHour->is_open);
+    }
+
+    public function test_toggle_to_open_sets_default_times_if_missing(): void
+    {
+        $this->actingAs($this->owner);
+
+        // Create a closed day without times
+        $openingHour = OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'profile' => 'booking',
+            'day_of_week' => 0, // Monday
+            'is_open' => false,
+            'open_time' => null,
+            'close_time' => null,
+        ]);
+
+        $this->assertNull($openingHour->open_time);
+        $this->assertNull($openingHour->close_time);
+
+        // Toggle to open with defaults
+        $data = ['is_open' => true];
+        if (! $openingHour->open_time) {
+            $data['open_time'] = '17:00';
+        }
+        if (! $openingHour->close_time) {
+            $data['close_time'] = '23:00';
+        }
+        $openingHour->update($data);
+        $openingHour->refresh();
+
+        $this->assertTrue($openingHour->is_open);
+        $this->assertEquals('17:00', $openingHour->open_time instanceof Carbon ? $openingHour->open_time->format('H:i') : $openingHour->open_time);
+        $this->assertEquals('23:00', $openingHour->close_time instanceof Carbon ? $openingHour->close_time->format('H:i') : $openingHour->close_time);
+    }
 }

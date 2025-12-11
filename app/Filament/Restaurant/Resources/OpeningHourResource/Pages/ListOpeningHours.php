@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Restaurant\Resources\OpeningHourResource\Pages;
 
 use App\Filament\Restaurant\Resources\OpeningHourResource;
+use App\Support\Tenancy\CurrentRestaurant;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -17,5 +18,18 @@ class ListOpeningHours extends ListRecords
         return [
             Actions\CreateAction::make(),
         ];
+    }
+
+    public function getTitle(): string
+    {
+        return 'Opening Hours & Special Dates';
+    }
+
+    public function getSubheading(): ?string
+    {
+        $restaurant = CurrentRestaurant::get();
+        $venueName = $restaurant ? "You are managing: {$restaurant->name}" : '';
+
+        return "Manage when guests can book online, plus holidays and special dates. {$venueName}";
     }
 }
