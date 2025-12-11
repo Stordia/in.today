@@ -111,19 +111,20 @@ class AvailabilityService
     }
 
     /**
-     * Check if the entire day is blocked.
+     * Check if the entire day is blocked for bookings.
      */
     private function isDayFullyBlocked(Restaurant $restaurant, CarbonInterface $date): bool
     {
         return BlockedDate::query()
             ->where('restaurant_id', $restaurant->id)
+            ->bookingProfile()
             ->whereDate('date', $date->toDateString())
             ->where('is_all_day', true)
             ->exists();
     }
 
     /**
-     * Get opening hours for the given date's day of week.
+     * Get booking opening hours for the given date's day of week.
      *
      * @return Collection<OpeningHour>
      */
@@ -136,13 +137,14 @@ class AvailabilityService
 
         return OpeningHour::query()
             ->where('restaurant_id', $restaurant->id)
+            ->bookingProfile()
             ->forDay($dayOfWeek)
             ->open()
             ->get();
     }
 
     /**
-     * Get blocked time ranges for a specific date.
+     * Get blocked time ranges for a specific date (booking profile only).
      *
      * @return array<array{from: string, to: string}>
      */
@@ -150,6 +152,7 @@ class AvailabilityService
     {
         $blockedDates = BlockedDate::query()
             ->where('restaurant_id', $restaurant->id)
+            ->bookingProfile()
             ->whereDate('date', $date->toDateString())
             ->where('is_all_day', false)
             ->get();

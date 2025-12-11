@@ -14,11 +14,16 @@ class BlockedDate extends Model
 
     protected $fillable = [
         'restaurant_id',
+        'profile',
         'date',
         'is_all_day',
         'time_from',
         'time_to',
         'reason',
+    ];
+
+    protected $attributes = [
+        'profile' => 'booking',
     ];
 
     protected function casts(): array
@@ -61,6 +66,16 @@ class BlockedDate extends Model
     public function scopeUpcoming($query)
     {
         return $query->where('date', '>=', now()->toDateString());
+    }
+
+    public function scopeBookingProfile($query)
+    {
+        return $query->where('profile', 'booking');
+    }
+
+    public function scopeForProfile($query, string $profile)
+    {
+        return $query->where('profile', $profile);
     }
 
     /*

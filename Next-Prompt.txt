@@ -1,0 +1,203 @@
+You are working on the in.today platform (Laravel 12 + Filament v3, multi-panel: Admin, Business, User).
+
+We are currently in Phase 1 (Restaurant Booking MVP).  
+Public booking (/book/{slug}), deposits and Business reservations management are already working and tested.
+
+NOW we want to implement a **Business Panel page for managing Opening Hours & Special Dates** for each venue.
+
+Context / Existing models & logic
+- There is already an `opening_hours` table used by `AvailabilityService` and the public booking widget.
+- There is already a `blocked_dates` table used to block certain dates from availability.
+- AvailabilityService + PublicBookingController already respect opening hours and blocked dates (do NOT change that logic now).
+- A venue = `Restaurant` model (we still call it Restaurant in code).
+
+Goal
+Give each venue owner/manager a **simple Business Panel UI** to manage:
+
+1. Weekly opening hours (per day of week).
+2. Special dates / closures (blocked dates).
+
+No one should need to go to the Admin panel for these.
+
+Business Panel tech context
+- Business panel Filament namespace is: `App\Filament\Restaurant\...`
+- We already have:
+  - `/business/reservations`
+  - `/business/restaurant-settings` ("Business Settings" page)
+- Routes are handled via Filament’s Restaurant panel configuration.
+
+========================================
+PART A – New Business Page: “Opening Hours”
+========================================
+
+Create a new Filament page in the Business panel:
+
+- Class: `App\Filament\Restaurant\Pages\OpeningHoursSettings`
+- Route: `/business/opening-hours`
+- Navigation:
+  - Group: e.g. “Settings”
+  - Label: “Opening Hours”
+  - Icon: something simple (e.g. `heroicon-o-clock`)
+  - Only visible to restaurant users (owners/managers/staff) – NOT platform admins.
+
+UX requirements
+- Use the same **dark mode / spacing / card style** as `RestaurantSettings` and `Reservations`.
+- Page title: **Opening Hours & Special Dates**
+- Subheading: “Manage your regular weekly hours and special closed days for this venue.”
+
+Tabs
+Use Filament’s tabbed layout (similar to our PlatformSettings / AffiliateHub patterns):
+
+1. **“Regular Hours” tab**
+2. **“Special Dates” tab**
+
+### 1) Regular Hours tab
+
+We already have an `opening_hours` table with fields like:
+- restaurant_id
+- day_of_week (0–6 or 1–7 depending on existing model)
+- is_open (bool)
+- opens_at (time)
+- closes_at (time)
+
+Your task:
+- Reuse the existing `OpeningHour` model (do NOT change schema).
+- For each day of week, show a row:
+
+  - Day label (Mon, Tue, …) using current locale (en for now)
+  - Toggle: “Open this day”
+  - When enabled:
+    - Time inputs: "Opens at" and "Closes at" (HH:MM, 24h format)
+  - When disabled:
+    - Show “Closed”
+
+- Use a **clean layout**, for example:
+  - A `Section` titled “Regular Weekly Hours”
+  - Inside it, a `Grid` with 1 row per day (or a Repeater grouped visually by day).
+- Persist changes for the **current restaurant** (the one linked to the logged-in user via restaurant_users).
+
+Assumptions:
+- For this MVP, **support only one time range per day** (`opens_at`–`closes_at`).
+- If the restaurant currently has no rows in `opening_hours`, initialize defaults:
+  - is_open = false for all days
+  - Or sensible initial values for a typical venue (e.g. 17:00–23:00 for Fri/Sat) – you decide, but keep it simple.
+
+Validation:
+- If is_open = true:
+  - opens_at < closes_at
+- If times invalid, show a friendly error message per day.
+
+### 2) Special Dates tab (Blocked Dates)
+
+We already have a `blocked_dates` table used by AvailabilityService.
+
+Assumed fields (adjust to actual schema in the project):
+- id
+- restaurant_id
+- date (date or datetime)
+- is_all_day (bool)
+- start_time (nullable)
+- end_time (nullable)
+- reason (nullable text)
+
+Your task:
+- Create a `Section` titled “Special Dates & Closures”.
+- Use a **Repeater** for blocked dates for the current restaurant, with fields:
+  - `date` (Date picker, required)
+  - `is_all_day` (Toggle: “All day closure”)
+  - If NOT all day:
+    - `start_time` (time)
+    - `end_time` (time)
+  - `reason` (short text, optional, e.g. “Private event”)
+
+- Add helper text, e.g.:
+  - “Use this to block specific days (e.g. holidays, private events, renovations).”
+- Entries should be **sorted ascending by date**.
+- Validation:
+  - If `is_all_day = true`: `start_time` and `end_time` can be null.
+  - If `is_all_day = false`: `start_time` and `end_time` required AND `start_time < end_time`.
+
+IMPORTANT:
+- This page ONLY manages data; do NOT change AvailabilityService logic.
+- AvailabilityService already uses opening_hours + blocked_dates; we just provide a better UI.
+
+========================================
+PART B – Access control & multi-restaurant support
+========================================
+
+- A Business user may be linked to multiple restaurants.
+- Follow the **existing pattern** used in `/business/reservations` and `/business/restaurant-settings` to:
+  - Determine the “current restaurant” (e.g. first active one or chosen context).
+  - Ensure a user can only edit opening hours / blocked dates for their own restaurant(s).
+- If user has **no restaurants**:
+  - Show a nice empty state: “You are not linked to any venue yet.”
+
+========================================
+PART C – Tests
+========================================
+
+Add a new Feature test file:
+
+- `tests/Feature/BusinessOpeningHoursSettingsTest.php`
+
+Include at least the following tests:
+
+1. `test_restaurant_user_can_access_opening_hours_page`
+   - Create a restaurant + user relation.
+   - Act as restaurant user.
+   - GET `/business/opening-hours`.
+   - Assert 200 and see page title.
+
+2. `test_non_restaurant_user_cannot_access_opening_hours_page`
+   - User without restaurant relation.
+   - Assert redirect or 403 (follow whichever pattern is used in Business panel).
+
+3. `test_regular_hours_can_be_updated_for_each_day`
+   - Seed some opening_hours rows.
+   - POST/PUT updated values via the form.
+   - Assert DB has the new opens_at/closes_at and is_open.
+
+4. `test_special_dates_can_be_created_and_updated`
+   - Add blocked date via form.
+   - Assert DB row created for blocked_dates with correct restaurant_id.
+
+5. `test_closed_days_are_marked_with_is_open_false`
+   - Set a day as closed from the UI.
+   - Assert is_open=false in DB.
+
+6. `test_partial_day_block_requires_start_and_end_time`
+   - Try saving blocked date with is_all_day=false but missing times.
+   - Assert validation errors on start_time/end_time.
+
+7. (Optional, if easy) `test_opening_hours_page_uses_current_restaurant_context`
+   - If user linked to 2 restaurants, ensure page loads for the expected one (reuse existing pattern from reservations/settings).
+
+========================================
+PART D – Non-Goals / Constraints
+========================================
+
+- Do NOT change `AvailabilityService` or `PublicBookingController` logic now.
+- Do NOT introduce multiple opening ranges per day (keep 1 range per day for now).
+- Keep the UI consistent with existing Business panel (dark mode, spacing, typography).
+- Follow the same patterns used in `RestaurantSettings` for:
+  - Determining the current restaurant.
+  - Flash notifications (“Settings saved”).
+  - Validation & form submission.
+
+========================================
+DELIVERABLES CHECKLIST
+========================================
+
+- [ ] New Business page: `OpeningHoursSettings` at `/business/opening-hours`
+- [ ] Navigation entry “Opening Hours” in Business sidebar
+- [ ] Regular Hours form (Mon–Sun) with is_open + opens_at/closes_at per day
+- [ ] Special Dates repeater with date, is_all_day, start_time, end_time, reason
+- [ ] Access control aligned with existing Business panel
+- [ ] New test suite: `BusinessOpeningHoursSettingsTest` with at least the tests above
+- [ ] All existing tests still pass
+- [ ] Commit + push to main branch when done
+
+When you finish, please:
+1. Paste a clear summary of all files changed/created.
+2. Confirm that **all tests pass**.
+3. Confirm that the new Business page works on `/business/opening-hours` for a sample restaurant user.

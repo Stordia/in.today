@@ -14,12 +14,17 @@ class OpeningHour extends Model
 
     protected $fillable = [
         'restaurant_id',
+        'profile',
         'day_of_week',
         'is_open',
         'shift_name',
         'open_time',
         'close_time',
         'last_reservation_time',
+    ];
+
+    protected $attributes = [
+        'profile' => 'booking',
     ];
 
     protected function casts(): array
@@ -71,6 +76,16 @@ class OpeningHour extends Model
     public function scopeForDay($query, int $dayOfWeek)
     {
         return $query->where('day_of_week', $dayOfWeek);
+    }
+
+    public function scopeBookingProfile($query)
+    {
+        return $query->where('profile', 'booking');
+    }
+
+    public function scopeForProfile($query, string $profile)
+    {
+        return $query->where('profile', $profile);
     }
 
     /*
