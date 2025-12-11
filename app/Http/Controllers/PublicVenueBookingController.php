@@ -24,42 +24,65 @@ use Illuminate\View\View;
 class PublicVenueBookingController extends Controller
 {
     /**
-     * Find restaurant by route parameters with canonical URL validation.
+     * Find restaurant by route parameters with strict ISO2 country and city slug validation.
+     *
+     * Contract:
+     * - URL pattern: /{countryIso2}/{citySlug}/{venueSlug}
+     * - Country MUST be ISO2 code (lowercase) from Country.code field
+     * - City MUST be slug derived from City.name via Str::slug()
+     * - Venue MUST match Restaurant.booking_public_slug with booking_enabled=true
      *
      * Resolution logic:
      * 1. Find restaurant by booking_public_slug (must have booking_enabled=true)
-     * 2. Validate country code matches
-     * 3. Canonicalize city slug and redirect if mismatch
+     * 2. Validate ISO2 country code matches (strict, lowercase)
+     * 3. Canonicalize city slug and 301 redirect if mismatch
+     * 4. Return 404 if country or venue don't match
      */
     protected function findRestaurantByRoute(string $country, string $city, string $venueSlug): Restaurant|RedirectResponse
     {
-        // Find restaurant by booking_public_slug with relations
+        // Step 1: Find restaurant by booking_public_slug with eager-loaded relationships
         $restaurant = Restaurant::query()
             ->where('booking_enabled', true)
             ->where('booking_public_slug', $venueSlug)
-            ->with('city.country', 'cuisine')
+            ->with(['city.country', 'cuisine'])
             ->first();
 
         if (! $restaurant) {
             abort(404, 'Venue not found');
         }
 
-        // Validate country code
-        $dbCountryCode = strtolower($restaurant->city?->country?->code ?? '');
+        // Ensure city relationship exists
+        // Use city() method to avoid conflict with legacy 'city' text attribute
+        $restaurantCity = $restaurant->city()->first();
+        if (! $restaurantCity) {
+            abort(404, 'Venue city not configured');
+        }
 
-        if ($dbCountryCode !== strtolower($country)) {
+        // Ensure country relationship exists
+        // Use country() method to get relationship and avoid conflict with legacy 'country' text attribute
+        $cityCountry = $restaurantCity->country()->first();
+        if (! $cityCountry) {
+            abort(404, 'Venue country not configured');
+        }
+
+        // Step 2: Validate ISO2 country code (strict lowercase matching)
+        $dbCountryIso2 = strtolower($cityCountry->code);
+        $urlCountryIso2 = strtolower($country);
+
+        if ($dbCountryIso2 !== $urlCountryIso2) {
+            // Country mismatch = hard 404 (do NOT redirect)
             abort(404, 'Venue not found in this country');
         }
 
-        // Canonical city handling
-        $expectedCitySlug = Str::slug($restaurant->city?->name ?? '');
+        // Step 3: Canonical city slug handling
+        $canonicalCitySlug = Str::slug($restaurantCity->name);
 
-        if ($expectedCitySlug !== '' && $city !== $expectedCitySlug) {
-            // Redirect to canonical URL
+        if ($canonicalCitySlug !== '' && $city !== $canonicalCitySlug) {
+            // City slug mismatch = 301 redirect to canonical URL
             return redirect()->to(
                 route(request()->route()->getName(), [
-                    'country' => $country,
-                    'city' => $expectedCitySlug,
+                    'country' => $urlCountryIso2,
+                    'city' => $canonicalCitySlug,
                     'venue' => $venueSlug,
                 ]),
                 301
