@@ -51,8 +51,8 @@ class PublicBookingController extends Controller
             $minDate = $earliestBookableTime->copy()->startOfDay();
         }
 
-        // Parse and validate date from request
-        $dateInput = $request->query('date');
+        // Parse and validate date from request (works for both GET and POST)
+        $dateInput = $request->input('date');
         if ($dateInput) {
             try {
                 $date = Carbon::parse($dateInput, $timezone)->startOfDay();
@@ -74,8 +74,8 @@ class PublicBookingController extends Controller
             $date = $minDate;
         }
 
-        // Parse and validate party size from request
-        $partySizeInput = $request->query('party_size');
+        // Parse and validate party size from request (works for both GET and POST)
+        $partySizeInput = $request->input('party_size');
         $minPartySize = $restaurant->booking_min_party_size ?? 1;
         $maxPartySize = $restaurant->booking_max_party_size ?? 20;
 

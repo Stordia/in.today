@@ -12,14 +12,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('restaurant_id')->constrained('restaurants')->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('name');
-            $table->string('email');
             $table->string('role'); // owner, manager, staff
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['restaurant_id', 'email']);
+            $table->unique(['restaurant_id', 'user_id']);
             $table->index(['restaurant_id', 'role']);
             $table->index('user_id');
         });

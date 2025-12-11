@@ -6,6 +6,7 @@ namespace App\Filament\Restaurant\Pages;
 
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Cuisine;
 use App\Support\Tenancy\CurrentRestaurant;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
@@ -44,7 +45,7 @@ class RestaurantSettings extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'Settings';
 
-    protected static ?string $title = 'Restaurant Settings';
+    protected static ?string $title = 'Business Settings';
 
     protected static string $view = 'filament.restaurant.pages.restaurant-settings';
 
@@ -81,6 +82,7 @@ class RestaurantSettings extends Page implements HasForms
             // Profile Tab
             'name' => $restaurant->name,
             'slug' => $restaurant->slug,
+            'cuisine_id' => $restaurant->cuisine_id,
             'tagline' => $restaurant->settings['tagline'] ?? null,
             'description' => $restaurant->settings['description'] ?? null,
             'phone' => $restaurant->settings['phone'] ?? null,
@@ -178,10 +180,10 @@ class RestaurantSettings extends Page implements HasForms
     {
         return [
             Section::make('Basic Information')
-                ->description('Core information about your restaurant that guests will see.')
+                ->description('Core information about your business that guests will see.')
                 ->schema([
                     TextInput::make('name')
-                        ->label('Restaurant Name')
+                        ->label('Business Name')
                         ->required()
                         ->maxLength(255)
                         ->helperText('The name displayed on your booking page and in emails.'),
@@ -189,13 +191,21 @@ class RestaurantSettings extends Page implements HasForms
                     TextInput::make('slug')
                         ->label('URL Slug')
                         ->disabled()
-                        ->helperText('Your restaurant\'s URL identifier. Contact support to change this.'),
+                        ->helperText('Your URL identifier. Contact support to change this.'),
+
+                    Select::make('cuisine_id')
+                        ->label('Main Cuisine')
+                        ->options(fn () => Cuisine::query()->ordered()->pluck('name_en', 'id'))
+                        ->searchable()
+                        ->preload()
+                        ->placeholder('Select your main cuisine')
+                        ->helperText('Choose the main cuisine your guests will see on your profile.'),
 
                     TextInput::make('tagline')
                         ->label('Tagline')
                         ->maxLength(150)
                         ->placeholder('e.g., Authentic Italian Cuisine')
-                        ->helperText('A short phrase describing your restaurant style.'),
+                        ->helperText('A short phrase describing your business style.'),
 
                     Textarea::make('description')
                         ->label('Description')
@@ -230,11 +240,25 @@ class RestaurantSettings extends Page implements HasForms
                         ->url()
                         ->maxLength(500)
                         ->prefix('https://')
-                        ->helperText('Your restaurant\'s website (optional).'),
+                        ->dehydrateStateUsing(function (?string $state): ?string {
+                            if (empty($state)) {
+                                return null;
+                            }
+                            $trimmed = trim($state);
+                            if (empty($trimmed)) {
+                                return null;
+                            }
+                            // Add https:// if no scheme is present
+                            if (! preg_match('/^https?:\/\//i', $trimmed)) {
+                                return 'https://' . $trimmed;
+                            }
+                            return $trimmed;
+                        })
+                        ->helperText('Your website (optional). You can enter just the domain name.'),
                 ]),
 
             Section::make('Location')
-                ->description('Your restaurant\'s address, shown on the booking page.')
+                ->description('Your business address, shown on the booking page.')
                 ->schema([
                     Grid::make(2)
                         ->schema([
@@ -577,6 +601,7 @@ class RestaurantSettings extends Page implements HasForms
         $restaurant->update([
             // Profile fields
             'name' => $data['name'],
+            'cuisine_id' => $data['cuisine_id'] ?? null,
             'country_id' => $data['country_id'],
             'city_id' => $data['city_id'],
             'address_street' => $data['address_street'] ?? null,
@@ -605,7 +630,7 @@ class RestaurantSettings extends Page implements HasForms
 
         Notification::make()
             ->title('Settings Saved')
-            ->body('Your restaurant settings have been updated successfully.')
+            ->body('Your settings have been updated successfully.')
             ->success()
             ->send();
     }

@@ -72,6 +72,48 @@ class PublicBookingTest extends TestCase
     |--------------------------------------------------------------------------
     */
 
+    public function test_booking_page_loads_with_get_no_query_params(): void
+    {
+        // Test that the initial GET load works without any query parameters
+        $response = $this->get('/book/test-restaurant');
+
+        $response->assertStatus(200);
+        $response->assertSee('Test Restaurant');
+    }
+
+    public function test_booking_page_accepts_post_with_date_and_party_size(): void
+    {
+        // Create opening hours for tomorrow
+        $tomorrow = Carbon::now('Europe/Berlin')->addDay();
+        OpeningHour::create([
+            'restaurant_id' => $this->restaurant->id,
+            'day_of_week' => $tomorrow->dayOfWeek === 0 ? 6 : $tomorrow->dayOfWeek - 1,
+            'open_time' => '12:00',
+            'close_time' => '22:00',
+            'is_closed' => false,
+        ]);
+
+        Table::create([
+            'restaurant_id' => $this->restaurant->id,
+            'name' => 'Table 1',
+            'seats' => 4,
+            'is_active' => true,
+            'is_combinable' => true,
+        ]);
+
+        // Test POST request (simulating "Check availability" form submission)
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+            'party_size' => 4,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertSee('Test Restaurant');
+        // Verify no query params in the rendered page
+        $response->assertDontSee('?date=');
+        $response->assertDontSee('&party_size=');
+    }
+
     public function test_booking_page_returns_404_for_invalid_slug(): void
     {
         $response = $this->get('/book/non-existent-restaurant');
@@ -109,7 +151,9 @@ class PublicBookingTest extends TestCase
             'is_combinable' => true,
         ]);
 
-        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString());
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+        ]);
 
         $response->assertStatus(200);
         $response->assertSee('Test Restaurant');
@@ -137,7 +181,10 @@ class PublicBookingTest extends TestCase
             'is_combinable' => true,
         ]);
 
-        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=4');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+            'party_size' => 4,
+        ]);
 
         $response->assertStatus(200);
         // Should see time slot radio buttons (12:00, 12:30, etc.)
@@ -156,7 +203,9 @@ class PublicBookingTest extends TestCase
         // Don't create any opening hours - restaurant is closed
         $tomorrow = Carbon::now('Europe/Berlin')->addDay();
 
-        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString());
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+        ]);
 
         $response->assertStatus(200);
         // Should see the "no availability" message
@@ -196,7 +245,10 @@ class PublicBookingTest extends TestCase
         ]);
 
         // Request with party size above threshold
-        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=6');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+            'party_size' => 6,
+        ]);
 
         $response->assertStatus(200);
         // Should see deposit info
@@ -234,7 +286,10 @@ class PublicBookingTest extends TestCase
         ]);
 
         // Request with party size below threshold
-        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=4');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+            'party_size' => 4,
+        ]);
 
         $response->assertStatus(200);
         // Should NOT see the deposit consent checkbox (look for the specific input name)
@@ -510,7 +565,10 @@ class PublicBookingTest extends TestCase
             'is_combinable' => true,
         ]);
 
-        $response = $this->get('/book/test-restaurant?date=' . $today->toDateString() . '&party_size=2');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $today->toDateString(),
+            'party_size' => 2,
+        ]);
 
         $response->assertStatus(200);
 
@@ -561,7 +619,10 @@ class PublicBookingTest extends TestCase
             'is_combinable' => true,
         ]);
 
-        $response = $this->get('/book/test-restaurant?date=' . $today->toDateString() . '&party_size=2');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $today->toDateString(),
+            'party_size' => 2,
+        ]);
 
         $response->assertStatus(200);
 
@@ -604,7 +665,10 @@ class PublicBookingTest extends TestCase
             'is_combinable' => true,
         ]);
 
-        $response = $this->get('/book/test-restaurant?date=' . $tomorrow->toDateString() . '&party_size=2');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $tomorrow->toDateString(),
+            'party_size' => 2,
+        ]);
 
         $response->assertStatus(200);
 
@@ -1087,7 +1151,10 @@ class PublicBookingTest extends TestCase
         ]);
 
         // First, verify the slot is available
-        $response = $this->get('/book/test-restaurant?date=' . $today->toDateString() . '&party_size=4');
+        $response = $this->post('/book/test-restaurant', [
+            'date' => $today->toDateString(),
+            'party_size' => 4,
+        ]);
         $response->assertStatus(200);
         $response->assertSee('value="12:00"', false);
 

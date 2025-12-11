@@ -41,7 +41,8 @@ Route::group([
 });
 
 // Public booking page (no locale prefix for now)
-Route::get('/book/{slug}', [App\Http\Controllers\PublicBookingController::class, 'show'])
+// Accepts both GET (initial load) and POST (check availability)
+Route::match(['get', 'post'], '/book/{slug}', [App\Http\Controllers\PublicBookingController::class, 'show'])
     ->name('public.booking.show');
 
 Route::post('/book/{slug}/request', [App\Http\Controllers\PublicBookingController::class, 'request'])

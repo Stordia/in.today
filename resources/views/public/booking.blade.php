@@ -9,7 +9,7 @@
     $cuisineName = null;
     if ($restaurant->cuisine) {
         $cuisineName = is_object($restaurant->cuisine)
-            ? ($restaurant->cuisine->name ?? null)
+            ? $restaurant->cuisine->getName()
             : $restaurant->cuisine;
     }
 
@@ -66,27 +66,22 @@
                         <div class="flex-1 text-center sm:text-left">
                             <h1 class="text-2xl sm:text-3xl font-bold text-primary">{{ $restaurant->name }}</h1>
 
-                            {{-- Cuisine Badge & Location --}}
-                            @if($cuisineName || $cityName)
-                                <div class="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            {{-- Cuisine & Location in text format --}}
+                            @if($cuisineName || $cityName || $countryName)
+                                <p class="mt-2 text-secondary text-sm sm:text-base">
                                     @if($cuisineName)
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-sm font-medium">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                            </svg>
-                                            {{ $cuisineName }}
-                                        </span>
+                                        <span class="font-medium">{{ $cuisineName }}</span>
+                                        @if($cityName || $countryName)
+                                            <span class="mx-1.5">•</span>
+                                        @endif
                                     @endif
                                     @if($cityName)
-                                        <span class="inline-flex items-center gap-1.5 text-secondary text-sm">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            {{ $cityName }}@if($countryName), {{ $countryName }}@endif
-                                        </span>
+                                        {{ $cityName }}@if($countryName),@endif
                                     @endif
-                                </div>
+                                    @if($countryName)
+                                        {{ $countryName }}
+                                    @endif
+                                </p>
                             @endif
 
                             {{-- Address --}}
@@ -190,7 +185,8 @@
                             {{ __('booking.step_1.title') }}
                         </h2>
 
-                        <form method="GET" action="{{ route('public.booking.show', $restaurant->booking_public_slug) }}">
+                        <form method="POST" action="{{ route('public.booking.show', $restaurant->booking_public_slug) }}">
+                            @csrf
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {{-- Date Input with Calendar Icon --}}
                                 <div>
