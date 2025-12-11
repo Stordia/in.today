@@ -38,7 +38,7 @@ class RestaurantPanelProvider extends PanelProvider
                 fn () => '<meta name="robots" content="noindex, nofollow">'
             )
             ->renderHook(
-                'panels::topbar.start',
+                'panels::user-menu.before',
                 fn () => view('filament.restaurant.components.venue-switcher')
             )
             ->colors([

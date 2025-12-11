@@ -8,7 +8,7 @@
 @endphp
 
 @if($currentRestaurant && $hasMultipleRestaurants)
-    <div class="fi-topbar-item flex items-center justify-center" x-data="{ open: false }">
+    <div class="fi-topbar-item flex items-center justify-center relative" x-data="{ open: false }">
         <button
             type="button"
             @click="open = !open"
@@ -31,7 +31,7 @@
             x-show="open"
             x-transition
             x-cloak
-            class="absolute top-full left-0 mt-2 w-64 rounded-lg bg-white shadow-lg ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 z-50"
+            class="absolute top-full right-0 mt-2 w-64 rounded-lg bg-white shadow-lg ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 z-50"
             style="display: none;"
         >
             <div class="p-2">
