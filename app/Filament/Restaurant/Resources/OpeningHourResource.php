@@ -122,7 +122,6 @@ class OpeningHourResource extends Resource
                     ->label(fn (OpeningHour $record): string => $record->is_open ? 'Mark Closed' : 'Mark Open')
                     ->icon(fn (OpeningHour $record): string => $record->is_open ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->color(fn (OpeningHour $record): string => $record->is_open ? 'danger' : 'success')
-                    ->requiresConfirmation()
                     ->action(function (OpeningHour $record): void {
                         if ($record->is_open) {
                             // Closing the day
