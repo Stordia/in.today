@@ -47,13 +47,13 @@ class PublicCityController extends Controller
         $city = City::find($cityId);
 
         if (! $city) {
-            return redirect()->route('public.home')->with('error', 'Please select a valid city.');
+            return redirect()->route('root')->with('error', 'Please select a valid city.');
         }
 
         // Use relationship method to avoid conflict with legacy text field
         $cityCountry = $city->country()->first();
         if (! $cityCountry) {
-            return redirect()->route('public.home')->with('error', 'City configuration error.');
+            return redirect()->route('root')->with('error', 'City configuration error.');
         }
 
         $countryIso2 = strtolower($cityCountry->code);

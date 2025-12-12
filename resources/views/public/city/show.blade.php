@@ -36,7 +36,7 @@
                     No venues with online booking in this city yet.
                 </p>
                 <a
-                    href="{{ route('public.home') }}"
+                    href="{{ route('root') }}"
                     class="inline-flex items-center px-6 py-3 bg-brand text-white font-medium rounded-xl hover:bg-brand-hover transition"
                 >
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +157,7 @@
             {{-- Back to Search Link --}}
             <div class="mt-12 text-center">
                 <a
-                    href="{{ route('public.home') }}"
+                    href="{{ route('root') }}"
                     class="inline-flex items-center text-sm font-medium text-secondary hover:text-primary transition"
                 >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@
     {{-- Footer --}}
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-default">
         <p class="text-center text-sm text-secondary">
-            Powered by <a href="{{ route('public.home') }}" class="text-primary hover:underline font-medium">in.today</a>
+            Powered by <a href="{{ route('root') }}" class="text-primary hover:underline font-medium">in.today</a>
         </p>
     </div>
 @endsection

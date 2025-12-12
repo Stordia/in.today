@@ -93,7 +93,7 @@ class PublicCityDiscoveryTest extends TestCase
 
     public function test_home_page_loads_and_shows_city_search(): void
     {
-        $response = $this->get('/home');
+        $response = $this->get('/');
 
         $response->assertStatus(200);
         $response->assertViewIs('public.home');
@@ -104,7 +104,7 @@ class PublicCityDiscoveryTest extends TestCase
 
     public function test_home_page_lists_cities_with_bookable_venues(): void
     {
-        $response = $this->get('/home');
+        $response = $this->get('/');
 
         $response->assertStatus(200);
         $response->assertSee('Berlin, Germany');
@@ -121,7 +121,7 @@ class PublicCityDiscoveryTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->get('/home');
+        $response = $this->get('/');
 
         $response->assertStatus(200);
         $response->assertDontSee('Munich, Germany');
@@ -132,7 +132,7 @@ class PublicCityDiscoveryTest extends TestCase
         // Delete all restaurants to make cities invisible
         Restaurant::query()->delete();
 
-        $response = $this->get('/home');
+        $response = $this->get('/');
 
         $response->assertStatus(200);
         $response->assertSee('No cities available yet');
@@ -149,7 +149,7 @@ class PublicCityDiscoveryTest extends TestCase
     {
         $response = $this->get('/search?city_id=99999');
 
-        $response->assertRedirect('/home');
+        $response->assertRedirect('/');
         $response->assertSessionHas('error', 'Please select a valid city.');
     }
 

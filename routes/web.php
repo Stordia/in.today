@@ -13,10 +13,9 @@ Route::get('/language', function () {
     return view('language-select');
 })->name('language.select');
 
-// Root redirect (language detection)
-Route::get('/', function () {
-    return view('lang-redirect');
-})->name('root');
+// Root page - Public discovery home with city search
+Route::get('/', [PublicCityController::class, 'home'])
+    ->name('root');
 
 // Affiliate redirect route - tracks clicks and redirects to clean landing page
 Route::get('/go/{slug}', [AffiliateRedirectController::class, 'redirect'])
@@ -71,13 +70,10 @@ Route::get('/admin/attachments/{path}', function (string $path) {
 | Public City Discovery Routes
 |--------------------------------------------------------------------------
 |
-| City search and discovery pages. These must come before venue routes.
+| City search and discovery pages. These must come after locale routes
+| but before venue routes to avoid conflicts.
 |
 */
-
-// Home page with city search
-Route::get('/home', [PublicCityController::class, 'home'])
-    ->name('public.home');
 
 // City search form submission
 Route::get('/search', [PublicCityController::class, 'search'])
