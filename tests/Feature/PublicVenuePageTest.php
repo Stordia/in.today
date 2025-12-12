@@ -99,22 +99,22 @@ class PublicVenuePageTest extends TestCase
         $response->assertSee('Germany'); // Country
     }
 
-    public function test_venue_profile_book_link_points_to_correct_url(): void
+    public function test_venue_profile_book_tab_points_to_correct_url(): void
     {
         $response = $this->get('/de/berlin/test-bistro');
 
         $response->assertStatus(200);
         $response->assertSee('/de/berlin/test-bistro/book', false);
-        $response->assertSee('Book a Table');
+        $response->assertSee('Book a table');
     }
 
-    public function test_venue_profile_menu_link_points_to_correct_url(): void
+    public function test_venue_profile_menu_tab_points_to_correct_url(): void
     {
         $response = $this->get('/de/berlin/test-bistro');
 
         $response->assertStatus(200);
         $response->assertSee('/de/berlin/test-bistro/menu', false);
-        $response->assertSee('View Menu');
+        $response->assertSee('Menu');
     }
 
     public function test_venue_profile_shows_opening_hours_for_bookings(): void

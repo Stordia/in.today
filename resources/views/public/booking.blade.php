@@ -1,4 +1,4 @@
-@extends('layouts.marketing')
+@extends('layouts.venue')
 
 @section('title', __('booking.page_title') . ' – ' . $restaurant->name)
 @section('meta_description', __('booking.page_subtitle'))
@@ -33,82 +33,18 @@
 @endphp
 
 @section('content')
-    {{-- Hero Header with Restaurant Branding --}}
-    <div class="relative">
-        {{-- Cover Image --}}
-        <div class="h-48 sm:h-56 md:h-64 w-full overflow-hidden">
-            <img
-                src="{{ $restaurant->getCoverImageUrlOrPlaceholder() }}"
-                alt="{{ $restaurant->name }}"
-                class="w-full h-full object-cover"
-            >
-            {{-- Gradient Overlay --}}
-            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-transparent"></div>
-        </div>
-
-        {{-- Restaurant Logo & Name Card --}}
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative -mt-16 sm:-mt-20">
-                <div class="bg-card rounded-2xl shadow-lg border border-default p-4 sm:p-6">
-                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-                        {{-- Logo --}}
-                        <div class="flex-shrink-0 -mt-12 sm:-mt-16">
-                            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-card shadow-lg bg-card">
-                                <img
-                                    src="{{ $restaurant->getLogoUrlOrPlaceholder() }}"
-                                    alt="{{ $restaurant->name }} logo"
-                                    class="w-full h-full object-cover"
-                                >
-                            </div>
-                        </div>
-
-                        {{-- Restaurant Info --}}
-                        <div class="flex-1 text-center sm:text-left">
-                            <h1 class="text-2xl sm:text-3xl font-bold text-primary">{{ $restaurant->name }}</h1>
-
-                            {{-- Cuisine & Location in text format --}}
-                            @if($cuisineName || $cityName || $countryName)
-                                <p class="mt-2 text-secondary text-sm sm:text-base">
-                                    @if($cuisineName)
-                                        <span class="font-medium">{{ $cuisineName }}</span>
-                                        @if($cityName || $countryName)
-                                            <span class="mx-1.5">•</span>
-                                        @endif
-                                    @endif
-                                    @if($cityName)
-                                        {{ $cityName }}@if($countryName),@endif
-                                    @endif
-                                    @if($countryName)
-                                        {{ $countryName }}
-                                    @endif
-                                </p>
-                            @endif
-
-                            {{-- Address --}}
-                            @if($restaurant->address_street)
-                                <p class="text-sm text-secondary mt-2 flex items-center justify-center sm:justify-start gap-1.5">
-                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                    <span>
-                                        {{ $restaurant->address_street }}@if($restaurant->address_postal), {{ $restaurant->address_postal }}@endif
-                                    </span>
-                                </p>
-                            @endif
-                        </div>
-
-                        {{-- Badge: Online Booking --}}
-                        <div class="hidden sm:flex flex-shrink-0">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                {{ __('booking.header.online_booking') }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- Shared Venue Header --}}
+    @include('public.venue.partials.header', [
+        'currentTab' => 'book',
+        'restaurant' => $restaurant,
+        'country' => $country,
+        'city' => $city,
+        'venue' => $venue,
+        'cuisineName' => $cuisineName ?? null,
+        'cityName' => $cityName ?? null,
+        'countryName' => $countryName ?? null,
+        'tagline' => null, // Booking page doesn't have tagline in current implementation
+    ])
 
     <div class="py-8 sm:py-12">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
