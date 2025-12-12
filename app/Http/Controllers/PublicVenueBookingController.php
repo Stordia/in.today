@@ -75,8 +75,8 @@ class PublicVenueBookingController extends Controller
             abort(404, 'Venue not found in this country');
         }
 
-        // Step 3: Canonical city slug handling
-        $canonicalCitySlug = Str::slug($restaurantCity->name);
+        // Step 3: Canonical city slug handling - use slug_canonical column
+        $canonicalCitySlug = $restaurantCity->slug_canonical ?: Str::slug($restaurantCity->name);
 
         if ($canonicalCitySlug !== '' && $city !== $canonicalCitySlug) {
             // City slug mismatch = 301 redirect to canonical URL

@@ -44,7 +44,25 @@ class RestaurantResource extends Resource
                             ->label('URL Slug')
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
-                            ->helperText('Leave blank to auto-generate from name'),
+                            ->rules([
+                                fn (): \Closure => function (string $attribute, $value, \Closure $fail) {
+                                    if (empty($value)) {
+                                        return;
+                                    }
+                                    // Block reserved city slugs (fast indexed lookup)
+                                    $isCitySlug = \App\Models\City::query()
+                                        ->where(function ($query) use ($value) {
+                                            $query->where('slug_canonical', $value)
+                                                ->orWhere('slug', $value);
+                                        })
+                                        ->exists();
+
+                                    if ($isCitySlug) {
+                                        $fail('This slug is reserved for a city name. Please choose a different slug.');
+                                    }
+                                },
+                            ])
+                            ->helperText('Leave blank to auto-generate from name. Cannot use city names.'),
                     ])
                     ->columns(1),
 

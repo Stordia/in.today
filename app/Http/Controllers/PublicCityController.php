@@ -57,7 +57,7 @@ class PublicCityController extends Controller
         }
 
         $countryIso2 = strtolower($cityCountry->code);
-        $citySlug = Str::slug($city->name);
+        $citySlug = $city->slug_canonical ?: Str::slug($city->name);
 
         return redirect()->route('public.city.show', [
             'country' => $countryIso2,
@@ -70,33 +70,49 @@ class PublicCityController extends Controller
      *
      * City resolution strategy:
      * - Country must be ISO2 code (lowercase)
-     * - City resolved by canonical slug derived from city.name (NOT cities.slug field)
-     * - Supports both canonical (katerini) and legacy slugs (katerini-gr)
-     * - 301 redirect to canonical if incoming slug != canonical
-     * - DB cities.slug can remain legacy (e.g., katerini-gr) without breaking routes
+     * - City resolved by slug_canonical column (indexed, fast lookup)
+     * - Supports legacy slugs (katerini-gr) for backward compatibility
+     * - 301 redirect to canonical if incoming slug != slug_canonical
+     * - Avoids runtime Str::slug(name) and loading all cities into memory
      */
     public function show(string $country, string $city): View|RedirectResponse
     {
-        // Step 1: Find all cities for the given country
-        $cities = City::query()
+        // Step 1: Try to find city by canonical slug (fast indexed lookup)
+        $cityModel = City::query()
             ->whereHas('country', function ($query) use ($country) {
                 $query->whereRaw('LOWER(code) = ?', [strtolower($country)]);
             })
+            ->where('slug_canonical', $city)
             ->with(['country', 'restaurants' => function ($query) {
                 $query->where('booking_enabled', true)
                     ->with(['cuisine'])
                     ->orderBy('name');
             }])
-            ->get();
+            ->first();
 
-        // Step 2: Find city by matching canonical slug (derived from name)
-        $cityModel = null;
-        foreach ($cities as $possibleCity) {
-            $canonicalSlug = Str::slug($possibleCity->name);
-            // Match both canonical and legacy (with country suffix) slugs
-            if ($city === $canonicalSlug || $city === $possibleCity->slug) {
-                $cityModel = $possibleCity;
-                break;
+        // Step 2: If not found by canonical, try legacy slug field
+        if (! $cityModel) {
+            $cityModel = City::query()
+                ->whereHas('country', function ($query) use ($country) {
+                    $query->whereRaw('LOWER(code) = ?', [strtolower($country)]);
+                })
+                ->where('slug', $city)
+                ->with(['country', 'restaurants' => function ($query) {
+                    $query->where('booking_enabled', true)
+                        ->with(['cuisine'])
+                        ->orderBy('name');
+                }])
+                ->first();
+
+            // If found by legacy slug, redirect to canonical
+            if ($cityModel && $cityModel->slug_canonical && $city !== $cityModel->slug_canonical) {
+                $cityCountry = $cityModel->country()->first();
+                $urlCountryIso2 = strtolower($country);
+
+                return redirect()->route('public.city.show', [
+                    'country' => $urlCountryIso2,
+                    'city' => $cityModel->slug_canonical,
+                ], 301);
             }
         }
 
@@ -118,18 +134,7 @@ class PublicCityController extends Controller
             abort(404, 'City not found in this country');
         }
 
-        // Step 5: Canonical city slug handling - always redirect to canonical
-        $canonicalCitySlug = Str::slug($cityModel->name);
-
-        if ($canonicalCitySlug !== '' && $city !== $canonicalCitySlug) {
-            // City slug mismatch = 301 redirect to canonical URL
-            return redirect()->route('public.city.show', [
-                'country' => $urlCountryIso2,
-                'city' => $canonicalCitySlug,
-            ], 301);
-        }
-
-        // Step 6: Return city results view
+        // Step 5: Return city results view
         $restaurants = $cityModel->restaurants;
 
         return view('public.city.show', [

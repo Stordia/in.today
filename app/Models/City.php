@@ -16,6 +16,7 @@ class City extends Model
 
     protected $fillable = [
         'slug',
+        'slug_canonical',
         'name',
         'country_id',
         'admin_name',
@@ -46,6 +47,16 @@ class City extends Model
         static::creating(function (City $city) {
             if (empty($city->slug)) {
                 $city->slug = Str::slug($city->name);
+            }
+            if (empty($city->slug_canonical)) {
+                $city->slug_canonical = Str::slug($city->name);
+            }
+        });
+
+        static::updating(function (City $city) {
+            // Auto-update canonical slug if name changes
+            if ($city->isDirty('name')) {
+                $city->slug_canonical = Str::slug($city->name);
             }
         });
     }
