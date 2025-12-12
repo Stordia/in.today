@@ -178,7 +178,7 @@ class PublicCityDiscoveryTest extends TestCase
         $response = $this->get('/de/berlin');
 
         $response->assertStatus(200);
-        $response->assertSee('2 venues with online booking');
+        $response->assertSee('2 venues');
         $response->assertSee('Berlin Bistro');
         $response->assertSee('Another Berlin Venue');
     }
@@ -227,27 +227,28 @@ class PublicCityDiscoveryTest extends TestCase
         $response = $this->get('/de/munich');
 
         $response->assertStatus(200);
-        $response->assertSee('No venues available yet');
-        $response->assertSee('No venues with online booking in this city yet');
+        $response->assertSee('No venues found');
+        $response->assertSee('No venues match your current filters');
         $response->assertSee('Back to search');
     }
 
-    public function test_city_results_page_only_shows_venues_with_booking_enabled(): void
+    public function test_city_results_page_shows_all_venues_by_default(): void
     {
         // Create a restaurant with booking disabled
         Restaurant::create([
-            'name' => 'Disabled Berlin Restaurant',
-            'slug' => 'disabled-berlin-restaurant',
+            'name' => 'No Booking Restaurant',
+            'slug' => 'no-booking-restaurant',
             'booking_enabled' => false,
             'city_id' => $this->berlin->id,
             'country_id' => $this->germany->id,
         ]);
 
+        // Default should show ALL venues (booking is optional)
         $response = $this->get('/de/berlin');
 
         $response->assertStatus(200);
-        $response->assertSee('Berlin Bistro');
-        $response->assertDontSee('Disabled Berlin Restaurant');
+        $response->assertSee('Berlin Bistro'); // booking enabled
+        $response->assertSee('No Booking Restaurant'); // booking disabled
     }
 
     public function test_city_results_page_shows_venue_details(): void
@@ -273,7 +274,6 @@ class PublicCityDiscoveryTest extends TestCase
         $response->assertSee('Berlin Bistro');
         $response->assertSee('Italian');
         $response->assertSee('Best Italian food in Berlin');
-        $response->assertSee('Online booking');
     }
 
     public function test_city_results_page_has_links_to_venue_pages(): void
@@ -330,7 +330,7 @@ class PublicCityDiscoveryTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Cuisine');
         $response->assertSee('All cuisines');
-        $response->assertSee('Bookable only');
+        $response->assertSee('Online booking available');
         $response->assertSee('Open today');
         $response->assertSee('Apply');
         $response->assertSee('Clear');
@@ -368,7 +368,7 @@ class PublicCityDiscoveryTest extends TestCase
         // Apply filter
         $response = $this->post('/de/berlin/filters', [
             'cuisine_id' => $italian->id,
-            'booking_only' => true,
+            'booking_only' => false,
             'open_today' => false,
         ]);
 
@@ -426,7 +426,7 @@ class PublicCityDiscoveryTest extends TestCase
         // Apply open today filter
         $response = $this->post('/de/berlin/filters', [
             'cuisine_id' => '',
-            'booking_only' => true,
+            'booking_only' => false,
             'open_today' => true,
         ]);
 
@@ -437,6 +437,33 @@ class PublicCityDiscoveryTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Open Today Venue');
         $response->assertDontSee('Closed Today Venue');
+    }
+
+    public function test_booking_only_filter_excludes_non_bookable_venues(): void
+    {
+        // Create a restaurant with booking disabled
+        Restaurant::create([
+            'name' => 'No Booking Restaurant',
+            'slug' => 'no-booking-restaurant',
+            'booking_enabled' => false,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+        ]);
+
+        // Apply booking_only filter
+        $response = $this->post('/de/berlin/filters', [
+            'cuisine_id' => '',
+            'booking_only' => true,
+            'open_today' => false,
+        ]);
+
+        $response->assertRedirect('/de/berlin');
+
+        // Check results - should only show bookable venues
+        $response = $this->get('/de/berlin');
+        $response->assertStatus(200);
+        $response->assertSee('Berlin Bistro'); // booking enabled
+        $response->assertDontSee('No Booking Restaurant'); // booking disabled
     }
 
     public function test_clear_filters_resets_to_default_list(): void
@@ -459,7 +486,7 @@ class PublicCityDiscoveryTest extends TestCase
         // Apply filter
         $this->post('/de/berlin/filters', [
             'cuisine_id' => $italian->id,
-            'booking_only' => true,
+            'booking_only' => false,
             'open_today' => false,
         ]);
 

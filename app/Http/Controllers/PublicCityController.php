@@ -134,7 +134,7 @@ class PublicCityController extends Controller
         $filterKey = "public-city-filters:{$urlCountryIso2}:{$cityModel->id}";
         $filters = session($filterKey, [
             'cuisine_id' => null,
-            'booking_only' => true, // Default: show only bookable venues
+            'booking_only' => false, // Default OFF: show ALL venues (booking is optional)
             'open_today' => false,   // Default OFF - most users want to see all venues; they can filter if needed
         ]);
 

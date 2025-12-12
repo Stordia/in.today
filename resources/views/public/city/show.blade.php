@@ -14,7 +14,7 @@
                 </h1>
                 @if($restaurants->isNotEmpty())
                     <p class="text-secondary">
-                        {{ $restaurants->count() }} {{ Str::plural('venue', $restaurants->count()) }} with online booking
+                        {{ $restaurants->count() }} {{ Str::plural('venue', $restaurants->count()) }}
                     </p>
                 @endif
             </div>
@@ -72,7 +72,7 @@
 
                     {{-- Toggles --}}
                     <div class="flex flex-col sm:flex-row gap-3">
-                        {{-- Online Booking Only --}}
+                        {{-- Online Booking Available --}}
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input
                                 type="checkbox"
@@ -81,7 +81,7 @@
                                 {{ $filters['booking_only'] ? 'checked' : '' }}
                                 class="w-4 h-4 text-brand border-default rounded focus:ring-2 focus:ring-brand"
                             >
-                            <span class="text-sm font-medium text-primary">Bookable only</span>
+                            <span class="text-sm font-medium text-primary">Online booking available</span>
                         </label>
 
                         {{-- Open Today --}}
@@ -128,9 +128,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                 </div>
-                <h2 class="text-xl font-semibold text-primary mb-2">No venues available yet</h2>
+                <h2 class="text-xl font-semibold text-primary mb-2">No venues found</h2>
                 <p class="text-secondary mb-6">
-                    No venues with online booking in this city yet.
+                    No venues match your current filters.
                 </p>
                 <a
                     href="{{ route('root') }}"
@@ -184,13 +184,15 @@
                             {{-- Gradient Overlay --}}
                             <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent"></div>
 
-                            {{-- Online Booking Badge --}}
-                            <div class="absolute top-3 right-3">
-                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                    Online booking
-                                </span>
-                            </div>
+                            {{-- Online Booking Badge (only if booking enabled) --}}
+                            @if($restaurant->booking_enabled)
+                                <div class="absolute top-3 right-3">
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Online booking
+                                    </span>
+                                </div>
+                            @endif
                         </div>
 
                         {{-- Card Content --}}
@@ -239,12 +241,14 @@
                                 >
                                     View
                                 </a>
-                                <a
-                                    href="{{ $bookUrl }}"
-                                    class="flex-1 px-4 py-2 text-center text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-lg transition shadow-sm"
-                                >
-                                    Book a table
-                                </a>
+                                @if($restaurant->booking_enabled)
+                                    <a
+                                        href="{{ $bookUrl }}"
+                                        class="flex-1 px-4 py-2 text-center text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-lg transition shadow-sm"
+                                    >
+                                        Book a table
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
