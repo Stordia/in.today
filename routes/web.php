@@ -21,10 +21,21 @@ Route::get('/', [PublicCityController::class, 'home'])
 Route::get('/go/{slug}', [AffiliateRedirectController::class, 'redirect'])
     ->name('affiliate.redirect');
 
-// Localized landing pages
+// Legacy Greek locale redirect: /el → /gr
+Route::get('/el/{path?}', function ($path = null) {
+    if ($path) {
+        return redirect('/gr/' . $path, 301);
+    }
+    return redirect('/gr', 301);
+})->where('path', '.*');
+
+// Localized landing pages (en, de, gr, it)
+// Note: These are locale landing pages, NOT country routes.
+// Single-segment country codes like /fr return 404.
+// Two-segment paths like /fr/paris work as city routes.
 Route::group([
     'prefix' => '{locale}',
-    'where' => ['locale' => implode('|', config('locales.supported', ['en']))],
+    'where' => ['locale' => 'en|de|gr|it'],
     'middleware' => 'set.locale',
 ], function () {
     Route::get('/', function () {

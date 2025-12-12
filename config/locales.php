@@ -9,9 +9,11 @@ return [
     | List of all locales supported by the application.
     | Used for route constraints, language switchers, and validation.
     |
+    | Note: Canonical Greek locale is 'gr'. Legacy 'el' redirects to 'gr'.
+    |
     */
 
-    'supported' => ['en', 'de', 'el', 'it'],
+    'supported' => ['en', 'de', 'gr', 'it'],
 
     /*
     |--------------------------------------------------------------------------
@@ -26,7 +28,7 @@ return [
     'names' => [
         'en' => 'English',
         'de' => 'Deutsch',
-        'el' => 'Ελληνικά',
+        'gr' => 'Ελληνικά',
         'it' => 'Italiano',
     ],
 
