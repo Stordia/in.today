@@ -8,7 +8,12 @@
       "Bash(git push:*)",
       "Bash(tree:*)",
       "Bash(git stash:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(git reset:*)",
+      "Bash(grep:*)",
+      "Bash(while read file)",
+      "Bash(do sed -i.bak \"/^[[:space:]]*''''booking_public_slug''''/d\" \"$file\" rm \"$file.bak\" done)"
     ],
     "deny": [],
     "ask": []

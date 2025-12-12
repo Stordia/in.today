@@ -12,6 +12,12 @@ class ListCities extends ListRecords
 {
     protected static string $resource = CityResource::class;
 
+    /**
+     * Disable URL query string tracking for table state.
+     * State is persisted in session instead (configured in CityResource).
+     */
+    protected ?string $tableQueryStringIdentifier = null;
+
     protected function getHeaderActions(): array
     {
         return [

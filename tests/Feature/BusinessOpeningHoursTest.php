@@ -55,7 +55,6 @@ class BusinessOpeningHoursTest extends TestCase
             'city_id' => $city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'test-restaurant',
         ]);
 
         RestaurantUser::create([

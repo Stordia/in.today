@@ -58,7 +58,6 @@ class RestaurantBookingSettingsTest extends TestCase
             'city_id' => $this->city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'test-restaurant-abc123',
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 10,
             'booking_default_duration_minutes' => 90,
@@ -88,7 +87,6 @@ class RestaurantBookingSettingsTest extends TestCase
 
         $restaurant->update([
             'booking_enabled' => true,
-            'booking_public_slug' => 'updated-slug',
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 12,
         ]);
@@ -127,14 +125,12 @@ class RestaurantBookingSettingsTest extends TestCase
             'name' => 'Restaurant With Slug',
             'city_id' => $this->city->id,
             'timezone' => 'Europe/Berlin',
-            'booking_public_slug' => 'my-restaurant',
         ]);
 
         $restaurantWithoutSlug = Restaurant::create([
             'name' => 'Restaurant Without Slug',
             'city_id' => $this->city->id,
             'timezone' => 'Europe/Berlin',
-            'booking_public_slug' => null,
         ]);
 
         $this->assertEquals(url('/book/my-restaurant'), $restaurantWithSlug->getBookingUrl());
@@ -260,7 +256,6 @@ class RestaurantBookingSettingsTest extends TestCase
             'country_id' => $this->country->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => false,
-            'booking_public_slug' => null,
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 8,
         ]);
@@ -272,7 +267,6 @@ class RestaurantBookingSettingsTest extends TestCase
                 'city_id' => $this->city->id,
                 'timezone' => 'Europe/Berlin',
                 'booking_enabled' => true,
-                'booking_public_slug' => '',
                 'booking_min_party_size' => 2,
                 'booking_max_party_size' => 8,
                 'booking_default_duration_minutes' => 90,
@@ -297,7 +291,6 @@ class RestaurantBookingSettingsTest extends TestCase
             'city_id' => $this->city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'existing-slug',
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 8,
         ]);
@@ -327,7 +320,6 @@ class RestaurantBookingSettingsTest extends TestCase
         $data = [
             'name' => 'Test Restaurant Name',
             'booking_enabled' => true,
-            'booking_public_slug' => '',
         ];
 
         $result = $method->invoke($page, $data);
@@ -339,7 +331,6 @@ class RestaurantBookingSettingsTest extends TestCase
         $data2 = [
             'name' => 'Another Restaurant',
             'booking_enabled' => false,
-            'booking_public_slug' => '',
         ];
 
         $result2 = $method->invoke($page, $data2);
@@ -350,7 +341,6 @@ class RestaurantBookingSettingsTest extends TestCase
         $data3 = [
             'name' => 'Third Restaurant',
             'booking_enabled' => true,
-            'booking_public_slug' => 'custom-slug',
         ];
 
         $result3 = $method->invoke($page, $data3);

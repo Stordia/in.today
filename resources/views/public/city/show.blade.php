@@ -65,13 +65,13 @@
                         $venueUrl = route('public.venue.show', [
                             'country' => $countrySlug,
                             'city' => $citySlug,
-                            'venue' => $restaurant->booking_public_slug,
+                            'venue' => $restaurant->slug,
                         ]);
 
                         $bookUrl = route('public.venue.book.show', [
                             'country' => $countrySlug,
                             'city' => $citySlug,
-                            'venue' => $restaurant->booking_public_slug,
+                            'venue' => $restaurant->slug,
                         ]);
                     @endphp
 

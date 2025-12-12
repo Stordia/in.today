@@ -56,7 +56,6 @@ class BusinessVenueSwitcherTest extends TestCase
             'city_id' => $city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'first-restaurant',
         ]);
 
         $this->restaurant2 = Restaurant::create([
@@ -64,7 +63,6 @@ class BusinessVenueSwitcherTest extends TestCase
             'city_id' => $city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'second-restaurant',
         ]);
 
         // Link user to both restaurants
@@ -196,7 +194,6 @@ class BusinessVenueSwitcherTest extends TestCase
             'city_id' => $city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'unauthorized-restaurant',
         ]);
 
         $this->actingAs($this->user);

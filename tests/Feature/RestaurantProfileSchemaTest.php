@@ -64,7 +64,6 @@ class RestaurantProfileSchemaTest extends TestCase
             'city_id' => $this->city->id,
             'cuisine_id' => $this->cuisine->id,
             'booking_enabled' => true,
-            'booking_public_slug' => 'test-restaurant',
             'timezone' => 'Europe/Berlin',
         ]);
     }
@@ -123,7 +122,6 @@ class RestaurantProfileSchemaTest extends TestCase
     {
         $this->restaurant->update([
             'booking_enabled' => true,
-            'booking_public_slug' => 'my-restaurant',
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 12,
             'booking_default_duration_minutes' => 120,
@@ -134,7 +132,6 @@ class RestaurantProfileSchemaTest extends TestCase
         $this->assertDatabaseHas('restaurants', [
             'id' => $this->restaurant->id,
             'booking_enabled' => true,
-            'booking_public_slug' => 'my-restaurant',
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 12,
             'booking_default_duration_minutes' => 120,

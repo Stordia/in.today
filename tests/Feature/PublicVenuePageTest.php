@@ -57,7 +57,6 @@ class PublicVenuePageTest extends TestCase
             'name' => 'Test Bistro',
             'slug' => 'test-bistro',
             'booking_enabled' => true,
-            'booking_public_slug' => 'test-bistro',
             'city_id' => $this->city->id,
             'country_id' => $this->country->id,
             'booking_min_party_size' => 1,

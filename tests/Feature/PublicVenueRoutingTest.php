@@ -20,7 +20,8 @@ use Tests\TestCase;
  * - URL pattern: /{countryIso2}/{citySlug}/{venueSlug}
  * - Country segment MUST be ISO2 code (lowercase) from Country.code
  * - City segment MUST be slug derived from City.name via Str::slug()
- * - Venue segment MUST match Restaurant.booking_public_slug with booking_enabled=true
+ * - Venue segment MUST match Restaurant.slug (canonical public slug)
+ * - Booking pages require booking_enabled=true
  *
  * @group venue-routing
  */
@@ -57,7 +58,6 @@ class PublicVenueRoutingTest extends TestCase
             'name' => 'Test Bistro',
             'slug' => 'test-bistro',
             'booking_enabled' => true,
-            'booking_public_slug' => 'test-bistro',
             'city_id' => $this->city->id,
             'country_id' => $this->country->id,
             'booking_min_party_size' => 1,
@@ -211,20 +211,23 @@ class PublicVenueRoutingTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_disabled_booking_venue_returns_404(): void
+    public function test_venue_page_works_even_when_booking_disabled(): void
     {
+        // Venue page (profile) should work even when booking is disabled
         $this->restaurant->update(['booking_enabled' => false]);
 
         $response = $this->get('/de/berlin/test-bistro');
 
-        $response->assertStatus(404);
+        $response->assertStatus(200);
+        $response->assertSee($this->restaurant->name);
     }
 
-    public function test_venue_without_slug_returns_404(): void
+    public function test_booking_page_returns_404_when_booking_disabled(): void
     {
-        $this->restaurant->update(['booking_public_slug' => null]);
+        // Booking page specifically requires booking_enabled=true
+        $this->restaurant->update(['booking_enabled' => false]);
 
-        $response = $this->get('/de/berlin/test-bistro');
+        $response = $this->get('/de/berlin/test-bistro/book');
 
         $response->assertStatus(404);
     }
@@ -345,12 +348,12 @@ class PublicVenueRoutingTest extends TestCase
     public function test_venue_slug_with_dots_is_allowed(): void
     {
         // Update the restaurant to have a slug with dots to test this edge case
-        $this->restaurant->update(['booking_public_slug' => 'test.bistro']);
+        $this->restaurant->update(['slug' => 'test.bistro']);
 
         // Debug: check if data exists
         $this->assertDatabaseHas('countries', ['code' => 'DE']);
         $this->assertDatabaseHas('cities', ['name' => 'Berlin']);
-        $this->assertDatabaseHas('restaurants', ['booking_public_slug' => 'test.bistro']);
+        $this->assertDatabaseHas('restaurants', ['slug' => 'test.bistro']);
 
         $response = $this->get('/de/berlin/test.bistro');
 

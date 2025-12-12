@@ -224,12 +224,8 @@ class RestaurantProfileSchema
                 ->helperText('How far ahead guests can book.'),
         ];
 
-        if ($showPublicSlug) {
-            array_unshift($schema, TextInput::make('booking_public_slug')
-                ->label('Public Booking URL')
-                ->maxLength(100)
-                ->helperText('The unique URL slug for your public booking page.'));
-        }
+        // Note: booking_public_slug is deprecated. We now use restaurants.slug as the canonical public slug.
+        // The showPublicSlug parameter is kept for backward compatibility but no longer adds a field.
 
         return $schema;
     }

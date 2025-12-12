@@ -61,7 +61,6 @@ class BusinessReservationStatusUpdateTest extends TestCase
             'city_id' => $this->city->id,
             'timezone' => 'Europe/Berlin',
             'booking_enabled' => true,
-            'booking_public_slug' => 'test-restaurant',
             'booking_min_party_size' => 2,
             'booking_max_party_size' => 10,
             'booking_default_duration_minutes' => 90,

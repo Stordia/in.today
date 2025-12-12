@@ -18,20 +18,19 @@ class PublicVenueController extends Controller
      * - URL pattern: /{countryIso2}/{citySlug}/{venueSlug}
      * - Country MUST be ISO2 code (lowercase) from Country.code field
      * - City MUST be slug derived from City.name via Str::slug()
-     * - Venue MUST match Restaurant.booking_public_slug with booking_enabled=true
+     * - Venue MUST match Restaurant.slug (canonical public slug)
      *
      * Resolution logic:
-     * 1. Find restaurant by booking_public_slug (must have booking_enabled=true)
+     * 1. Find restaurant by slug
      * 2. Validate ISO2 country code matches (strict, lowercase)
      * 3. Canonicalize city slug and 301 redirect if mismatch
      * 4. Return 404 if country or venue don't match
      */
     protected function findRestaurantByRoute(string $country, string $city, string $venueSlug): Restaurant|RedirectResponse
     {
-        // Step 1: Find restaurant by booking_public_slug with eager-loaded relationships
+        // Step 1: Find restaurant by canonical public slug with eager-loaded relationships
         $restaurant = Restaurant::query()
-            ->where('booking_enabled', true)
-            ->where('booking_public_slug', $venueSlug)
+            ->where('slug', $venueSlug)
             ->with(['city.country', 'cuisine'])
             ->first();
 
