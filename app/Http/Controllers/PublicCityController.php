@@ -68,17 +68,17 @@ class PublicCityController extends Controller
     /**
      * Show city results page with all venues in the city.
      *
-     * Reuses the same slug canonicalization logic as venue pages:
+     * City resolution strategy:
      * - Country must be ISO2 code (lowercase)
-     * - City slug must match Str::slug(city.name)
-     * - 301 redirect if slug mismatch
-     * - 404 if not found
+     * - City resolved by canonical slug derived from city.name (NOT cities.slug field)
+     * - Supports both canonical (katerini) and legacy slugs (katerini-gr)
+     * - 301 redirect to canonical if incoming slug != canonical
+     * - DB cities.slug can remain legacy (e.g., katerini-gr) without breaking routes
      */
     public function show(string $country, string $city): View|RedirectResponse
     {
-        // Find city by slug with country relationship
-        $cityModel = City::query()
-            ->where('slug', $city)
+        // Step 1: Find all cities for the given country
+        $cities = City::query()
             ->whereHas('country', function ($query) use ($country) {
                 $query->whereRaw('LOWER(code) = ?', [strtolower($country)]);
             })
@@ -87,31 +87,30 @@ class PublicCityController extends Controller
                     ->with(['cuisine'])
                     ->orderBy('name');
             }])
-            ->first();
+            ->get();
 
-        // If city not found by slug, try to find it and redirect to canonical URL
-        if (! $cityModel) {
-            // Try to find any city with this slug regardless of country
-            $possibleCity = City::where('slug', $city)
-                ->with('country')
-                ->first();
-
-            if ($possibleCity) {
-                // Wrong country in URL, return 404
-                abort(404, 'City not found in this country');
+        // Step 2: Find city by matching canonical slug (derived from name)
+        $cityModel = null;
+        foreach ($cities as $possibleCity) {
+            $canonicalSlug = Str::slug($possibleCity->name);
+            // Match both canonical and legacy (with country suffix) slugs
+            if ($city === $canonicalSlug || $city === $possibleCity->slug) {
+                $cityModel = $possibleCity;
+                break;
             }
+        }
 
-            // City doesn't exist at all
+        if (! $cityModel) {
             abort(404, 'City not found');
         }
 
-        // Use relationship method to avoid conflict with legacy text field
+        // Step 3: Use relationship method to avoid conflict with legacy text field
         $cityCountry = $cityModel->country()->first();
         if (! $cityCountry) {
             abort(404, 'City country not configured');
         }
 
-        // Validate country code matches
+        // Step 4: Validate country code matches (redundant but safe)
         $dbCountryIso2 = strtolower($cityCountry->code);
         $urlCountryIso2 = strtolower($country);
 
@@ -119,7 +118,7 @@ class PublicCityController extends Controller
             abort(404, 'City not found in this country');
         }
 
-        // Canonical city slug handling
+        // Step 5: Canonical city slug handling - always redirect to canonical
         $canonicalCitySlug = Str::slug($cityModel->name);
 
         if ($canonicalCitySlug !== '' && $city !== $canonicalCitySlug) {
@@ -130,7 +129,7 @@ class PublicCityController extends Controller
             ], 301);
         }
 
-        // Get restaurants with booking enabled for this city
+        // Step 6: Return city results view
         $restaurants = $cityModel->restaurants;
 
         return view('public.city.show', [

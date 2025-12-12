@@ -114,4 +114,38 @@ class GreekLocaleAndCityTest extends TestCase
         $response->assertViewIs('public.venue.show');
         $response->assertSee('Athens Taverna');
     }
+
+    public function test_city_with_legacy_slug_suffix_redirects_to_canonical(): void
+    {
+        // Create a city with legacy slug format (name-countrycode)
+        $katerini = City::create([
+            'name' => 'Katerini',
+            'slug' => 'katerini-gr', // Legacy slug with country suffix
+            'country_id' => $this->greece->id,
+            'is_active' => true,
+        ]);
+
+        // Add a restaurant to make the city discoverable
+        Restaurant::create([
+            'name' => 'Katerini Restaurant',
+            'slug' => 'katerini-restaurant',
+            'booking_enabled' => true,
+            'booking_public_slug' => 'katerini-restaurant',
+            'city_id' => $katerini->id,
+            'country_id' => $this->greece->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        // Test legacy slug redirects to canonical
+        $response = $this->get('/gr/katerini-gr');
+        $response->assertStatus(301);
+        $response->assertRedirect('/gr/katerini');
+
+        // Test canonical slug works
+        $response = $this->get('/gr/katerini');
+        $response->assertStatus(200);
+        $response->assertSee('Katerini, Greece');
+        $response->assertSee('Katerini Restaurant');
+    }
 }

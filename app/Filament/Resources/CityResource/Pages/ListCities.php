@@ -18,4 +18,12 @@ class ListCities extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    /**
+     * Limit pagination to prevent 'All' option from freezing the page.
+     */
+    protected function getTableRecordsPerPageSelectOptions(): array
+    {
+        return [10, 25, 50, 100];
+    }
 }
