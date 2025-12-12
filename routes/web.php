@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AffiliateRedirectController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\PublicCityController;
 use App\Http\Controllers\PublicVenueController;
 use App\Http\Controllers\PublicVenueBookingController;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,31 @@ Route::get('/admin/attachments/{path}', function (string $path) {
     ->where('path', '.*')
     ->middleware(['auth', 'verified'])
     ->name('admin.attachment.download');
+
+/*
+|--------------------------------------------------------------------------
+| Public City Discovery Routes
+|--------------------------------------------------------------------------
+|
+| City search and discovery pages. These must come before venue routes.
+|
+*/
+
+// Home page with city search
+Route::get('/home', [PublicCityController::class, 'home'])
+    ->name('public.home');
+
+// City search form submission
+Route::get('/search', [PublicCityController::class, 'search'])
+    ->name('public.city.search');
+
+// City results page: /{country}/{city}
+Route::get('/{country}/{city}', [PublicCityController::class, 'show'])
+    ->name('public.city.show')
+    ->where([
+        'country' => '[a-z]{2}',
+        'city' => '[a-z0-9\-]+',
+    ]);
 
 /*
 |--------------------------------------------------------------------------
