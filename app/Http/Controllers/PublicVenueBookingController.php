@@ -16,6 +16,7 @@ use App\Services\Reservations\AvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -31,25 +32,24 @@ class PublicVenueBookingController extends Controller
      * - Country MUST be ISO2 code (lowercase) from Country.code field
      * - City MUST be slug derived from City.name via Str::slug()
      * - Venue MUST match Restaurant.slug (canonical public slug)
-     * - Booking page requires booking_enabled=true
+     * - Booking page shows graceful message if booking_enabled=false
      *
      * Resolution logic:
-     * 1. Find restaurant by slug (must have booking_enabled=true for booking page)
+     * 1. Find restaurant by slug (no booking_enabled requirement)
      * 2. Validate ISO2 country code matches (strict, lowercase)
      * 3. Canonicalize city slug and 301 redirect if mismatch
-     * 4. Return 404 if country or venue don't match, or booking not enabled
+     * 4. Return 404 if country or venue don't match
      */
     protected function findRestaurantByRoute(string $country, string $city, string $venueSlug): Restaurant|RedirectResponse
     {
         // Step 1: Find restaurant by canonical public slug with eager-loaded relationships
         $restaurant = Restaurant::query()
             ->where('slug', $venueSlug)
-            ->where('booking_enabled', true)
             ->with(['city.country', 'cuisine'])
             ->first();
 
         if (! $restaurant) {
-            abort(404, 'Venue not found or booking not available');
+            abort(404, 'Venue not found');
         }
 
         // Ensure city relationship exists
@@ -96,7 +96,7 @@ class PublicVenueBookingController extends Controller
     /**
      * Show booking page (reuses existing availability logic).
      */
-    public function show(Request $request, string $country, string $city, string $venue, AvailabilityService $availabilityService): View|RedirectResponse
+    public function show(Request $request, string $country, string $city, string $venue, AvailabilityService $availabilityService): View|RedirectResponse|Response
     {
         $result = $this->findRestaurantByRoute($country, $city, $venue);
 
@@ -105,6 +105,46 @@ class PublicVenueBookingController extends Controller
         }
 
         $restaurant = $result;
+
+        // If booking is disabled, show graceful unavailable message
+        if (! $restaurant->booking_enabled) {
+            // Safely resolve cuisine name
+            $cuisineName = null;
+            if ($restaurant->cuisine) {
+                $cuisineName = is_object($restaurant->cuisine)
+                    ? $restaurant->cuisine->getName()
+                    : $restaurant->cuisine;
+            }
+
+            // Safely resolve city and country using relationship methods
+            $restaurantCity = $restaurant->city()->first();
+            $cityCountry = $restaurantCity->country()->first();
+            $cityName = $restaurantCity->name;
+            $countryName = $cityCountry->name;
+
+            // Extract contact info from settings
+            $phone = $restaurant->settings['phone'] ?? null;
+            $email = $restaurant->settings['email'] ?? null;
+            $websiteUrl = $restaurant->settings['website_url'] ?? null;
+
+            // Normalize website URL (ensure it has protocol)
+            if ($websiteUrl && ! preg_match('/^https?:\/\//i', $websiteUrl)) {
+                $websiteUrl = 'https://' . $websiteUrl;
+            }
+
+            return response()->view('public.booking-unavailable', [
+                'restaurant' => $restaurant,
+                'country' => $country,
+                'city' => $city,
+                'venue' => $venue,
+                'cuisineName' => $cuisineName,
+                'cityName' => $cityName,
+                'countryName' => $countryName,
+                'phone' => $phone,
+                'email' => $email,
+                'websiteUrl' => $websiteUrl,
+            ])->header('X-Robots-Tag', 'noindex');
+        }
 
         // Determine timezone
         $timezone = $restaurant->timezone ?? config('app.timezone', 'UTC');

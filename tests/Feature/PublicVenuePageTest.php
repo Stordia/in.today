@@ -347,4 +347,18 @@ class PublicVenuePageTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('https://test-bistro.com', false); // Should be normalized to https://
     }
+
+    public function test_venue_header_hides_book_tab_when_booking_disabled(): void
+    {
+        // Disable booking for this venue
+        $this->restaurant->update(['booking_enabled' => false]);
+
+        $response = $this->get('/de/berlin/test-bistro');
+
+        $response->assertStatus(200);
+        // Should NOT see "Book a table" tab in navigation
+        $response->assertDontSee('Book a table</span>', false);
+        // Should see "Online booking not available" badge instead
+        $response->assertSee('Online booking not available');
+    }
 }

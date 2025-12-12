@@ -222,14 +222,16 @@ class PublicVenueRoutingTest extends TestCase
         $response->assertSee($this->restaurant->name);
     }
 
-    public function test_booking_page_returns_404_when_booking_disabled(): void
+    public function test_booking_page_shows_unavailable_message_when_booking_disabled(): void
     {
-        // Booking page specifically requires booking_enabled=true
+        // Booking page shows graceful message when booking_enabled=false
         $this->restaurant->update(['booking_enabled' => false]);
 
         $response = $this->get('/de/berlin/test-bistro/book');
 
-        $response->assertStatus(404);
+        // Should return 200 with unavailable message (not 404)
+        $response->assertStatus(200);
+        $response->assertSee('Online Booking Unavailable');
     }
 
     public function test_booking_page_accepts_date_and_party_size_parameters(): void
@@ -372,5 +374,26 @@ class PublicVenueRoutingTest extends TestCase
         $response->assertViewHas('country', 'de');
         $response->assertViewHas('city', 'berlin');
         $response->assertViewHas('venue', 'test-bistro');
+    }
+
+    public function test_booking_page_renders_message_when_booking_disabled(): void
+    {
+        // Disable booking for this venue
+        $this->restaurant->update(['booking_enabled' => false]);
+
+        $response = $this->get('/de/berlin/test-bistro/book');
+
+        // Should return 200 (not 404)
+        $response->assertStatus(200);
+        // Should see unavailable message
+        $response->assertSee('Online Booking Unavailable');
+        $response->assertSee('Online booking is currently not available');
+        // Should NOT see booking form elements
+        $response->assertDontSee('Select date');
+        $response->assertDontSee('Party size');
+        // Should see venue name in header
+        $response->assertSee($this->restaurant->name);
+        // Should have noindex header
+        $this->assertEquals('noindex', $response->headers->get('X-Robots-Tag'));
     }
 }

@@ -105,20 +105,32 @@
                 </span>
             </a>
 
-            {{-- Book a Table Tab --}}
-            <a
-                href="{{ route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) }}"
-                class="flex-shrink-0 px-4 py-2.5 text-sm font-medium rounded-t-lg transition {{ $currentTab === 'book' ? 'bg-page text-brand border-b-2 border-brand' : 'text-secondary hover:text-primary hover:bg-page/50' }}"
-                role="tab"
-                aria-selected="{{ $currentTab === 'book' ? 'true' : 'false' }}"
-            >
-                <span class="flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Book a table
-                </span>
-            </a>
+            {{-- Book a Table Tab (only if booking enabled) --}}
+            @if($restaurant->booking_enabled)
+                <a
+                    href="{{ route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) }}"
+                    class="flex-shrink-0 px-4 py-2.5 text-sm font-medium rounded-t-lg transition {{ $currentTab === 'book' ? 'bg-page text-brand border-b-2 border-brand' : 'text-secondary hover:text-primary hover:bg-page/50' }}"
+                    role="tab"
+                    aria-selected="{{ $currentTab === 'book' ? 'true' : 'false' }}"
+                >
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Book a table
+                    </span>
+                </a>
+            @else
+                {{-- Booking unavailable badge --}}
+                <div class="flex-shrink-0 px-4 py-2.5 text-xs font-medium text-secondary bg-gray-100 dark:bg-gray-800 rounded-t-lg border border-default">
+                    <span class="flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Online booking not available
+                    </span>
+                </div>
+            @endif
         </nav>
     </div>
 </div>

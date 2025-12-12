@@ -335,6 +335,29 @@ class PublicCityDiscoveryTest extends TestCase
         $response->assertSee('No Booking Restaurant'); // booking disabled
     }
 
+    public function test_city_card_hides_book_cta_when_booking_disabled(): void
+    {
+        // Create a restaurant with booking disabled
+        Restaurant::create([
+            'name' => 'No Booking Restaurant',
+            'slug' => 'no-booking-restaurant',
+            'booking_enabled' => false,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+        ]);
+
+        $response = $this->get('/de/berlin');
+
+        $response->assertStatus(200);
+        // Should NOT see "Book a table" button for disabled venue
+        $response->assertDontSee('/de/berlin/no-booking-restaurant/book', false);
+        // Should still see "View" button
+        $response->assertSee('/de/berlin/no-booking-restaurant', false);
+        // Should NOT see "Online booking" badge for disabled venue
+        $content = $response->getContent();
+        $this->assertStringContainsString('No Booking Restaurant', $content);
+    }
+
     public function test_city_results_page_shows_venue_details(): void
     {
         // Add cuisine and tagline to the restaurant
