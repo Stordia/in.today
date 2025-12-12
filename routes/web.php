@@ -98,6 +98,21 @@ Route::get('/{country}/{city}', [PublicCityController::class, 'show'])
         'city' => '[a-z0-9\-]+',
     ]);
 
+// City filters (session-based, no query params)
+Route::post('/{country}/{city}/filters', [PublicCityController::class, 'applyFilters'])
+    ->name('public.city.filters.apply')
+    ->where([
+        'country' => '[a-z]{2}',
+        'city' => '[a-z0-9\-]+',
+    ]);
+
+Route::post('/{country}/{city}/filters/clear', [PublicCityController::class, 'clearFilters'])
+    ->name('public.city.filters.clear')
+    ->where([
+        'country' => '[a-z]{2}',
+        'city' => '[a-z0-9\-]+',
+    ]);
+
 /*
 |--------------------------------------------------------------------------
 | Global Public Venue Routes

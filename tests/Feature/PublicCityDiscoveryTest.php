@@ -322,4 +322,161 @@ class PublicCityDiscoveryTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('public.venue.show');
     }
+
+    public function test_city_page_shows_filter_ui(): void
+    {
+        $response = $this->get('/de/berlin');
+
+        $response->assertStatus(200);
+        $response->assertSee('Cuisine');
+        $response->assertSee('All cuisines');
+        $response->assertSee('Bookable only');
+        $response->assertSee('Open today');
+        $response->assertSee('Apply');
+        $response->assertSee('Clear');
+    }
+
+    public function test_applying_cuisine_filter_stores_session_and_filters_results(): void
+    {
+        // Create cuisines
+        $italian = Cuisine::create(['name_en' => 'Italian', 'sort_order' => 1]);
+        $german = Cuisine::create(['name_en' => 'German', 'sort_order' => 2]);
+
+        // Create restaurants with different cuisines
+        Restaurant::create([
+            'name' => 'Italian Place',
+            'slug' => 'italian-place',
+            'booking_enabled' => true,
+            'cuisine_id' => $italian->id,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        Restaurant::create([
+            'name' => 'German Place',
+            'slug' => 'german-place',
+            'booking_enabled' => true,
+            'cuisine_id' => $german->id,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        // Apply filter
+        $response = $this->post('/de/berlin/filters', [
+            'cuisine_id' => $italian->id,
+            'booking_only' => true,
+            'open_today' => false,
+        ]);
+
+        $response->assertRedirect('/de/berlin');
+        $this->assertNotEmpty(session("public-city-filters:de:{$this->berlin->id}"));
+
+        // Visit page and check filtered results
+        $response = $this->get('/de/berlin');
+        $response->assertStatus(200);
+        $response->assertSee('Italian Place');
+        $response->assertDontSee('German Place');
+    }
+
+    public function test_open_today_filter_excludes_closed_venues(): void
+    {
+        // Create a venue with opening hours for today
+        $openVenue = Restaurant::create([
+            'name' => 'Open Today Venue',
+            'slug' => 'open-today',
+            'booking_enabled' => true,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        $closedVenue = Restaurant::create([
+            'name' => 'Closed Today Venue',
+            'slug' => 'closed-today',
+            'booking_enabled' => true,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        // Get today's day of week (0=Monday in our system)
+        $timezone = config('app.timezone', 'UTC');
+        $now = now($timezone);
+        $todayDayOfWeek = ($now->dayOfWeek + 6) % 7;
+
+        // Add opening hours for open venue (today is open)
+        \App\Models\OpeningHour::create([
+            'restaurant_id' => $openVenue->id,
+            'profile' => 'booking',
+            'day_of_week' => $todayDayOfWeek,
+            'is_open' => true,
+            'open_time' => '10:00',
+            'close_time' => '22:00',
+            'last_reservation_time' => '21:00',
+        ]);
+
+        // Closed venue has no opening hours for today
+
+        // Apply open today filter
+        $response = $this->post('/de/berlin/filters', [
+            'cuisine_id' => '',
+            'booking_only' => true,
+            'open_today' => true,
+        ]);
+
+        $response->assertRedirect('/de/berlin');
+
+        // Check results
+        $response = $this->get('/de/berlin');
+        $response->assertStatus(200);
+        $response->assertSee('Open Today Venue');
+        $response->assertDontSee('Closed Today Venue');
+    }
+
+    public function test_clear_filters_resets_to_default_list(): void
+    {
+        // Create cuisines
+        $italian = Cuisine::create(['name_en' => 'Italian', 'sort_order' => 1]);
+
+        // Create restaurants
+        Restaurant::create([
+            'name' => 'Italian Place',
+            'slug' => 'italian-place',
+            'booking_enabled' => true,
+            'cuisine_id' => $italian->id,
+            'city_id' => $this->berlin->id,
+            'country_id' => $this->germany->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        // Apply filter
+        $this->post('/de/berlin/filters', [
+            'cuisine_id' => $italian->id,
+            'booking_only' => true,
+            'open_today' => false,
+        ]);
+
+        // Verify filter is in session
+        $this->assertNotEmpty(session("public-city-filters:de:{$this->berlin->id}"));
+
+        // Clear filters
+        $response = $this->post('/de/berlin/filters/clear');
+        $response->assertRedirect('/de/berlin');
+
+        // Verify filter is cleared from session
+        $this->assertEmpty(session("public-city-filters:de:{$this->berlin->id}"));
+
+        // Check page shows all venues
+        $response = $this->get('/de/berlin');
+        $response->assertStatus(200);
+        $response->assertSee('Italian Place');
+        $response->assertSee('Berlin Bistro'); // Original test fixture
+    }
 }

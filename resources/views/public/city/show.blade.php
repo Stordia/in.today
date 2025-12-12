@@ -21,6 +21,103 @@
         </div>
     </div>
 
+    {{-- Filter Bar --}}
+    <div class="bg-card border-b border-default">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <form action="{{ route('public.city.filters.apply', ['country' => $countrySlug, 'city' => $citySlug]) }}" method="POST" class="space-y-4">
+                @csrf
+
+                {{-- Active Filters Chips (optional but minimal) --}}
+                @if($filters['cuisine_id'] || $filters['open_today'])
+                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                        <span class="text-secondary">Active filters:</span>
+                        @if($filters['cuisine_id'])
+                            @php
+                                $selectedCuisine = $cuisines->firstWhere('id', $filters['cuisine_id']);
+                            @endphp
+                            @if($selectedCuisine)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-brand/10 text-brand text-xs font-medium">
+                                    {{ $selectedCuisine->getName() }}
+                                </span>
+                            @endif
+                        @endif
+                        @if($filters['open_today'])
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-brand/10 text-brand text-xs font-medium">
+                                Open today
+                            </span>
+                        @endif
+                    </div>
+                @endif
+
+                {{-- Filter Controls --}}
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
+                    {{-- Cuisine Dropdown --}}
+                    <div class="flex-1">
+                        <label for="cuisine_id" class="block text-sm font-medium text-primary mb-1">
+                            Cuisine
+                        </label>
+                        <select
+                            name="cuisine_id"
+                            id="cuisine_id"
+                            class="w-full rounded-lg border-default bg-card text-primary focus:ring-2 focus:ring-brand focus:border-brand"
+                        >
+                            <option value="">All cuisines</option>
+                            @foreach($cuisines as $cuisine)
+                                <option value="{{ $cuisine->id }}" {{ $filters['cuisine_id'] == $cuisine->id ? 'selected' : '' }}>
+                                    {{ $cuisine->getName() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Toggles --}}
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        {{-- Online Booking Only --}}
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name="booking_only"
+                                value="1"
+                                {{ $filters['booking_only'] ? 'checked' : '' }}
+                                class="w-4 h-4 text-brand border-default rounded focus:ring-2 focus:ring-brand"
+                            >
+                            <span class="text-sm font-medium text-primary">Bookable only</span>
+                        </label>
+
+                        {{-- Open Today --}}
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name="open_today"
+                                value="1"
+                                {{ $filters['open_today'] ? 'checked' : '' }}
+                                class="w-4 h-4 text-brand border-default rounded focus:ring-2 focus:ring-brand"
+                            >
+                            <span class="text-sm font-medium text-primary">Open today</span>
+                        </label>
+                    </div>
+
+                    {{-- Action Buttons --}}
+                    <div class="flex gap-2">
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-brand text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition"
+                        >
+                            Apply
+                        </button>
+                        <button
+                            type="button"
+                            onclick="this.form.action='{{ route('public.city.filters.clear', ['country' => $countrySlug, 'city' => $citySlug]) }}'; this.form.submit();"
+                            class="px-4 py-2 bg-card border border-default text-secondary text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Main Content --}}
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         @if($restaurants->isEmpty())
