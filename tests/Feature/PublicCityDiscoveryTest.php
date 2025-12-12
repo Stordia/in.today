@@ -214,6 +214,90 @@ class PublicCityDiscoveryTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_city_results_page_redirects_legacy_slug_pattern_to_canonical(): void
+    {
+        // Create a city with legacy slug pattern: athens-gr
+        $greece = Country::firstOrCreate(
+            ['code' => 'GR'],
+            ['name' => 'Greece', 'slug' => 'greece', 'is_active' => true]
+        );
+
+        $athens = City::create([
+            'name' => 'Athens',
+            'slug' => 'athens-gr', // legacy pattern
+            'slug_canonical' => 'athens', // canonical is just city name
+            'country_id' => $greece->id,
+            'is_active' => true,
+        ]);
+
+        // Add a restaurant so the city shows up
+        Restaurant::create([
+            'name' => 'Athens Restaurant',
+            'slug' => 'athens-restaurant',
+            'booking_enabled' => true,
+            'city_id' => $athens->id,
+            'country_id' => $greece->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        // Access with legacy URL pattern /gr/athens-gr
+        $response = $this->get('/gr/athens-gr');
+
+        // Should 301 redirect to canonical /gr/athens
+        $response->assertRedirect('/gr/athens');
+        $response->assertStatus(301);
+    }
+
+    public function test_city_results_page_works_with_canonical_slug(): void
+    {
+        // Create a city with proper canonical slug
+        $greece = Country::firstOrCreate(
+            ['code' => 'GR'],
+            ['name' => 'Greece', 'slug' => 'greece', 'is_active' => true]
+        );
+
+        $athens = City::create([
+            'name' => 'Athens',
+            'slug' => 'athens-gr', // legacy
+            'slug_canonical' => 'athens', // canonical
+            'country_id' => $greece->id,
+            'is_active' => true,
+        ]);
+
+        Restaurant::create([
+            'name' => 'Athens Restaurant',
+            'slug' => 'athens-restaurant',
+            'booking_enabled' => true,
+            'city_id' => $athens->id,
+            'country_id' => $greece->id,
+            'booking_min_party_size' => 1,
+            'booking_max_party_size' => 10,
+        ]);
+
+        // Access with canonical URL /gr/athens
+        $response = $this->get('/gr/athens');
+
+        // Should work without redirect
+        $response->assertStatus(200);
+        $response->assertSee('Athens');
+        $response->assertSee('Athens Restaurant');
+    }
+
+    public function test_country_code_must_be_lowercase_in_url(): void
+    {
+        // Access Berlin with uppercase country code
+        $response = $this->get('/DE/berlin');
+
+        // Should 404 because route constraint requires lowercase
+        $response->assertStatus(404);
+
+        // Lowercase version works
+        $response = $this->get('/de/berlin');
+        $response->assertStatus(200);
+        $response->assertSee('Berlin');
+    }
+
     public function test_city_results_page_shows_empty_state_if_no_venues(): void
     {
         // Create a city without restaurants

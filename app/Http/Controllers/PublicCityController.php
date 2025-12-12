@@ -81,10 +81,12 @@ class PublicCityController extends Controller
      */
     public function show(string $country, string $city): View|RedirectResponse
     {
+        $urlCountryIso2 = strtolower($country);
+
         // Step 1: Try to find city by canonical slug (fast indexed lookup)
         $cityModel = City::query()
-            ->whereHas('country', function ($query) use ($country) {
-                $query->whereRaw('LOWER(code) = ?', [strtolower($country)]);
+            ->whereHas('country', function ($query) use ($urlCountryIso2) {
+                $query->whereRaw('LOWER(code) = ?', [$urlCountryIso2]);
             })
             ->where('slug_canonical', $city)
             ->with('country')
@@ -93,8 +95,8 @@ class PublicCityController extends Controller
         // Step 2: If not found by canonical, try legacy slug field
         if (! $cityModel) {
             $cityModel = City::query()
-                ->whereHas('country', function ($query) use ($country) {
-                    $query->whereRaw('LOWER(code) = ?', [strtolower($country)]);
+                ->whereHas('country', function ($query) use ($urlCountryIso2) {
+                    $query->whereRaw('LOWER(code) = ?', [$urlCountryIso2]);
                 })
                 ->where('slug', $city)
                 ->with('country')
@@ -102,9 +104,30 @@ class PublicCityController extends Controller
 
             // If found by legacy slug, redirect to canonical
             if ($cityModel && $cityModel->slug_canonical && $city !== $cityModel->slug_canonical) {
-                $cityCountry = $cityModel->country()->first();
-                $urlCountryIso2 = strtolower($country);
+                return redirect()->route('public.city.show', [
+                    'country' => $urlCountryIso2,
+                    'city' => $cityModel->slug_canonical,
+                ], 301);
+            }
+        }
 
+        // Step 3: If still not found, try legacy pattern: {citySlug}-{countryIso2}
+        // e.g. athens-gr, berlin-de
+        if (! $cityModel) {
+            $legacySlug = $city . '-' . $urlCountryIso2;
+            $cityModel = City::query()
+                ->whereHas('country', function ($query) use ($urlCountryIso2) {
+                    $query->whereRaw('LOWER(code) = ?', [$urlCountryIso2]);
+                })
+                ->where(function ($query) use ($legacySlug) {
+                    $query->where('slug', $legacySlug)
+                        ->orWhere('slug_canonical', $legacySlug);
+                })
+                ->with('country')
+                ->first();
+
+            // If found by legacy pattern, redirect to canonical
+            if ($cityModel && $cityModel->slug_canonical && $city !== $cityModel->slug_canonical) {
                 return redirect()->route('public.city.show', [
                     'country' => $urlCountryIso2,
                     'city' => $cityModel->slug_canonical,
@@ -116,21 +139,20 @@ class PublicCityController extends Controller
             abort(404, 'City not found');
         }
 
-        // Step 3: Use relationship method to avoid conflict with legacy text field
+        // Step 4: Use relationship method to avoid conflict with legacy text field
         $cityCountry = $cityModel->country()->first();
         if (! $cityCountry) {
             abort(404, 'City country not configured');
         }
 
-        // Step 4: Validate country code matches (redundant but safe)
+        // Step 5: Validate country code matches (redundant but safe)
         $dbCountryIso2 = strtolower($cityCountry->code);
-        $urlCountryIso2 = strtolower($country);
 
         if ($dbCountryIso2 !== $urlCountryIso2) {
             abort(404, 'City not found in this country');
         }
 
-        // Step 5: Get filters from session
+        // Step 6: Get filters from session
         $filterKey = "public-city-filters:{$urlCountryIso2}:{$cityModel->id}";
         $filters = session($filterKey, [
             'cuisine_id' => null,
@@ -138,7 +160,7 @@ class PublicCityController extends Controller
             'open_today' => false,   // Default OFF - most users want to see all venues; they can filter if needed
         ]);
 
-        // Step 6: Build restaurant query with filters
+        // Step 7: Build restaurant query with filters
         $restaurantsQuery = Restaurant::query()
             ->where('city_id', $cityModel->id)
             ->with(['cuisine']);
@@ -178,7 +200,7 @@ class PublicCityController extends Controller
 
         $restaurants = $restaurantsQuery->orderBy('name')->get();
 
-        // Step 7: Get all cuisines for filter dropdown
+        // Step 8: Get all cuisines for filter dropdown
         $cuisines = Cuisine::query()
             ->whereHas('restaurants', function ($query) use ($cityModel) {
                 $query->where('city_id', $cityModel->id);
