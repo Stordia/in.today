@@ -92,7 +92,7 @@
 
                 {{-- Opening Hours --}}
                 <div class="bg-card rounded-xl shadow-sm border border-default p-6">
-                    <h2 class="text-lg font-semibold text-primary mb-4">Booking Hours</h2>
+                    <h2 class="text-lg font-semibold text-primary mb-4">Opening Hours</h2>
                     @if($openingHours->isNotEmpty())
                         @php
                             $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -133,14 +133,20 @@
                             @endforeach
                         </div>
 
-                        @if($todayIsOpen === false && $todayDayOfWeek !== null)
-                            <p class="mt-4 text-sm text-secondary/70 italic">
-                                Closed for online bookings today.
-                            </p>
+                        {{-- Book a table CTA (only if booking enabled) --}}
+                        @if($restaurant->booking_enabled)
+                            <div class="mt-4 pt-4 border-t border-default">
+                                <a
+                                    href="{{ route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) }}"
+                                    class="block w-full px-4 py-2.5 text-center text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-lg transition shadow-sm"
+                                >
+                                    Book a table
+                                </a>
+                            </div>
                         @endif
                     @else
-                        <p class="text-sm text-secondary">
-                            View available booking times on the <a href="{{ route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) }}" class="text-primary hover:underline">booking page</a>.
+                        <p class="text-sm text-secondary/70 italic">
+                            Opening hours not provided yet.
                         </p>
                     @endif
                 </div>
@@ -152,6 +158,12 @@
                         <p class="text-sm text-secondary">Map coming soon</p>
                     </div>
                 </div>
+
+                {{-- TODO Phase 2: Share buttons --}}
+
+                {{-- TODO Phase 2: Social links --}}
+
+                {{-- TODO Phase 2: Contact form --}}
             </div>
         </div>
     </div>

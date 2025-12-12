@@ -120,16 +120,6 @@
                         Book a table
                     </span>
                 </a>
-            @else
-                {{-- Booking unavailable badge --}}
-                <div class="flex-shrink-0 px-4 py-2.5 text-xs font-medium text-secondary bg-gray-100 dark:bg-gray-800 rounded-t-lg border border-default">
-                    <span class="flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Online booking not available
-                    </span>
-                </div>
             @endif
         </nav>
     </div>

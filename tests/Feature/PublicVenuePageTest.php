@@ -142,7 +142,7 @@ class PublicVenuePageTest extends TestCase
         $response = $this->get('/de/berlin/test-bistro');
 
         $response->assertStatus(200);
-        $response->assertSee('Booking Hours');
+        $response->assertSee('Opening Hours');
         $response->assertSee('Monday');
         $response->assertSee('17:00');
         $response->assertSee('23:00');
@@ -185,12 +185,13 @@ class PublicVenuePageTest extends TestCase
         // Get current day of week (0=Monday in OpeningHour model)
         $todayDayOfWeek = (now()->dayOfWeek + 6) % 7;
 
-        // If today is not Monday, we should see the closed message
+        // If today is not Monday, we should see "Closed" for today
         if ($todayDayOfWeek !== 0) {
             $response = $this->get('/de/berlin/test-bistro');
 
             $response->assertStatus(200);
-            $response->assertSee('Closed for online bookings today');
+            $response->assertSee('Opening Hours');
+            $response->assertSee('Closed'); // Today should show as closed
         } else {
             // Today is Monday, so it should be open
             $this->assertTrue(true); // Skip this assertion
@@ -358,7 +359,7 @@ class PublicVenuePageTest extends TestCase
         $response->assertStatus(200);
         // Should NOT see "Book a table" tab in navigation
         $response->assertDontSee('Book a table</span>', false);
-        // Should see "Online booking not available" badge instead
-        $response->assertSee('Online booking not available');
+        // Should also NOT see any "Online booking not available" badge in header tabs
+        $response->assertDontSee('Online booking not available');
     }
 }
