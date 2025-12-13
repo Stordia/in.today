@@ -28,7 +28,7 @@
                 @csrf
 
                 {{-- Active Filters Chips (optional but minimal) --}}
-                @if($filters['cuisine_id'] || $filters['open_today'])
+                @if($filters['cuisine_id'] || $filters['booking_only'] || $filters['open_today'])
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <span class="text-secondary">Active filters:</span>
                         @if($filters['cuisine_id'])
@@ -40,6 +40,11 @@
                                     {{ $selectedCuisine->getName() }}
                                 </span>
                             @endif
+                        @endif
+                        @if($filters['booking_only'])
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-brand/10 text-brand text-xs font-medium">
+                                Online booking available
+                            </span>
                         @endif
                         @if($filters['open_today'])
                             <span class="inline-flex items-center px-3 py-1 rounded-full bg-brand/10 text-brand text-xs font-medium">
@@ -231,6 +236,8 @@
                                 <p class="text-sm text-secondary italic mb-4 line-clamp-2">
                                     {{ $tagline }}
                                 </p>
+                            @else
+                                <div class="mb-4"></div>
                             @endif
 
                             {{-- Action Buttons --}}
