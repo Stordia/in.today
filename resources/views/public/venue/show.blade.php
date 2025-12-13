@@ -1,8 +1,74 @@
 @extends('layouts.venue')
 
-@section('title', $restaurant->name . ' – ' . ($cityName ?? '') . ($countryName ? ', ' . $countryName : ''))
-@section('meta_description', $tagline ?? $restaurant->name)
+@php
+    // Prepare SEO variables
+    $cuisineText = $cuisineName ? $cuisineName . ' ' : '';
+    $locationText = ($cityName ?? '') . ($countryName ? ', ' . $countryName : '');
+
+    // Meta description priority: description > tagline > fallback
+    $metaDescription = $description
+        ? (strlen($description) > 155 ? substr($description, 0, 152) . '...' : $description)
+        : ($tagline ?? "$restaurant->name is a {$cuisineText}venue in $locationText. View menu, opening hours and more on in.today.");
+@endphp
+
+@section('title', $restaurant->name . ' – ' . $cuisineText . 'in ' . ($cityName ?? 'Unknown') . ' | in.today')
+@section('meta_description', $metaDescription)
+@section('canonical', route('public.venue.show', ['country' => $country, 'city' => $city, 'venue' => $venue]))
 @section('robots', 'index,follow')
+
+{{-- OpenGraph --}}
+@section('og_title', $restaurant->name . ' – ' . $cuisineText . 'in ' . ($cityName ?? 'Unknown'))
+@section('og_description', $metaDescription)
+
+{{-- Custom OG Image (override default) --}}
+@push('head')
+    <meta property="og:image" content="{{ $restaurant->getCoverImageUrlOrPlaceholder() }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    {{-- Schema.org JSON-LD --}}
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "{{ $cuisineName ? 'Restaurant' : 'LocalBusiness' }}",
+        "name": {{ json_encode($restaurant->name) }},
+        @if($restaurant->address_street || $cityName)
+        "address": {
+            "@@type": "PostalAddress"
+            @if($restaurant->address_street)
+            ,"streetAddress": {{ json_encode($restaurant->address_street) }}
+            @endif
+            @if($restaurant->address_postal)
+            ,"postalCode": {{ json_encode($restaurant->address_postal) }}
+            @endif
+            @if($cityName)
+            ,"addressLocality": {{ json_encode($cityName) }}
+            @endif
+            @if($countryName)
+            ,"addressCountry": {{ json_encode($countryName) }}
+            @endif
+        },
+        @endif
+        @if($cuisineName)
+        "servesCuisine": {{ json_encode($cuisineName) }},
+        @endif
+        "url": {{ json_encode(route('public.venue.show', ['country' => $country, 'city' => $city, 'venue' => $venue])) }},
+        "image": {{ json_encode($restaurant->getCoverImageUrlOrPlaceholder()) }}
+        @if($openingHours->isNotEmpty())
+        ,"openingHoursSpecification": [
+            @foreach($openingHours->where('is_open', true) as $hours)
+            {
+                "@@type": "OpeningHoursSpecification",
+                "dayOfWeek": "{{ ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][$hours->day_of_week] }}",
+                "opens": "{{ $hours->open_time ? $hours->open_time->format('H:i') : '' }}",
+                "closes": "{{ $hours->close_time ? $hours->close_time->format('H:i') : '' }}"
+            }{{ !$loop->last ? ',' : '' }}
+            @endforeach
+        ]
+        @endif
+    }
+    </script>
+@endpush
 
 @section('content')
     {{-- Shared Venue Header --}}

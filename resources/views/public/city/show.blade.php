@@ -1,8 +1,13 @@
 @extends('layouts.venue')
 
-@section('title', 'Places in ' . $city->name . ', ' . $country->name)
-@section('meta_description', 'Discover restaurants, bars and venues in ' . $city->name . ' with online booking')
-@section('robots', 'index,follow')
+@section('title', 'Restaurants & Venues in ' . $city->name . ', ' . $country->name . ' | in.today')
+@section('meta_description', 'Discover restaurants, cafés, bars and venues in ' . $city->name . '. View menus, opening hours and book a table online with in.today.')
+@section('canonical', route('public.city.show', ['country' => $countrySlug, 'city' => $citySlug]))
+@section('robots', ($filters['cuisine_id'] || $filters['booking_only'] || $filters['open_today']) ? 'noindex,follow' : 'index,follow')
+
+{{-- OpenGraph --}}
+@section('og_title', 'Restaurants & Venues in ' . $city->name . ', ' . $country->name)
+@section('og_description', 'Discover restaurants, cafés, bars and venues in ' . $city->name . '. View menus, opening hours and book a table online.')
 
 @section('content')
     {{-- Header Section --}}

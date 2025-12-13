@@ -1,8 +1,9 @@
 @extends('layouts.venue')
 
-@section('title', $restaurant->name . ' - Online Booking Unavailable')
+@section('title', 'Online Booking Unavailable – ' . $restaurant->name . ' | in.today')
 @section('meta_description', 'Online booking is currently unavailable for ' . $restaurant->name . '. Contact us directly for reservations.')
-@section('robots', 'noindex,nofollow')
+@section('canonical', route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]))
+@section('robots', 'noindex,follow')
 
 @section('content')
     {{-- Shared Venue Header --}}

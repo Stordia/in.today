@@ -330,9 +330,10 @@ class PublicVenuePageTest extends TestCase
         $response = $this->get('/de/berlin/test-bistro');
 
         $response->assertStatus(200);
-        $response->assertSee('<title>Test Bistro – Berlin, Germany</title>', false);
+        $response->assertSee('<title>Test Bistro – in Berlin | in.today</title>', false);
         $response->assertSee('Best bistro in Berlin', false); // Meta description should use tagline
         $response->assertSee('index,follow', false); // SEO-friendly robots tag
+        $response->assertSee('<link rel="canonical"', false); // Should have canonical URL
     }
 
     public function test_venue_profile_normalizes_website_url_without_protocol(): void

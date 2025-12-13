@@ -1,8 +1,13 @@
 @extends('layouts.venue')
 
-@section('title', 'Menu – ' . $restaurant->name)
-@section('meta_description', 'View the menu for ' . $restaurant->name)
-@section('robots', 'noindex,nofollow')
+@section('title', 'Menu – ' . $restaurant->name . ' | in.today')
+@section('meta_description', 'Explore the menu of ' . $restaurant->name . ' in ' . ($cityName ?? 'Unknown') . '. Updated dishes, prices and photos.')
+@section('canonical', route('public.venue.menu.show', ['country' => $country, 'city' => $city, 'venue' => $venue]))
+@section('robots', 'index,follow')
+
+{{-- OpenGraph --}}
+@section('og_title', 'Menu – ' . $restaurant->name)
+@section('og_description', 'Explore the menu of ' . $restaurant->name . ' in ' . ($cityName ?? 'Unknown') . '. Updated dishes, prices and photos.')
 
 @section('content')
     {{-- Shared Venue Header --}}

@@ -1,8 +1,9 @@
 @extends('layouts.venue')
 
-@section('title', __('booking.page_title') . ' – ' . $restaurant->name)
-@section('meta_description', __('booking.page_subtitle'))
-@section('robots', 'noindex,nofollow')
+@section('title', 'Book a table – ' . $restaurant->name . ' | in.today')
+@section('meta_description', 'Reserve a table at ' . $restaurant->name . '. Choose your date, time and party size for an instant booking confirmation.')
+@section('canonical', isset($country) ? route('public.venue.book.show', ['country' => $country, 'city' => $city, 'venue' => $venue]) : route('public.booking.show', $restaurant->booking_public_slug))
+@section('robots', 'noindex,follow')
 
 @php
     // Safely resolve cuisine name (relation object vs string)
